@@ -69,9 +69,16 @@ public sealed class NavigationSmokeTests
             "Оболочка не завершила стартовую навигацию на «Главную».");
 
         main.NavigateCommand.Execute(key);
+
+        // Ждём именно смену страницы: NavigationService выставляет CurrentEntry до того,
+        // как завершится OnNavigatedToAsync, и только потом уведомляет оболочку.
+        var navigation = services.GetRequiredService<INavigationService>();
         Assert.True(
-            WaitUntil(() => CurrentKey(services) == key, TimeSpan.FromSeconds(20)),
-            $"Раздел «{key}» не открылся: текущий ключ — {CurrentKey(services) ?? "нет"}.");
+            WaitUntil(() => CurrentKey(services) == key
+                            && navigation.Current is not null
+                            && ReferenceEquals(main.CurrentPage, navigation.Current),
+                TimeSpan.FromSeconds(20)),
+            $"Раздел «{key}» не открылся: {Describe(window, main, services)}");
 
         // Дать представлению построиться и уложиться (шрифты, элементы списков).
         Pump(window, TimeSpan.FromSeconds(1.5));
