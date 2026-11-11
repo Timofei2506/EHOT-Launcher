@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>EHOT.Launcher.Platform.Windows</RootNamespace>
+    <AssemblyName>EHOT.Launcher.Platform.Windows</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <ProjectReference Include="../EHOT.Launcher.Platform/EHOT.Launcher.Platform.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,295 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- ============================================================
+       EHOT Launcher · компоненты дизайн-системы
+       ============================================================ -->
+
+  <Styles.Resources>
+
+      <ControlTheme x:Key="EhotButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Padding" Value="16,9" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Cursor" Value="Hand" />
+          <Setter Property="Transitions">
+          <Transitions>
+            <BrushTransition Property="Background" Duration="0:0:0.15" />
+            <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
+            <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+          </Transitions>
+        </Setter>
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Name="Root"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="{TemplateBinding CornerRadius}">
+              <ContentPresenter Name="Content"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="{TemplateBinding Padding}"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+            </Border>
+          </ControlTemplate>
+        </Setter>
+
+        <Style Selector="^:pointerover /template/ Border#Root">
+          <Setter Property="Background" Value="{StaticResource SurfaceHighBrush}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#Root">
+          <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
+        </Style>
+        <Style Selector="^:disabled">
+          <Setter Property="Opacity" Value="0.45" />
+          <Setter Property="Cursor" Value="Arrow" />
+        </Style>
+      </ControlTheme>
+
+      <ControlTheme x:Key="EhotPrimaryButton" TargetType="Button" BasedOn="{StaticResource EhotButton}">
+        <Setter Property="Background" Value="{StaticResource AccentGradient}" />
+        <Setter Property="BorderBrush" Value="#00000000" />
+        <Setter Property="Foreground" Value="#FFFFFF" />
+        <Style Selector="^ /template/ Border#Root">
+      <Setter Property="BoxShadow" Value="0 10 26 -10 #A68B5CF6" />
+    </Style>
+        <Style Selector="^:pointerover /template/ Border#Root">
+          <Setter Property="Background" Value="{StaticResource AccentGradientHorizontal}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#Root">
+          <Setter Property="Opacity" Value="0.9" />
+        </Style>
+      </ControlTheme>
+
+      <ControlTheme x:Key="EhotGhostButton" TargetType="Button" BasedOn="{StaticResource EhotButton}">
+        <Setter Property="Background" Value="#00000000" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Style Selector="^:pointerover /template/ Border#Root">
+          <Setter Property="Background" Value="#14FFFFFF" />
+        </Style>
+      </ControlTheme>
+
+      <ControlTheme x:Key="EhotDangerButton" TargetType="Button" BasedOn="{StaticResource EhotButton}">
+        <Setter Property="Background" Value="#2A1518" />
+        <Setter Property="BorderBrush" Value="#5A2A30" />
+        <Setter Property="Foreground" Value="{StaticResource DangerBrush}" />
+      </ControlTheme>
+
+      <ControlTheme x:Key="EhotIconButton" TargetType="Button" BasedOn="{StaticResource EhotButton}">
+        <Setter Property="Background" Value="#00000000" />
+        <Setter Property="BorderBrush" Value="#00000000" />
+        <Setter Property="Padding" Value="8" />
+        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Style Selector="^:pointerover /template/ Border#Root">
+          <Setter Property="Background" Value="#1AFFFFFF" />
+        </Style>
+      </ControlTheme>
+
+      <!-- Поле ввода: внешний вид наследует встроенный шаблон Fluent (Avalonia 12),
+           переопределяются только палитра и геометрия. -->
+      <ControlTheme x:Key="EhotTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="CaretBrush" Value="{StaticResource AccentBlueBrush}" />
+        <Setter Property="SelectionBrush" Value="#5538BDF8" />
+        <Setter Property="PlaceholderForeground" Value="{StaticResource TextSecondaryBrush}" />
+        <Setter Property="MinHeight" Value="38" />
+      </ControlTheme>
+
+      <ControlTheme x:Key="NavItemTheme" TargetType="RadioButton">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Padding" Value="12,9" />
+        <Setter Property="Margin" Value="0,1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Border Name="Root" Background="{TemplateBinding Background}" CornerRadius="10" Padding="{TemplateBinding Padding}">
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <ContentPresenter Name="IconHost"
+                                  Content="{TemplateBinding Tag}"
+                                  VerticalAlignment="Center"
+                                  Margin="0,0,11,0" />
+                <ContentPresenter Grid.Column="1"
+                                  Content="{TemplateBinding Content}"
+                                  VerticalAlignment="Center"
+                                  TextElement.FontSize="13.5"
+                                  TextElement.Foreground="{TemplateBinding Foreground}" />
+                <Border Grid.Column="2" Name="Indicator" Width="3" Height="16" CornerRadius="2"
+                        Background="{StaticResource AccentBrush}" Opacity="0" />
+              </Grid>
+            </Border>
+          </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#Root">
+          <Setter Property="Background" Value="#0DFFFFFF" />
+        </Style>
+        <Style Selector="^:checked /template/ Border#Root">
+          <Setter Property="Background" Value="#1A8B5CF6" />
+        </Style>
+        <Style Selector="^:checked /template/ Border#Indicator">
+          <Setter Property="Opacity" Value="1" />
+        </Style>
+        <Style Selector="^:checked">
+          <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        </Style>
+      </ControlTheme>
+
+  </Styles.Resources>
+
+
+  <!-- Кнопка: базовая -->
+
+  <!-- Кнопка: акцентная -->
+
+  <!-- Кнопка: призрачная -->
+
+  <!-- Кнопка: опасная -->
+
+  <!-- Кнопка-иконка -->
+
+  <!-- Поле ввода -->
+
+  <!-- Карточка -->
+  <Style Selector="Border.card">
+    <Setter Property="Background" Value="{StaticResource CardGradient}" />
+    <Setter Property="BorderBrush" Value="{StaticResource BorderSoftBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="18" />
+    <Setter Property="Padding" Value="20" />
+    <Setter Property="BoxShadow" Value="0 10 30 0 #3D000000" />
+  </Style>
+
+  <Style Selector="Border.glass">
+    <Setter Property="Background" Value="#12151FCC" />
+    <Setter Property="BorderBrush" Value="#1FFFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="18" />
+  </Style>
+
+  <Style Selector="Border.hero">
+    <Setter Property="Background" Value="{StaticResource HeroGradient}" />
+    <Setter Property="BorderBrush" Value="#2A2145" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="24" />
+    <Setter Property="Padding" Value="28" />
+    <Setter Property="BoxShadow" Value="0 18 48 -12 #66000000" />
+  </Style>
+
+  <Style Selector="Border.chip">
+    <Setter Property="Background" Value="#1AFFFFFF" />
+    <Setter Property="BorderBrush" Value="#22FFFFFF" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="999" />
+    <Setter Property="Padding" Value="10,4" />
+  </Style>
+
+  <Style Selector="Border.divider">
+    <Setter Property="Height" Value="1" />
+    <Setter Property="Background" Value="{StaticResource BorderSoftBrush}" />
+    <Setter Property="Margin" Value="0,12" />
+  </Style>
+
+  <!-- Текст -->
+  <Style Selector="TextBlock.display">
+    <Setter Property="FontSize" Value="40" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    <Setter Property="LetterSpacing" Value="-0.5" />
+  </Style>
+
+  <Style Selector="TextBlock.h1">
+    <Setter Property="FontSize" Value="26" />
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.h2">
+    <Setter Property="FontSize" Value="18" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.h3">
+    <Setter Property="FontSize" Value="14.5" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+  </Style>
+
+  <Style Selector="TextBlock.body">
+    <Setter Property="FontSize" Value="13.5" />
+    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <Style Selector="TextBlock.caption">
+    <Setter Property="FontSize" Value="11.5" />
+    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+    <Setter Property="Opacity" Value="0.85" />
+  </Style>
+
+  <Style Selector="TextBlock.eyebrow">
+    <Setter Property="FontSize" Value="11" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="LetterSpacing" Value="1.2" />
+    <Setter Property="Foreground" Value="{StaticResource AccentBlueBrush}" />
+  </Style>
+
+  <!-- Иконка -->
+  <Style Selector="Path.icon">
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="Fill" Value="Transparent" />
+    <Setter Property="Stroke" Value="{StaticResource TextSecondaryBrush}" />
+    <Setter Property="StrokeThickness" Value="1.6" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="StrokeJoin" Value="Round" />
+  </Style>
+
+  <Style Selector="Path.icon.accent">
+    <Setter Property="Stroke" Value="{StaticResource AccentBrush}" />
+  </Style>
+
+  <Style Selector="Path.icon.blue">
+    <Setter Property="Stroke" Value="{StaticResource AccentBlueBrush}" />
+  </Style>
+
+  <!-- Навигация -->
+
+  <!-- Прогресс -->
+  <Style Selector="ProgressBar.ehot">
+    <Setter Property="Height" Value="6" />
+    <Setter Property="CornerRadius" Value="3" />
+    <Setter Property="Background" Value="#1AFFFFFF" />
+    <Setter Property="Foreground" Value="{StaticResource AccentGradientHorizontal}" />
+    <Setter Property="MinWidth" Value="40" />
+  </Style>
+
+  <!-- Прокрутка -->
+  <Style Selector="ScrollBar">
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <!-- Разделитель -->
+  <Style Selector="Rectangle">
+    <Setter Property="Fill" Value="{StaticResource BorderSoftBrush}" />
+  </Style>
+
+</Styles>

@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             xmlns:core="using:EHOT.Launcher.Core.Platform"
+             x:Class="EHOT.Launcher.UI.Views.AboutView"
+             x:DataType="vm:AboutViewModel">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="14" MaxWidth="900" HorizontalAlignment="Left">
+
+      <Border Classes="hero" Padding="24">
+        <StackPanel Spacing="10">
+          <StackPanel Orientation="Horizontal" Spacing="14">
+            <Border Width="54" Height="54" CornerRadius="16" Background="{StaticResource AccentGradient}">
+              <TextBlock Text="E" FontSize="26" FontWeight="Bold" Foreground="White"
+                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <StackPanel VerticalAlignment="Center" Spacing="2">
+              <TextBlock Text="EHOT Launcher" Classes="h1" />
+              <TextBlock Text="{Binding Version}" Classes="caption" />
+            </StackPanel>
+          </StackPanel>
+          <TextBlock Classes="body"
+                     Text="Кроссплатформенный лаунчер Minecraft Java Edition: профили, установка версий и модов, каталог контента и собственная сеть для совместной игры." />
+          <TextBlock Text="{Binding Runtime}" Classes="caption" />
+          <TextBlock Text="{Binding Platform}" Classes="caption" />
+          <TextBlock Text="{Binding BuildInfo}" Classes="caption" />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card" Padding="16">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Матрица возможностей" Classes="h3" />
+          <ItemsControl ItemsSource="{Binding FeatureMatrix}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="core:Capability">
+                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,4">
+                  <Ellipse Width="7" Height="7" Fill="{Binding State, Converter={x:Static vm:NetConverters.CapabilityBrush}}"
+                           VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="9,0,0,0" FontSize="12"
+                             Foreground="{StaticResource TextBrush}" />
+                  <TextBlock Grid.Column="2" Text="{Binding State}" Classes="caption" />
+                </Grid>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Classes="caption" TextWrapping="Wrap"
+                     Text="Возможности помечаются честно: доступно / с ограничениями / недоступно. Пометка «недоступно» всегда сопровождается причиной." />
+        </StackPanel>
+      </Border>
+
+      <Border Classes="card" Padding="16">
+        <StackPanel Spacing="8">
+          <TextBlock Text="Правовая информация" Classes="h3" />
+          <TextBlock Text="{Binding LegalNotice}" Classes="caption" TextWrapping="Wrap" />
+          <TextBlock Text="{Binding Credits}" Classes="caption" TextWrapping="Wrap" />
+        </StackPanel>
+      </Border>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

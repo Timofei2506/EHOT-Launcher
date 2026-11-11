@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>EHOT.Launcher.Platform.Linux</RootNamespace>
+    <AssemblyName>EHOT.Launcher.Platform.Linux</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../EHOT.Launcher.Platform/EHOT.Launcher.Platform.csproj" />
+  </ItemGroup>
+</Project>

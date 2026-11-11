@@ -1,0 +1,8 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             xmlns:views="using:EHOT.Launcher.UI.Views"
+             x:Class="EHOT.Launcher.UI.Views.BrowseWorldsView"
+             x:DataType="vm:WorldsViewModel">
+  <views:ContentBrowseView DataContext="{Binding}" />
+</UserControl>

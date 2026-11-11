@@ -1,0 +1,86 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             xmlns:dl="using:EHOT.Launcher.Core.Downloads"
+             x:Class="EHOT.Launcher.UI.Views.DownloadsView"
+             x:DataType="vm:DownloadsViewModel">
+
+  <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14">
+
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="3">
+        <TextBlock Text="Загрузки" Classes="h1" />
+        <TextBlock Text="{Binding Summary}" Classes="body" />
+      </StackPanel>
+      <Button Grid.Column="1" Classes="ghost" Content="История" Command="{Binding LoadHistoryCommand}"
+              VerticalAlignment="Center" />
+    </Grid>
+
+    <Border Grid.Row="1" Classes="card" Padding="14">
+      <StackPanel Spacing="8">
+        <TextBlock Text="{Binding Summary}" Classes="caption" />
+        <ProgressBar Classes="ehot" IsIndeterminate="{Binding IsBusy}" />
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="14">
+      <Border Classes="card" Padding="14">
+        <Grid RowDefinitions="Auto,*">
+          <TextBlock Grid.Row="0" Text="Очередь" Classes="h3" Margin="0,0,0,8" />
+          <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding Active}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dl:DownloadSnapshot">
+                  <Border BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="0,9">
+                    <StackPanel Spacing="5">
+                      <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding DisplayName}" FontSize="12.5" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Grid.Column="1" Text="{Binding State}" Classes="caption" />
+                      </Grid>
+                      <ProgressBar Classes="ehot" Value="{Binding Fraction}" Maximum="1" />
+                      <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Text="{Binding BytesPerSecond, Converter={x:Static vm:NetConverters.Speed}}"
+                                   Classes="caption" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                          <Button Classes="icon" Command="{Binding $parent[ItemsControl].((vm:DownloadsViewModel)DataContext).PauseCommand}" CommandParameter="{Binding}">
+                            <Path Data="{StaticResource IconPause}" Classes="icon" Width="12" Height="12" />
+                          </Button>
+                          <Button Classes="icon" Command="{Binding $parent[ItemsControl].((vm:DownloadsViewModel)DataContext).CancelCommand}" CommandParameter="{Binding}">
+                            <Path Data="{StaticResource IconClose}" Classes="icon" Width="12" Height="12" />
+                          </Button>
+                        </StackPanel>
+                      </Grid>
+                    </StackPanel>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="1" Classes="card" Padding="14">
+        <Grid RowDefinitions="Auto,*">
+          <TextBlock Grid.Row="0" Text="История" Classes="h3" Margin="0,0,0,8" />
+          <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding History}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="dl:DownloadHistoryEntry">
+                  <Border BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="0,7">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{Binding DisplayName}" FontSize="12" Foreground="{StaticResource TextBrush}"
+                                 TextTrimming="CharacterEllipsis" />
+                      <TextBlock Grid.Column="1" Text="{Binding CompletedAt, Converter={x:Static vm:TextConverters.ShortDate}}"
+                                 Classes="caption" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

@@ -1,0 +1,20 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EHOT.Launcher.UI/EHOT.Launcher.UI.csproj" />
+    <Project Path="src/EHOT.Launcher.Core/EHOT.Launcher.Core.csproj" />
+    <Project Path="src/EHOT.Launcher.Auth/EHOT.Launcher.Auth.csproj" />
+    <Project Path="src/EHOT.Launcher.Game/EHOT.Launcher.Game.csproj" />
+    <Project Path="src/EHOT.Launcher.Content/EHOT.Launcher.Content.csproj" />
+    <Project Path="src/EHOT.Launcher.Network/EHOT.Launcher.Network.csproj" />
+    <Project Path="src/EHOT.Launcher.Storage/EHOT.Launcher.Storage.csproj" />
+    <Project Path="src/EHOT.Launcher.Platform/EHOT.Launcher.Platform.csproj" />
+    <Project Path="src/EHOT.Launcher.Platform.Windows/EHOT.Launcher.Platform.Windows.csproj" />
+    <Project Path="src/EHOT.Launcher.Platform.MacOS/EHOT.Launcher.Platform.MacOS.csproj" />
+    <Project Path="src/EHOT.Launcher.Platform.Linux/EHOT.Launcher.Platform.Linux.csproj" />
+    <Project Path="src/EHOT.Launcher.API/EHOT.Launcher.API.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EHOT.Launcher.Tests/EHOT.Launcher.Tests.csproj" />
+    <Project Path="tests/EHOT.Launcher.UI.Tests/EHOT.Launcher.UI.Tests.csproj" />
+  </Folder>
+</Solution>

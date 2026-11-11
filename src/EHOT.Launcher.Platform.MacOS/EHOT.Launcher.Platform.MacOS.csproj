@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>EHOT.Launcher.Platform.MacOS</RootNamespace>
+    <AssemblyName>EHOT.Launcher.Platform.MacOS</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../EHOT.Launcher.Platform/EHOT.Launcher.Platform.csproj" />
+  </ItemGroup>
+</Project>

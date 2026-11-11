@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <!-- CA1707: подчёркивания в именах тестов — стандартная конвенция xUnit (Метод_Сценарий_Ожидание). -->
+    <NoWarn>$(NoWarn);CA1707</NoWarn>
+    <RootNamespace>EHOT.Launcher.UI.Tests</RootNamespace>
+    <!-- Исполняемый файл тестов должен называться так же, как сборка: иначе app host
+         из тестового проекта «прячется» за app host UI (оба EHOT.Launcher.exe). -->
+    <AssemblyName>EHOT.Launcher.UI.Tests</AssemblyName>
+    <UseAppHost>true</UseAppHost>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit.v3" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="Avalonia.Headless.XUnit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../src/EHOT.Launcher.UI/EHOT.Launcher.UI.csproj" />
+  </ItemGroup>
+</Project>

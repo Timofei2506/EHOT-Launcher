@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>EHOT.Launcher.Content</RootNamespace>
+    <AssemblyName>EHOT.Launcher.Content</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <ProjectReference Include="../EHOT.Launcher.Core/EHOT.Launcher.Core.csproj" />
+    <ProjectReference Include="../EHOT.Launcher.Platform/EHOT.Launcher.Platform.csproj" />
+    <ProjectReference Include="../EHOT.Launcher.Storage/EHOT.Launcher.Storage.csproj" />
+    <ProjectReference Include="../EHOT.Launcher.Game/EHOT.Launcher.Game.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>EHOT.Launcher.Network</RootNamespace>
+    <AssemblyName>EHOT.Launcher.Network</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <ProjectReference Include="../EHOT.Launcher.Core/EHOT.Launcher.Core.csproj" />
+  </ItemGroup>
+</Project>

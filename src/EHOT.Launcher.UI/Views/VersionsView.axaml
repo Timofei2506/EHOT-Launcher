@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             xmlns:models="using:EHOT.Launcher.Core.Models"
+             x:Class="EHOT.Launcher.UI.Views.VersionsView"
+             x:DataType="vm:VersionsViewModel">
+
+  <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14">
+
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="3">
+        <TextBlock Text="Версии" Classes="h1" />
+        <TextBlock Text="{Binding LatestRelease, StringFormat='Актуальный релиз: {0}'}" Classes="body" />
+      </StackPanel>
+      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+        <ComboBox ItemsSource="{Binding Loaders}" SelectedItem="{Binding SelectedLoader, Mode=TwoWay}" Width="140" />
+        <ComboBox ItemsSource="{Binding LoaderVersions}" SelectedItem="{Binding SelectedLoaderVersion, Mode=TwoWay}"
+                  Width="160" PlaceholderText="Версия лоадера" />
+        <Button Classes="ghost" Command="{Binding RefreshCommand}" Content="Обновить" />
+      </StackPanel>
+    </Grid>
+
+    <Border Grid.Row="1" Classes="card" Padding="14">
+      <StackPanel Spacing="8">
+        <TextBlock Text="{Binding InstallStage, FallbackValue='Готово к установке'}" Classes="caption" />
+        <ProgressBar Classes="ehot" Value="{Binding InstallProgress}" Maximum="1" />
+      </StackPanel>
+    </Border>
+
+    <Grid Grid.Row="2" ColumnDefinitions="*,320" ColumnSpacing="14">
+      <Border Classes="card" Padding="14">
+        <Grid RowDefinitions="Auto,*">
+          <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
+            <TextBlock Text="Релизы" Classes="h3" />
+            <TextBlock Grid.Column="1" Text="{Binding Releases.Count, StringFormat='{}{0} версий'}" Classes="caption" />
+          </Grid>
+          <ScrollViewer Grid.Row="1">
+            <ItemsControl ItemsSource="{Binding Releases}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:VersionRowViewModel">
+                  <Border BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="0,8">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                      <Border Width="8" Height="8" CornerRadius="4" Background="{StaticResource AccentGradient}"
+                              VerticalAlignment="Center" />
+                      <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                        <TextBlock Text="{Binding Id}" FontWeight="SemiBold" FontSize="13"
+                                   Foreground="{StaticResource TextBrush}" />
+                        <TextBlock Text="{Binding RelativeLabel}" Classes="caption" />
+                      </StackPanel>
+                      <TextBlock Grid.Column="2" Text="{Binding DateLabel}" Classes="caption"
+                                 VerticalAlignment="Center" Margin="0,0,12,0" />
+                      <Button Grid.Column="3" Classes="ghost" Padding="10,5" FontSize="11"
+                              Content="Установить"
+                              Command="{Binding $parent[ItemsControl].((vm:VersionsViewModel)DataContext).InstallCommand}"
+                              CommandParameter="{Binding}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </Grid>
+      </Border>
+
+      <Border Grid.Column="1" Classes="card" Padding="14">
+        <StackPanel Spacing="12">
+          <TextBlock Text="Снапшоты" Classes="h3" />
+          <TextBlock Text="{Binding LatestSnapshot}" Classes="h2" Foreground="{StaticResource AccentBlueBrush}" />
+          <TextBlock Classes="caption" TextWrapping="Wrap"
+                     Text="Снапшоты нестабильны и могут ломать мир. Используйте отдельный профиль." />
+          <Border Classes="divider" />
+          <TextBlock Text="Как это работает" Classes="h3" />
+          <TextBlock Classes="caption" TextWrapping="Wrap"
+                     Text="Лаунчер скачивает client.jar, библиотеки и ассеты напрямую из официальных серверов Mojang и проверяет SHA-1 каждого файла. Fabric и Quilt устанавливаются из официальных метаданных, Forge и NeoForge — через их официальный установщик." />
+        </StackPanel>
+      </Border>
+    </Grid>
+  </Grid>
+</UserControl>

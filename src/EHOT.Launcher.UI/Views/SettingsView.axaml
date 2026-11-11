@@ -1,0 +1,124 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             xmlns:core="using:EHOT.Launcher.Core.Platform"
+             x:Class="EHOT.Launcher.UI.Views.SettingsView"
+             x:DataType="vm:SettingsViewModel">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="14">
+
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="3">
+          <TextBlock Text="Настройки" Classes="h1" />
+          <TextBlock Text="{Binding PlatformSummary}" Classes="body" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="primary" Content="Сохранить" Command="{Binding SaveCommand}"
+                VerticalAlignment="Center" />
+      </Grid>
+
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
+
+        <StackPanel Spacing="12">
+          <Border Classes="card" Padding="16">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Файлы" Classes="h3" />
+              <TextBlock Text="Каталог Minecraft" Classes="caption" />
+              <TextBox Classes="ehot" Text="{Binding MinecraftDirectory, Mode=TwoWay}" />
+              <TextBlock Text="Каталог загрузок" Classes="caption" />
+              <TextBox Classes="ehot" Text="{Binding DownloadsDirectory, Mode=TwoWay}" />
+              <TextBlock Text="{Binding AppDataPath, StringFormat='Данные лаунчера: {0}'}" Classes="caption" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="16">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Производительность" Classes="h3" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="Максимум RAM" Classes="body" />
+                <TextBlock Grid.Column="1" Text="{Binding MaxMemoryMb, StringFormat='{}{0} МБ'}" Classes="h3" />
+              </Grid>
+              <Slider Minimum="1024" Maximum="32768" TickFrequency="512" Value="{Binding MaxMemoryMb, Mode=TwoWay}" />
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="Параллельных загрузок" Classes="body" />
+                <TextBlock Grid.Column="1" Text="{Binding MaxParallelDownloads}" Classes="h3" />
+              </Grid>
+              <Slider Minimum="1" Maximum="8" TickFrequency="1" Value="{Binding MaxParallelDownloads, Mode=TwoWay}" />
+              <CheckBox Content="Уменьшить анимации" IsChecked="{Binding ReduceAnimations, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="16">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Java" Classes="h3" />
+              <ItemsControl ItemsSource="{Binding JavaRuntimes}" MaxHeight="140">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate>
+                    <TextBlock Text="{Binding DisplayName}" Classes="caption" Margin="0,2" />
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <Button Classes="ghost" Content="Сканировать заново" Command="{Binding RescanJavaCommand}"
+                      HorizontalAlignment="Left" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="12">
+          <Border Classes="card" Padding="16">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Сеть и Game Network" Classes="h3" />
+              <TextBlock Text="Адрес контрольного сервера" Classes="caption" />
+              <TextBox Classes="ehot" Text="{Binding ControlPlaneUrl, Mode=TwoWay}"
+                       PlaceholderText="https://api.ehot.example" />
+              <CheckBox Content="Предпочитать прямое соединение" IsChecked="{Binding PreferDirect, Mode=TwoWay}" />
+              <CheckBox Content="Разрешить relay как резерв" IsChecked="{Binding AllowRelay, Mode=TwoWay}" />
+              <TextBlock Classes="caption" TextWrapping="Wrap"
+                         Text="Без настроенного сервера комнаты недоступны — лаунчер сообщит об этом, а не создаст фиктивную комнату." />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="16">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Поведение" Classes="h3" />
+              <CheckBox Content="Автоматически обновлять контент" IsChecked="{Binding AutoUpdateContent, Mode=TwoWay}" />
+              <CheckBox Content="Системные уведомления" IsChecked="{Binding NotificationsEnabled, Mode=TwoWay}" />
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="16">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Диагностика" Classes="h3" />
+              <TextBlock Text="{Binding DiagnosticsSummary}" Classes="caption" TextWrapping="Wrap" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Classes="ghost" Content="Открыть логи" Command="{Binding OpenLogsCommand}" />
+                <Button Classes="danger" Content="Очистить кэш" Command="{Binding ClearCacheCommand}" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <Border Classes="card" Padding="16">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Возможности на этой системе" Classes="h3" />
+              <ItemsControl ItemsSource="{Binding Capabilities}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="core:Capability">
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,3">
+                      <Ellipse Width="6" Height="6" Fill="{Binding State, Converter={x:Static vm:NetConverters.CapabilityBrush}}"
+                               VerticalAlignment="Center" />
+                      <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                        <TextBlock Text="{Binding Title}" FontSize="11.5" Foreground="{StaticResource TextBrush}" />
+                        <TextBlock Text="{Binding Detail}" Classes="caption" TextWrapping="Wrap"
+                                   IsVisible="{Binding Detail, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                      </StackPanel>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>
