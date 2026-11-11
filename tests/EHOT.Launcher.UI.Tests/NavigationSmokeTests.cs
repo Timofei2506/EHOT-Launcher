@@ -83,6 +83,11 @@ public sealed class NavigationSmokeTests
         // то представление, чей DataContext — открытая страница (страницы меняются
         // через переход, поэтому старое дерево какое-то время ещё висит в окне).
         var section = FindSection(window, page!);
+        if (section is null || section.GetType().Name != expectedViewName)
+        {
+            Dump(window, main, services, key, page);
+        }
+
         Assert.True(
             section is not null,
             $"Раздел «{key}» не показал содержимое (ViewModel {page!.GetType().Name}).");
@@ -110,6 +115,15 @@ public sealed class NavigationSmokeTests
     /// <summary>Ключ раздела, открытого навигацией (её состояние — источник истины).</summary>
     private static string? CurrentKey(IServiceProvider services)
         => services.GetRequiredService<INavigationService>().CurrentEntry?.Key;
+
+    private static void Dump(Window window, MainWindowViewModel main, IServiceProvider services, string key, ViewModelBase? page)
+    {
+        Console.WriteLine($"[dump:{key}] IsBusy={main.IsBusy} currentKey={CurrentKey(services)} page={page?.GetType().Name} vmPage={main.CurrentPage?.GetType().Name}");
+        foreach (var control in window.GetVisualDescendants().OfType<UserControl>())
+        {
+            Console.WriteLine($"[dump:{key}] view={control.GetType().Name} dc={control.DataContext?.GetType().Name} bounds={control.Bounds}");
+        }
+    }
 
     private static bool WaitUntil(Func<bool> condition, TimeSpan timeout)
     {
