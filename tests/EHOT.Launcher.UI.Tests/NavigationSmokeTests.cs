@@ -83,15 +83,13 @@ public sealed class NavigationSmokeTests
         // то представление, чей DataContext — открытая страница (страницы меняются
         // через переход, поэтому старое дерево какое-то время ещё висит в окне).
         var section = FindSection(window, page!);
-        if (section is null || section.GetType().Name != expectedViewName)
-        {
-            Dump(window, main, services, key, page);
-        }
 
         Assert.True(
             section is not null,
             $"Раздел «{key}» не показал содержимое (ViewModel {page!.GetType().Name}).");
-        Assert.Equal(expectedViewName, section!.GetType().Name);
+        Assert.True(
+            section!.GetType().Name == expectedViewName,
+            $"Раздел «{key}»: ожидалось {expectedViewName}, получено {section.GetType().Name}. {Describe(window, main, services)}");
 
         // Заглушка ViewLocator — это TextBlock с текстом «Представление не найдено».
         var placeholder = FindText(window, "Представление не найдено");
@@ -116,13 +114,13 @@ public sealed class NavigationSmokeTests
     private static string? CurrentKey(IServiceProvider services)
         => services.GetRequiredService<INavigationService>().CurrentEntry?.Key;
 
-    private static void Dump(Window window, MainWindowViewModel main, IServiceProvider services, string key, ViewModelBase? page)
+    /// <summary>Краткое состояние навигации — попадает в текст падения теста.</summary>
+    private static string Describe(Window window, MainWindowViewModel main, IServiceProvider services)
     {
-        Console.WriteLine($"[dump:{key}] IsBusy={main.IsBusy} currentKey={CurrentKey(services)} page={page?.GetType().Name} vmPage={main.CurrentPage?.GetType().Name}");
-        foreach (var control in window.GetVisualDescendants().OfType<UserControl>())
-        {
-            Console.WriteLine($"[dump:{key}] view={control.GetType().Name} dc={control.DataContext?.GetType().Name} bounds={control.Bounds}");
-        }
+        var views = window.GetVisualDescendants()
+            .OfType<UserControl>()
+            .Select(v => $"{v.GetType().Name}({v.DataContext?.GetType().Name},{v.Bounds.Width:0}x{v.Bounds.Height:0})");
+        return $"IsBusy={main.IsBusy}, ключ={CurrentKey(services)}, страница={main.CurrentPage?.GetType().Name}, View=[{string.Join("; ", views)}]";
     }
 
     private static bool WaitUntil(Func<bool> condition, TimeSpan timeout)
