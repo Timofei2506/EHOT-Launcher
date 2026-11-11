@@ -2,6 +2,7 @@
 ; EHOT Launcher — установщик для Windows (Inno Setup 6).
 ; Собирается автоматически в CI: см. .github/workflows/ci.yml, job "installers".
 ; Локально: iscc.exe packaging\windows\ehot-launcher.iss /DAppVersion=0.1.0
+; Пути по умолчанию считаются от расположения этого файла, поэтому запускать можно из любой папки.
 ; ---------------------------------------------------------------------------
 
 #define AppName        "EHOT Launcher"
@@ -11,10 +12,10 @@
   #define AppVersion   "0.1.0"
 #endif
 #ifndef SourceDir
-  #define SourceDir    "..\..\artifacts\win-x64"
+  #define SourceDir    AddBackslash(SourcePath) + "..\..\artifacts\win-x64"
 #endif
 #ifndef OutputDir
-  #define OutputDir    "..\..\artifacts\installers"
+  #define OutputDir    AddBackslash(SourcePath) + "..\..\artifacts\installers"
 #endif
 
 [Setup]
@@ -29,14 +30,14 @@ DefaultGroupName={#AppName}
 UninstallDisplayName={#AppName}
 UninstallDisplayIcon={app}\{#AppExeName}
 DisableProgramGroupPage=yes
-LicenseFile=..\..\LICENSE.txt
+LicenseFile={#SourcePath}\..\..\LICENSE.txt
 ; Установка в Program Files требует прав администратора.
 PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir={#OutputDir}
 OutputBaseFilename=EHOT-Launcher-{#AppVersion}-win-x64-setup
-SetupIconFile=..\..\src\EHOT.Launcher.UI\Assets\ehot.ico
+SetupIconFile={#SourcePath}\..\..\src\EHOT.Launcher.UI\Assets\ehot.ico
 WizardStyle=modern
 Compression=lzma2/max
 SolidCompression=yes

@@ -159,7 +159,7 @@ jobs:
         shell: pwsh
         run: |
           $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
-          & $iscc "packaging\windows\ehot-launcher.iss" "/DAppVersion=${{ env.APP_VERSION }}" "/DSourceDir=artifacts\${{ matrix.rid }}" "/DOutputDir=artifacts\installers"
+          & $iscc "packaging\windows\ehot-launcher.iss" "/DAppVersion=${{ env.APP_VERSION }}" "/DSourceDir=${{ github.workspace }}\artifacts\${{ matrix.rid }}" "/DOutputDir=${{ github.workspace }}\artifacts\installers"
           if ($LASTEXITCODE -ne 0) { throw "Inno Setup завершился с кодом $LASTEXITCODE" }
 
       # ---------- macOS: .app + .dmg ----------
