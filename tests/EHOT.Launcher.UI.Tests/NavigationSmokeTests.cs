@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media.Imaging;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
@@ -127,7 +128,7 @@ public sealed class NavigationSmokeTests
         {
             var frame = window.CaptureRenderedFrame();
             if (frame is null) { Console.WriteLine($"[screen] {key}: кадр не получен"); return; }
-            frame.Save(Path.Combine(ScreenDirectory, $"{key}.png"), 100);
+            frame.Save(Path.Combine(ScreenDirectory, $"{key}.png"), PngBitmapEncoderOptions.Default);
         }
         catch (Exception ex)
         {
