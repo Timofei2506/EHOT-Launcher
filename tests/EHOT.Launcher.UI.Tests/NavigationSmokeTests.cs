@@ -33,6 +33,8 @@ public sealed class NavigationSmokeTests
         }
     }
 
+    private static readonly Lazy<IServiceProvider> SharedServices = new(AppBootstrap.BuildServiceProvider);
+
     /// <summary>Все разделы бокового меню: ключ навигации и ожидаемый тип View.</summary>
     public static TheoryData<string, string> Sections => new()
     {
@@ -55,7 +57,9 @@ public sealed class NavigationSmokeTests
     [MemberData(nameof(Sections))]
     public void Section_OpensAndRendersWithoutPlaceholder(string key, string expectedViewName)
     {
-        var services = AppBootstrap.BuildServiceProvider();
+        // Провайдер общий на все разделы: иначе создание и прогрев страниц выполняются
+        // одновременно в нескольких прогонах @AvaloniaTheory (диспетчер общий, зависание).
+        var services = SharedServices.Value;
         var main = services.GetRequiredService<MainWindowViewModel>();
 
         var window = new MainWindow { DataContext = main };

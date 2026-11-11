@@ -176,6 +176,15 @@ public static class WindowsPlatformModule
         services.AddSingleton<IAppPaths, WindowsAppPaths>();
         services.AddSingleton<IPlatformInfo, BasePlatformInfo>();
         services.AddSingleton<ISecretProtector, WindowsDpapiSecretProtector>();
+        // Токены Microsoft-аккаунта шифруются DPAPI и лежат только в профиле пользователя:
+        // DPAPI привязан к учётной записи Windows, поэтому файл бесполезен на другой машине.
+        services.AddSingleton<ISecretStore>(sp =>
+        {
+            var paths = sp.GetRequiredService<IAppPaths>();
+            return new FileSecretStore(
+                Path.Combine(paths.AppDataDirectory, "secrets.json"),
+                sp.GetRequiredService<ISecretProtector>());
+        });
         services.AddSingleton<INotificationService, WindowsNotificationService>();
         services.AddSingleton<INetworkPrivileges, WindowsNetworkPrivileges>();
         services.AddSingleton<IJavaRuntimeService, JavaRuntimeService>();
