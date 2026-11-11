@@ -18,7 +18,9 @@ permissions:
   contents: read
 
 env:
+  # Версия приложения в одном месте: Directory.Build.props → <Version>. Здесь только читаем.
   APP_VERSION: '0.1.0'
+  UPDATE_REPOSITORY: ${{ github.repository }}
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -94,7 +96,8 @@ jobs:
         run: >
           dotnet publish src/EHOT.Launcher.UI/EHOT.Launcher.UI.csproj
           -c Release -r ${{ matrix.rid }} --self-contained true
-          -p:DebugType=embedded -o artifacts/${{ matrix.rid }}
+          -p:DebugType=embedded -p:UpdateRepository=${{ env.UPDATE_REPOSITORY }}
+          -o artifacts/${{ matrix.rid }}
 
       - name: Упаковать в архив
         shell: bash
@@ -148,7 +151,8 @@ jobs:
         run: >
           dotnet publish src/EHOT.Launcher.UI/EHOT.Launcher.UI.csproj
           -c Release -r ${{ matrix.rid }} --self-contained true
-          -p:DebugType=embedded -o artifacts/${{ matrix.rid }}
+          -p:DebugType=embedded -p:UpdateRepository=${{ env.UPDATE_REPOSITORY }}
+          -o artifacts/${{ matrix.rid }}
 
       - name: Установить Inno Setup
         if: matrix.platform == 'windows'
@@ -168,7 +172,8 @@ jobs:
         run: >
           dotnet publish src/EHOT.Launcher.UI/EHOT.Launcher.UI.csproj
           -c Release -r ${{ matrix.rid }} --self-contained true
-          -p:DebugType=embedded -o artifacts/${{ matrix.rid }}
+          -p:DebugType=embedded -p:UpdateRepository=${{ env.UPDATE_REPOSITORY }}
+          -o artifacts/${{ matrix.rid }}
 
       - name: Собрать .dmg
         if: startsWith(matrix.platform, 'macos')

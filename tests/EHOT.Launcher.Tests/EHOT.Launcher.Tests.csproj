@@ -22,5 +22,6 @@
     <ProjectReference Include="../../src/EHOT.Launcher.Content/EHOT.Launcher.Content.csproj" />
     <ProjectReference Include="../../src/EHOT.Launcher.Network/EHOT.Launcher.Network.csproj" />
     <ProjectReference Include="../../src/EHOT.Launcher.API/EHOT.Launcher.API.csproj" />
+    <ProjectReference Include="../../src/EHOT.Launcher.Update/EHOT.Launcher.Update.csproj" />
   </ItemGroup>
 </Project>

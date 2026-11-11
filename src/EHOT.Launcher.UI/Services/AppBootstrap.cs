@@ -16,6 +16,7 @@ using EHOT.Launcher.Platform.Shared;
 using EHOT.Launcher.Platform.Windows;
 using EHOT.Launcher.Storage;
 using EHOT.Launcher.UI.ViewModels;
+using EHOT.Launcher.Update;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -116,6 +117,19 @@ public static class AppBootstrap
 
         // --- UI-сервисы --------------------------------------------------
         services.AddSingleton<IToastService, ToastService>();
+
+        // --- Автообновление -----------------------------------------------
+        // Репозиторий релизов зашит в сборку (AssemblyMetadata "UpdateRepository"),
+        // поэтому «сборка из исходников» честно сообщит, что канал не настроен.
+        services.AddSingleton(sp => new UpdateOptions
+        {
+            Repository = ReadUpdateRepository(),
+            StagingRoot = Path.Combine(sp.GetRequiredService<IAppPaths>().AppDataDirectory, "updates"),
+            ExecutablePath = Environment.ProcessPath,
+            IncludePrerelease = true
+        });
+        services.AddSingleton<IUpdateService, GitHubUpdateService>();
+        services.AddSingleton<UpdateViewModel>();
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<DeepLinkRouter>(sp => new DeepLinkRouter(
             sp.GetRequiredService<ILoggerFactory>().CreateLogger("DeepLink"),
@@ -167,6 +181,12 @@ public static class AppBootstrap
 
         return new NullNetworkAdapter(log);
     }
+
+    /// <summary>Репозиторий релизов из метаданных сборки (owner/name). Пусто — канал не настроен.</summary>
+    private static string ReadUpdateRepository()
+        => typeof(AppBootstrap).Assembly
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), inherit: false)
+            .Cast<System.Reflection.AssemblyMetadataAttribute>()
+            .FirstOrDefault(a => a.Key == "UpdateRepository")
+            ?.Value ?? string.Empty;
 }
-
-

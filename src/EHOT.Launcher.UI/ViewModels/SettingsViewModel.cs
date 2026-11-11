@@ -44,6 +44,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
         MaxMemoryMb = settings.MaxMemoryMb;
         MaxParallelDownloads = settings.MaxParallelDownloads;
         AutoUpdateContent = settings.AutoUpdateContent;
+        CheckLauncherUpdates = settings.CheckLauncherUpdates;
         NotificationsEnabled = settings.NotificationsEnabled;
         ReduceAnimations = settings.ReduceAnimations;
         ControlPlaneUrl = settings.ControlPlaneUrl;
@@ -69,6 +70,9 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _autoUpdateContent = true;
+
+    [ObservableProperty]
+    private bool _checkLauncherUpdates = true;
 
     [ObservableProperty]
     private bool _notificationsEnabled = true;
@@ -132,6 +136,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
             MaxMemoryMb = MaxMemoryMb,
             MaxParallelDownloads = MaxParallelDownloads,
             AutoUpdateContent = AutoUpdateContent,
+            CheckLauncherUpdates = CheckLauncherUpdates,
             NotificationsEnabled = NotificationsEnabled,
             ReduceAnimations = ReduceAnimations,
             ControlPlaneUrl = ControlPlaneUrl,

@@ -7,6 +7,7 @@
     <Project Path="src/EHOT.Launcher.Content/EHOT.Launcher.Content.csproj" />
     <Project Path="src/EHOT.Launcher.Network/EHOT.Launcher.Network.csproj" />
     <Project Path="src/EHOT.Launcher.Storage/EHOT.Launcher.Storage.csproj" />
+    <Project Path="src/EHOT.Launcher.Update/EHOT.Launcher.Update.csproj" />
     <Project Path="src/EHOT.Launcher.Platform/EHOT.Launcher.Platform.csproj" />
     <Project Path="src/EHOT.Launcher.Platform.Windows/EHOT.Launcher.Platform.Windows.csproj" />
     <Project Path="src/EHOT.Launcher.Platform.MacOS/EHOT.Launcher.Platform.MacOS.csproj" />

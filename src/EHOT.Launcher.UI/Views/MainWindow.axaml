@@ -149,7 +149,42 @@
           </StackPanel>
         </Grid>
 
-        <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Margin="26,0,26,18" />
+        <Grid Grid.Row="1" RowDefinitions="Auto,*">
+          <!-- ══════ Обновление лаунчера: показывается только когда есть что обновлять ══════ -->
+          <Border Grid.Row="0" IsVisible="{Binding Updates.IsVisible}" Margin="26,0,26,10"
+                  CornerRadius="12" Padding="14,11" Background="#141B2B" BorderBrush="#2A3350" BorderThickness="1">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+              <Border Width="26" Height="26" CornerRadius="8" Background="{StaticResource AccentGradient}"
+                      VerticalAlignment="Center">
+                <Path Data="{StaticResource IconDownload}" Classes="icon" />
+              </Border>
+
+              <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"
+                           Text="{Binding Updates.StatusText}" TextWrapping="Wrap" />
+                <TextBlock FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}"
+                           Text="{Binding Updates.ReleaseNotes}" TextWrapping="Wrap" MaxLines="3"
+                           IsVisible="{Binding Updates.ReleaseNotes, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <TextBlock FontSize="10.5" Foreground="{StaticResource DangerBrush}"
+                           Text="{Binding Updates.ErrorText}" TextWrapping="Wrap"
+                           IsVisible="{Binding Updates.ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                <ProgressBar Value="{Binding Updates.Progress}" Maximum="1" Height="4" Margin="0,3,0,0"
+                             IsVisible="{Binding Updates.IsDownloading}" Foreground="{StaticResource AccentBrush}" />
+              </StackPanel>
+
+              <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
+                <Button Classes="primary" Content="Скачать" Command="{Binding Updates.DownloadCommand}"
+                        IsVisible="{Binding Updates.HasUpdate}" />
+                <Button Classes="primary" Content="Установить и перезапустить"
+                        Command="{Binding Updates.InstallCommand}" IsVisible="{Binding Updates.IsReady}" />
+                <Button Classes="ghost" Content="Страница релиза" Command="{Binding Updates.OpenReleasePageCommand}" />
+                <Button Classes="icon" Content="✕" Command="{Binding Updates.DismissCommand}" ToolTip.Tip="Скрыть" />
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Margin="26,0,26,18" />
+        </Grid>
       </Grid>
 
       <!-- Правая колонка: контекст -->

@@ -26,7 +26,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IToastService toasts,
         ILogService log,
         IPlatformInfo platform,
-        ICapabilityRegistry capabilities)
+        ICapabilityRegistry capabilities,
+        UpdateViewModel updates)
     {
         _navigation = navigation;
         _state = state;
@@ -34,6 +35,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _log = log;
         _platform = platform;
         _capabilities = capabilities;
+        Updates = updates;
 
         NavigationItems = new ObservableCollection<NavigationItemViewModel>(
             _navigation.Entries.Select(e => new NavigationItemViewModel(e, () => _ = NavigateAsync(e.Key))));
@@ -84,6 +86,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     public ObservableCollection<CapabilityRow> CapabilityRows { get; } = [];
 
+    /// <summary>Баннер автообновления в шапке.</summary>
+    public UpdateViewModel Updates { get; }
+
     private async Task InitializeAsync()
     {
         IsBusy = true;
@@ -92,6 +97,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             await _state.InitializeAsync().ConfigureAwait(true);
             ApplyState();
             await _navigation.NavigateAsync("home").ConfigureAwait(true);
+
+            // Проверка обновлений — после того как окно уже показано, чтобы старт был мгновенным.
+            // Если пользователь выключил авто-проверку в настройках, в сеть не ходим.
+            if (_state.Settings.CheckLauncherUpdates && Updates.IsSupported)
+            {
+                await Updates.CheckCommand.ExecuteAsync(null).ConfigureAwait(true);
+            }
         }
         catch (Exception ex)
         {

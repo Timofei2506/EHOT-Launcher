@@ -82,6 +82,9 @@
             <StackPanel Spacing="10">
               <TextBlock Text="Поведение" Classes="h3" />
               <CheckBox Content="Автоматически обновлять контент" IsChecked="{Binding AutoUpdateContent, Mode=TwoWay}" />
+              <CheckBox Content="Проверять обновления лаунчера при запуске" IsChecked="{Binding CheckLauncherUpdates, Mode=TwoWay}" />
+              <TextBlock Classes="caption" TextWrapping="Wrap"
+                         Text="Обновление никогда не ставится без вашего нажатия: лаунчер только показывает, что вышла новая версия." />
               <CheckBox Content="Системные уведомления" IsChecked="{Binding NotificationsEnabled, Mode=TwoWay}" />
             </StackPanel>
           </Border>

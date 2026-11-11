@@ -40,4 +40,16 @@
     <ProjectReference Include="../EHOT.Launcher.Network/EHOT.Launcher.Network.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="../EHOT.Launcher.Update/EHOT.Launcher.Update.csproj" />
+  </ItemGroup>
+
+  <!-- Канал обновлений: репозиторий релизов подставляется при сборке.
+       Переопределяется в CI: -p:UpdateRepository=owner/repo -->
+  <PropertyGroup>
+    <UpdateRepository Condition="'$(UpdateRepository)' == ''">Timofei2506/EHOT-Launcher</UpdateRepository>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="UpdateRepository" Value="$(UpdateRepository)" />
+  </ItemGroup>
 </Project>
