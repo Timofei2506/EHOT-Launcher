@@ -4,7 +4,7 @@
 
 ## Этап 1 — Исследование и архитектура ✅
 - [x] Проверка .NET 10 (SDK 10.0.403, LTS, поддержка до 14.11.2028)
-- [x] Проверка Avalonia 12.1.6, CommunityToolkit.Mvvm 8.4.2, EF Core 10, xUnit 2.9.3
+- [x] Проверка Avalonia 12.1.6, CommunityToolkit.Mvvm 8.4.2, EF Core 10, xUnit v3 3.2.2 (Avalonia.Headless.XUnit собран на v3)
 - [x] Проверка внешних API: piston-meta (release 26.3), Modrinth, Mojang news
 - [x] `docs/TECHNICAL-ANALYSIS.md`, `docs/ARCHITECTURE.md`, `docs/GAME-NETWORK-ARCHITECTURE.md`
 - [x] Оценка рисков Windows/macOS, границы честности
@@ -15,7 +15,7 @@
 - [x] 11 проектов из ТЗ + `Platform.Linux` (для CI) + `UI.Tests`
 - [x] DI-контейнер, MVVM-каркас, `ViewLocator`, `NavigationService`
 - [x] Публикация под `win-x64`, `osx-arm64`, `osx-x64`
-- [x] Сборка и тесты зелёные
+- [x] Сборка и тесты зелёные: `dotnet build EHOT.Launcher.slnx` — 0 ошибок, 0 предупреждений
 
 ## Этап 3 — Интерфейс ✅ (первый проход)
 - [x] Дизайн-система: токены, кнопки, карточки, поля, бейджи, прогресс, тосты, диалоги, пустые состояния
@@ -23,6 +23,9 @@
 - [x] Главная страница (логотип, аккаунт, профиль, версия, ИГРАТЬ, статус, новости, тренды, недавнее, Game Network)
 - [x] Экраны: Играть, Версии, Моды, Сборки, Текстуры, Шейдеры, Карты, Game Network, Аккаунты, Загрузки, Настройки, О программе
 - [x] Глобальный поиск (пингвин-бар + Ctrl+K)
+- [x] Дизайн-система переведена на `Styles.Resources` (ControlTheme как ресурсы) — совместимо с Avalonia 12
+- [x] Поле ввода наследует шаблон Fluent (`BasedOn`) вместо собственного шаблона; `Watermark` → `PlaceholderText`
+- [x] Панель «Состояние систем» показывает реальные `Capability` (доступно / ограничено / недоступно)
 
 ## Этап 4 — Minecraft Engine ✅
 - [x] Манифест версий и правило-движок (`rules`, os/features)
@@ -50,13 +53,32 @@
 - ⚠️ Публичная relay-инфраструктура: требует хостинга, не входит в репозиторий
 
 ## Этап 7 — Тестирование 🟡
-- [x] Unit-тесты: PathGuard, SafeZip, rules, аргументы, resolver, redaction, инвайты
-- [x] Тесты API (WebApplicationFactory + SQLite-in-memory замена PG)
-- [ ] UI-тесты (headless) — расширяются по мере готовности экранов
-- [ ] Нагрузочные проверки Download Manager
+Что реально покрыто тестами (37 тестов, `scripts/build.sh test`):
+- [x] `PathGuardTests` — zip-slip, абсолютные пути, соседние каталоги с общим префиксом
+- [x] `SafeZipExtractorTests` — нормальный архив, zip-slip, симлинки, лимит записей, лимит размера, отмена, чтение индекса
+- [x] `DependencyResolverTests` — совместимость по версии игры/лоадеру, «универсальные» версии
+- [x] `InviteServiceTests` — генерация base32-кодов, HMAC-хэш и постоянное сравнение, подсеть комнаты `10.{64..79}.0.0/24`, исчерпание адресов
+- [x] `UiSmokeTests` (headless Avalonia) — загрузка `App.axaml` + дизайн-системы, рендер кнопки на `ControlTheme`, форматирование размеров
+- [ ] Тесты API через `WebApplicationFactory` (endpoints комнат/инвайтов) — следующий шаг
+- [ ] Тесты правил Mojang и сборки аргументов запуска (`RuleEvaluator`, `LaunchArgumentBuilder`)
+- [ ] Нагрузочные проверки Download Manager (параллелизм, повторы, докачка по Range)
 
 ## Этап 8 — Релиз ⬜
 - [ ] CI: matrix windows/macos/ubuntu (build+test+publish)
 - [ ] Inno Setup (Windows), `.dmg` + notarization (macOS) — конфигурация готова, артефакты требуют CI/secrets
 - [ ] Автообновление (signed manifest + delta)
 - [ ] Подпись кода (EV / Apple Developer ID)
+
+## Журнал верификации
+
+| Проверка | Команда | Результат |
+| --- | --- | --- |
+| Сборка решения | `dotnet build EHOT.Launcher.slnx -c Debug` | 0 ошибок, 0 предупреждений |
+| Тесты | `dotnet test EHOT.Launcher.slnx` | 37/37 пройдено (`EHOT.Launcher.Tests` 29, `EHOT.Launcher.UI.Tests` 8) |
+| Исходники в git | `git push origin main` | github.com/Timofei2506/EHOT-Launcher (private) |
+
+Ограничения, которые остаются честными (не «сделано», пока нет подписи/хостинга):
+- Windows-туннель требует подписанного драйвера Wintun/VPN-плагина; macOS — подписанного Network Extension
+  (`NEPacketTunnelProvider`). Без этого лаунчер сообщает о деградации, а не имитирует подключение.
+- Публичный relay-узел требует хостинга; в репозитории только клиент и control-plane.
+- Apple notarization и Windows EV-подпись выполняются в CI с секретами, локально не воспроизводятся.
