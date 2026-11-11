@@ -89,13 +89,19 @@
                   <Button Classes="ghost" Command="{Binding SelectCommand}"
                           HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
                           Padding="0" Background="Transparent" BorderThickness="0">
-                    <Border CornerRadius="10" Padding="12,9" Margin="0,1"
+                    <Border CornerRadius="10" Padding="11,8" Margin="0,1"
                             Background="{Binding IsSelected, Converter={StaticResource SelectedBackground}}">
                       <Grid ColumnDefinitions="Auto,*,Auto">
                         <Path Data="{Binding IconKey, Converter={StaticResource IconKey}}" Classes="icon"
-                              Stroke="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="11,0,0,0" FontSize="13"
-                                   Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                              Width="16" Height="16"
+                              Stroke="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}"
+                              VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="11,0,0,0" FontSize="12.5"
+                                   Foreground="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}"
+                                   VerticalAlignment="Center" />
+                        <Border Grid.Column="2" Width="6" Height="6" CornerRadius="3"
+                                Background="{StaticResource AccentBlueBrush}" VerticalAlignment="Center"
+                                IsVisible="{Binding IsSelected}" />
                       </Grid>
                     </Border>
                   </Button>
@@ -161,7 +167,7 @@
                 <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"
                            Text="{Binding Updates.StatusText}" TextWrapping="Wrap" />
                 <TextBlock FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}"
-                           Text="{Binding Updates.ReleaseNotes}" TextWrapping="Wrap" MaxLines="3"
+                           Text="{Binding Updates.ReleaseNotes}" TextWrapping="Wrap" MaxLines="2"
                            IsVisible="{Binding Updates.ReleaseNotes, Converter={x:Static ObjectConverters.IsNotNull}}" />
                 <TextBlock FontSize="10.5" Foreground="{StaticResource DangerBrush}"
                            Text="{Binding Updates.ErrorText}" TextWrapping="Wrap"
@@ -236,18 +242,13 @@
 
             <Border Classes="divider" />
 
-            <TextBlock Text="СОСТОЯНИЕ" Classes="eyebrow" />
-            <ItemsControl ItemsSource="{Binding CapabilityRows}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:CapabilityRow">
-                  <Grid ColumnDefinitions="Auto,*" Margin="0,3">
-                    <Ellipse Width="6" Height="6" Fill="{Binding Brush}" VerticalAlignment="Center" />
-                    <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="8,0,0,0" FontSize="11.5"
-                               Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
-                  </Grid>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <StackPanel Spacing="6">
+              <TextBlock Text="ПОДСКАЗКА" Classes="eyebrow" />
+              <Border CornerRadius="12" Padding="12" Background="#101724">
+                <TextBlock Classes="caption" FontSize="11" TextWrapping="Wrap"
+                           Text="Полная матрица возможностей системы — в разделе «О программе». Здесь показывается только то, что влияет на запуск." />
+              </Border>
+            </StackPanel>
 
           </StackPanel>
         </ScrollViewer>
