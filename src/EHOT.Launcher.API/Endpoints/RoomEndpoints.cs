@@ -36,8 +36,11 @@ public static class RoomEndpoints
                 return Results.Problem("Название комнаты: 2–48 символа.", statusCode: 400);
             }
 
+            // Граница «сейчас» вычисляется в C#: провайдеры EF не умеют транслировать DateTimeOffset.UtcNow
+            // внутри предиката с колонкой DateTimeOffset (SQLite/Postgres ведут себя по-разному).
+            var now = DateTimeOffset.UtcNow;
             var activeRooms = await db.Rooms.CountAsync(r =>
-                r.OwnerIdentityId == identityId.Value && r.Status == RoomStatus.Open && r.ExpiresAt > DateTimeOffset.UtcNow, ct);
+                r.OwnerIdentityId == identityId.Value && r.Status == RoomStatus.Open && r.ExpiresAt > now, ct);
 
             if (activeRooms >= options.MaxRoomsPerIdentity)
             {

@@ -53,13 +53,15 @@
 - ⚠️ Публичная relay-инфраструктура: требует хостинга, не входит в репозиторий
 
 ## Этап 7 — Тестирование 🟡
-Что реально покрыто тестами (37 тестов, `scripts/build.sh test`):
+Что реально покрыто тестами (43 теста, `scripts/build.sh test`):
 - [x] `PathGuardTests` — zip-slip, абсолютные пути, соседние каталоги с общим префиксом
 - [x] `SafeZipExtractorTests` — нормальный архив, zip-slip, симлинки, лимит записей, лимит размера, отмена, чтение индекса
 - [x] `DependencyResolverTests` — совместимость по версии игры/лоадеру, «универсальные» версии
 - [x] `InviteServiceTests` — генерация base32-кодов, HMAC-хэш и постоянное сравнение, подсеть комнаты `10.{64..79}.0.0/24`, исчерпание адресов
 - [x] `UiSmokeTests` (headless Avalonia) — загрузка `App.axaml` + дизайн-системы, рендер кнопки на `ControlTheme`, форматирование размеров
-- [ ] Тесты API через `WebApplicationFactory` (endpoints комнат/инвайтов) — следующий шаг
+- [x] `ControlPlaneApiTests` — интеграционные тесты через `WebApplicationFactory` (SQLite): регистрация identity,
+      создание комнаты, вступление по коду, отказ при неизвестном коде, закрытие комнаты владельцем, защита эндпоинтов
+      (найдено и исправлено: запросы с `DateTimeOffset.UtcNow` в предикате EF падали в 500 на SQLite)
 - [ ] Тесты правил Mojang и сборки аргументов запуска (`RuleEvaluator`, `LaunchArgumentBuilder`)
 - [ ] Нагрузочные проверки Download Manager (параллелизм, повторы, докачка по Range)
 
@@ -74,7 +76,7 @@
 | Проверка | Команда | Результат |
 | --- | --- | --- |
 | Сборка решения | `dotnet build EHOT.Launcher.slnx -c Debug` | 0 ошибок, 0 предупреждений |
-| Тесты | `dotnet test EHOT.Launcher.slnx` | 37/37 пройдено (`EHOT.Launcher.Tests` 29, `EHOT.Launcher.UI.Tests` 8) |
+| Тесты | `dotnet test EHOT.Launcher.slnx` | 43/43 пройдено (`EHOT.Launcher.Tests` 35, `EHOT.Launcher.UI.Tests` 8) |
 | Исходники в git | `git push origin main` | github.com/Timofei2506/EHOT-Launcher (private) |
 
 Ограничения, которые остаются честными (не «сделано», пока нет подписи/хостинга):

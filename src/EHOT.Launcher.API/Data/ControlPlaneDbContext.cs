@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace EHOT.Launcher.API.Data;
 
@@ -16,6 +17,23 @@ public class ControlPlaneDbContext(DbContextOptions<ControlPlaneDbContext> optio
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // SQLite не умеет сравнивать DateTimeOffset в SQL (значения хранятся как TEXT и не упорядочиваются).
+        // Для окружения Testing/локальной разработки переводим их в тики UTC, чтобы запросы с TTL
+        // (истечение комнат и инвайтов) выполнялись на стороне БД, а не падали в 500.
+        if (Database.ProviderName?.Contains("Sqlite", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            foreach (var entity in modelBuilder.Model.GetEntityTypes())
+            {
+                foreach (var property in entity.GetProperties())
+                {
+                    if (property.ClrType == typeof(DateTimeOffset) || property.ClrType == typeof(DateTimeOffset?))
+                    {
+                        property.SetValueConverter(new DateTimeOffsetToTicksConverter());
+                    }
+                }
+            }
+        }
+
         modelBuilder.Entity<Identity>(e =>
         {
             e.ToTable("identities");
@@ -65,3 +83,11 @@ public class ControlPlaneDbContext(DbContextOptions<ControlPlaneDbContext> optio
         });
     }
 }
+
+/// <summary>
+/// DateTimeOffset ⇄ тики UTC: для SQLite это даёт корректные сравнения в SQL
+/// (Production использует PostgreSQL, где тип `timestamptz` поддерживается нативно).
+/// </summary>
+internal sealed class DateTimeOffsetToTicksConverter() : ValueConverter<DateTimeOffset, long>(
+    value => value.UtcTicks,
+    ticks => new DateTimeOffset(ticks, TimeSpan.Zero));

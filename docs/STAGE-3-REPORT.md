@@ -3,13 +3,13 @@
 ## Итог
 
 Интерфейс собран и проверяется автоматически: решение собирается **без ошибок и без предупреждений**,
-тесты проходят (`37/37`), UI-тесты запускаются headless (без окна) и проверяют, что дизайн-система
+тесты проходят (`43/43`), UI-тесты запускаются headless (без окна) и проверяют, что дизайн-система
 реально загружается и применяется к контролам.
 
 | Проверка | Команда | Результат |
 | --- | --- | --- |
 | Сборка | `dotnet build EHOT.Launcher.slnx -c Debug` | 0 ошибок, 0 предупреждений |
-| Тесты | `scripts/build.sh test` | 37/37 (29 unit + 8 headless UI) |
+| Тесты | `scripts/build.sh test` | 43/43 (35 unit + интеграционные API + 8 headless UI) |
 
 ## Что сделано
 
@@ -72,7 +72,15 @@
 
 ## Что осталось за границей этапа
 
-- Тесты API через `WebApplicationFactory`, тесты `RuleEvaluator`/`LaunchArgumentBuilder`, нагрузочные
-  проверки Download Manager.
+- Тесты `RuleEvaluator`/`LaunchArgumentBuilder`, нагрузочные проверки Download Manager.
+
+## Найдено тестами (и исправлено)
+
+- `ControlPlaneApiTests` (WebApplicationFactory + SQLite) поймали реальный баг API: EF не транслировал
+  `r.ExpiresAt > DateTimeOffset.UtcNow` в SQL — создание комнаты отвечало 500. Теперь граница «сейчас»
+  вычисляется в C#, а для SQLite в тестовом окружении добавлен конвертер `DateTimeOffset → тики UTC`
+  (`ControlPlaneDbContext.OnModelCreating`), чтобы сравнения TTL выполнялись на стороне БД.
+- Те же тесты зафиксировали контракт, на который опирается клиент: `POST /v1/rooms` → 201 + `joinCode` (8 символов),
+  `POST /v1/rooms/join` с `registration.publicKey`, `GET /v1/rooms/{id}` → `peerы`, `DELETE /v1/rooms/{id}` → 204.
 - Подпись Windows-драйвера туннеля, macOS Network Extension, нотаризация, публичный relay — требуют
   инфраструктуры и секретов, вне репозитория. Лаунчер в этих случаях честно сообщает об ограничении.
