@@ -62,11 +62,19 @@ public sealed class NavigationSmokeTests
         var window = new MainWindow { DataContext = main };
         window.Show();
 
-        // Ждём, пока оболочка выполнит стартовую навигацию.
-        Pump(window, TimeSpan.FromSeconds(2));
+        // Ждём завершения стартовой навигации оболочки: на медленном раннере она ещё в полёте
+        // и может перезаписать раздел, открытый следующим шагом.
+        Assert.True(
+            WaitUntil(() => CurrentKey(services) == "home", TimeSpan.FromSeconds(20)),
+            "Оболочка не выполнила стартовую навигацию на «Главную».");
 
         main.NavigateCommand.Execute(key);
-        Pump(window, TimeSpan.FromSeconds(2));
+        Assert.True(
+            WaitUntil(() => CurrentKey(services) == key, TimeSpan.FromSeconds(20)),
+            $"Раздел «{key}» не открылся: текущий ключ — {CurrentKey(services) ?? "нет"}.");
+
+        // Дать представлению построиться и уложиться (шрифты, элементы списков).
+        Pump(window, TimeSpan.FromSeconds(1.5));
 
         var page = main.CurrentPage;
         Assert.NotNull(page);
@@ -110,6 +118,28 @@ public sealed class NavigationSmokeTests
         root.GetVisualDescendants()
             .OfType<TextBlock>()
             .FirstOrDefault(t => t.Text?.Contains(value, StringComparison.Ordinal) == true);
+
+    /// <summary>Ключ раздела, открытого навигацией (её состояние — источник истины).</summary>
+    private static string? CurrentKey(IServiceProvider services)
+        => services.GetRequiredService<INavigationService>().CurrentEntry?.Key;
+
+    private static bool WaitUntil(Func<bool> condition, TimeSpan timeout)
+    {
+        var deadline = DateTime.UtcNow + timeout;
+        while (DateTime.UtcNow < deadline)
+        {
+            Dispatcher.UIThread.RunJobs();
+            if (condition())
+            {
+                return true;
+            }
+
+            Thread.Sleep(20);
+        }
+
+        Dispatcher.UIThread.RunJobs();
+        return condition();
+    }
 
     private static void Pump(Window window, TimeSpan duration)
     {
