@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EHOT Launcher — лаунчер Minecraft для Windows и macOS</title>
+<meta name="description" content="EHOT Launcher: быстрый лаунчер Minecraft с профилями, Fabric/Quilt/Forge/NeoForge, каталогом модов и собственной сетевой игрой. Открытый код, без обхода лицензии.">
+<meta name="theme-color" content="#0B0D13">
+<meta property="og:title" content="EHOT Launcher">
+<meta property="og:description" content="Лаунчер Minecraft: профили, лоадеры, моды, сетевая игра. Windows и macOS.">
+<meta property="og:type" content="website">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="glow glow-a"></div>
+<div class="glow glow-b"></div>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <span class="logo">E</span>
+      <span class="brand-text">EHOT Launcher</span>
+      <span class="beta">beta</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features">Возможности</a>
+      <a href="#network">Game Network</a>
+      <a href="#install">Установка</a>
+      <a href="#faq">Вопросы</a>
+    </nav>
+    <a class="btn btn-primary btn-sm" href="#install">Скачать</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ───────────────────────── Hero ───────────────────────── -->
+  <section class="hero wrap">
+    <div class="hero-copy">
+      <div class="pill">
+        <span class="dot"></span>
+        <span id="version-pill">Загрузка версии…</span>
+      </div>
+      <h1>Minecraft,<br><span class="grad">запускается сразу</span></h1>
+      <p class="lead">
+        Профили с разными версиями и лоадерами, каталог модов из Modrinth, авто-подбор Java
+        и собственный Game Network для игры с друзьями. Без обхода лицензии и без «магии»:
+        если что-то недоступно — лаунчер так и говорит.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="#install" id="cta-main">Скачать для Windows</a>
+        <a class="btn btn-ghost" href="#install">Версия для macOS</a>
+      </div>
+      <ul class="hero-facts">
+        <li><strong>Windows 10/11</strong> · macOS 11+ (Intel и Apple Silicon)</li>
+        <li>Внутри уже есть .NET — ничего доустанавливать не нужно</li>
+        <li>Исходный код открыт на GitHub</li>
+      </ul>
+    </div>
+
+    <div class="hero-art" aria-hidden="true">
+      <div class="app-mock">
+        <div class="mock-bar">
+          <span class="mc-dot r"></span><span class="mc-dot y"></span><span class="mc-dot g"></span>
+          <span class="mock-title">EHOT Launcher</span>
+          <span class="mock-chip">BETA</span>
+        </div>
+        <div class="mock-body">
+          <aside class="mock-nav">
+            <div class="mock-item active"><i></i>Главная</div>
+            <div class="mock-item"><i></i>Играть</div>
+            <div class="mock-item"><i></i>Версии</div>
+            <div class="mock-item"><i></i>Моды</div>
+            <div class="mock-item"><i></i>Сборки</div>
+            <div class="mock-item"><i></i>Game Network</div>
+            <div class="mock-item"><i></i>Загрузки</div>
+            <div class="mock-item"><i></i>Настройки</div>
+          </aside>
+          <div class="mock-content">
+            <div class="mock-hero">
+              <div class="mock-eyebrow">ТЕКУЩИЙ ПРОФИЛЬ</div>
+              <div class="mock-h">Fabric 1.21.4</div>
+              <div class="mock-sub">Java 21 · 8 ГБ RAM · 24 мода</div>
+              <div class="mock-play">ИГРАТЬ</div>
+            </div>
+            <div class="mock-row">
+              <div class="mock-card"><span></span><b>Загрузка</b><em>assets 92%</em></div>
+              <div class="mock-card"><span></span><b>Game Network</b><em>комната открыта</em></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── Что умеет ───────────────────────── -->
+  <section class="wrap section" id="features">
+    <h2>Что внутри</h2>
+    <p class="section-lead">Всё, что нужно для игры, — в одном окне. Без десятка вспомогательных программ.</p>
+
+    <div class="grid">
+      <article class="card">
+        <div class="ico i-purple">▣</div>
+        <h3>Профили и лоадеры</h3>
+        <p>Отдельные папки, версия игры, лоадер, память и JVM-аргументы. Ваниль, Fabric, Quilt, Forge, NeoForge — в один клик.</p>
+      </article>
+      <article class="card">
+        <div class="ico i-blue">✦</div>
+        <h3>Каталог модов</h3>
+        <p>Поиск по Modrinth, проверка зависимостей и конфликтов, установка модов и сборок (.mrpack) прямо в профиль.</p>
+      </article>
+      <article class="card">
+        <div class="ico i-green">↻</div>
+        <h3>Автоустановка Minecraft</h3>
+        <p>Скачивание лицензионных файлов с официальных серверов Mojang, проверка SHA-1, докачка при обрыве.</p>
+      </article>
+      <article class="card">
+        <div class="ico i-amber">☕</div>
+        <h3>Java без хлопот</h3>
+        <p>Лаунчер сам находит установленную Java, а если версия не подходит — предлагает скачать нужную с Adoptium.</p>
+      </article>
+      <article class="card">
+        <div class="ico i-pink">◈</div>
+        <h3>Аккаунты Microsoft</h3>
+        <p>Вход по коду устройства, как в официальном лаунчере. Офлайн-профили есть, но честно помечены как офлайн.</p>
+      </article>
+      <article class="card">
+        <div class="ico i-cyan">↺</div>
+        <h3>Автообновление</h3>
+        <p>Лаунчер сам сообщает о новой версии и обновляется по кнопке — не нужно каждый раз качать установщик вручную.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── Game Network ───────────────────────── -->
+  <section class="network" id="network">
+    <div class="wrap network-inner">
+      <div class="network-copy">
+        <div class="pill pill-outline">EHOT Game Network</div>
+        <h2>Играйте вместе без «подключайся по IP»</h2>
+        <p>
+          Создайте комнату, отправьте другу код из 8 символов — он вводит его в лаунчере
+          и попадает в вашу игру. Лаунчер выбирает лучший способ связи: прямое соединение,
+          обход NAT или relay.
+        </p>
+        <ul class="checks">
+          <li>Код приглашения вместо настройки портов и белого IP</li>
+          <li>Ссылка <code>ehot://join/КОД</code> — открывается в один клик</li>
+          <li>Список участников, пинг, объём трафика</li>
+          <li>Честный статус сети: если туннель недоступен — так и написано</li>
+        </ul>
+      </div>
+      <div class="network-card">
+        <div class="nc-label">АДРЕС ДЛЯ MINECRAFT</div>
+        <div class="nc-addr">10.64.0.1:25565</div>
+        <div class="nc-code">Код приглашения <b>ABCD2345</b></div>
+        <div class="nc-peers">
+          <div><span class="avatar">A</span> Артём <em>12 мс</em></div>
+          <div><span class="avatar">M</span> Маша <em>28 мс</em></div>
+          <div><span class="avatar">+</span> Свободно 5 мест</div>
+        </div>
+        <div class="nc-note">Прямое соединение · 0,4 МБ ↑ / 1,2 МБ ↓</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────────────────── Установка ───────────────────────── -->
+  <section class="wrap section" id="install">
+    <h2>Установка</h2>
+    <p class="section-lead">Файлы берутся с GitHub Releases — это те же сборки, что проходят все тесты.</p>
+
+    <div class="downloads" id="downloads">
+      <article class="dl-card">
+        <div class="dl-head">
+          <span class="dl-os">Windows</span>
+          <span class="dl-arch">x64 · 10/11</span>
+        </div>
+        <a class="btn btn-primary btn-block" data-asset="win" href="#install" rel="noopener">Скачать установщик</a>
+        <p class="dl-note">Обычный установщик: ярлык в «Пуск», удаление через «Приложения», протокол <code>ehot://</code>.</p>
+      </article>
+
+      <article class="dl-card">
+        <div class="dl-head">
+          <span class="dl-os">macOS</span>
+          <span class="dl-arch">Apple Silicon</span>
+        </div>
+        <a class="btn btn-ghost btn-block" data-asset="mac-arm" href="#install" rel="noopener">Скачать .dmg</a>
+        <p class="dl-note">M1–M4. Открыть образ и перетащить приложение в Applications.</p>
+      </article>
+
+      <article class="dl-card">
+        <div class="dl-head">
+          <span class="dl-os">macOS</span>
+          <span class="dl-arch">Intel</span>
+        </div>
+        <a class="btn btn-ghost btn-block" data-asset="mac-x64" href="#install" rel="noopener">Скачать .dmg</a>
+        <p class="dl-note">Mac на процессорах Intel. Тот же образ с приложением.</p>
+      </article>
+    </div>
+
+    <ol class="steps">
+      <li>
+        <span class="step-n">1</span>
+        <div><b>Скачайте установщик</b><p>Кнопкой выше или со страницы релиза на GitHub.</p></div>
+      </li>
+      <li>
+        <span class="step-n">2</span>
+        <div><b>Установите</b><p>Windows — мастер установки. macOS — перетащите «EHOT Launcher» в Applications.</p></div>
+      </li>
+      <li>
+        <span class="step-n">3</span>
+        <div><b>Войдите и играйте</b><p>Аккаунт Microsoft или офлайн-профиль. Выберите версию — лаунчер докачает всё сам.</p></div>
+      </li>
+    </ol>
+
+    <div class="warning">
+      <b>Почему система предупреждает.</b>
+      Сборки пока без коммерческой подписи, поэтому Windows SmartScreen показывает «неизвестный издатель»,
+      а macOS просит подтвердить запуск. Это не вирус, а отсутствие платного сертификата.
+      На macOS: правый клик по приложению → «Открыть», или команда
+      <code>xattr -dr com.apple.quarantine "/Applications/EHOT Launcher.app"</code>.
+      Подпись и нотаризация — в планах.
+    </div>
+  </section>
+
+  <!-- ───────────────────────── FAQ ───────────────────────── -->
+  <section class="wrap section" id="faq">
+    <h2>Частые вопросы</h2>
+    <div class="faq">
+      <details>
+        <summary>Это пиратский лаунчер?</summary>
+        <p>Нет. Для игры на официальных серверах нужна приобретённая копия Minecraft и вход через Microsoft.
+           EHOT Launcher не обходит и не ослабляет лицензионную защиту. Офлайн-профили предназначены
+           для локальной игры и явно помечены как офлайн.</p>
+      </details>
+      <details>
+        <summary>Куда лаунчер ставит игру и настройки?</summary>
+        <p>Игра — в отдельную папку профиля (по умолчанию рядом с данными лаунчера), настройки и база — в системную
+           папку приложения. В «Настройках» можно указать свой путь к папке Minecraft.</p>
+      </details>
+      <details>
+        <summary>Почему Game Network иногда пишет «ограничено»?</summary>
+        <p>Полноценный сетевой туннель требует подписанного драйвера на Windows и Network Extension на macOS.
+           Без них лаунчер работает через прямое соединение или relay и честно сообщает об ограничении,
+           а не изображает подключение.</p>
+      </details>
+      <details>
+        <summary>Моды и сборки — откуда?</summary>
+        <p>Из официального API Modrinth. CurseForge работает только если у вас есть собственный API-ключ:
+           лаунчер не содержит и не может содержать чужой ключ.</p>
+      </details>
+      <details>
+        <summary>Есть ли Linux?</summary>
+        <p>Ядро лаунчера кроссплатформенное, сборка под Linux используется в автотестах.
+           Пользовательский установщик для Linux пока не публикуется.</p>
+      </details>
+    </div>
+  </section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap footer-inner">
+    <div>
+      <div class="brand">
+        <span class="logo logo-sm">E</span>
+        <span class="brand-text">EHOT Launcher</span>
+      </div>
+      <p class="muted">
+        Не связан с Mojang Studios и Microsoft. Minecraft — торговая марка Mojang AB.
+      </p>
+    </div>
+    <div class="footer-links">
+      <a href="https://github.com/Timofei2506/EHOT-Launcher" rel="noopener" id="repo-link">Исходный код</a>
+      <a href="https://github.com/Timofei2506/EHOT-Launcher/releases" rel="noopener" id="releases-link">Все релизы</a>
+      <a href="#faq">Вопросы</a>
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <span>© 2026 EHOT</span>
+    <span id="build-version">версия …</span>
+  </div>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
