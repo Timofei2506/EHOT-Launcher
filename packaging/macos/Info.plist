@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>EHOT Launcher</string>
+    <key>CFBundleDisplayName</key>
+    <string>EHOT Launcher</string>
+    <key>CFBundleIdentifier</key>
+    <string>app.ehot.launcher</string>
+    <key>CFBundleVersion</key>
+    <string>__VERSION__</string>
+    <key>CFBundleShortVersionString</key>
+    <string>__VERSION__</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleSignature</key>
+    <string>EHTL</string>
+    <key>CFBundleExecutable</key>
+    <string>EHOT.Launcher</string>
+    <key>CFBundleIconFile</key>
+    <string>ehot.icns</string>
+    <key>LSMinimumSystemVersion</key>
+    <string>11.0</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <!-- Тёмный интерфейс по умолчанию: лаунчер всегда рисует свою тему. -->
+    <key>NSRequiresAquaSystemAppearance</key>
+    <false/>
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.games</string>
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>app.ehot.launcher.join</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>ehot</string>
+            </array>
+        </dict>
+    </array>
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>Minecraft Modpack</string>
+            <key>CFBundleTypeExtensions</key>
+            <array>
+                <string>mrpack</string>
+                <string>zip</string>
+            </array>
+            <key>CFBundleTypeRole</key>
+            <string>Viewer</string>
+        </dict>
+    </array>
+</dict>
+</plist>

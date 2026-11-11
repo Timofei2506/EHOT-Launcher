@@ -18,6 +18,7 @@ permissions:
   contents: read
 
 env:
+  APP_VERSION: '0.1.0'
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
@@ -111,4 +112,84 @@ jobs:
         with:
           name: EHOT-Launcher-${{ matrix.rid }}
           path: artifacts/EHOT-Launcher-${{ matrix.rid }}.zip
+          if-no-files-found: error
+
+  installers:
+    name: Установщик (${{ matrix.platform }})
+    needs: [build-test, publish]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: windows
+            os: windows-latest
+            rid: win-x64
+          - platform: macos-arm64
+            os: macos-latest
+            rid: osx-arm64
+          - platform: macos-x64
+            os: macos-latest
+            rid: osx-x64
+
+    steps:
+      - name: Получить код
+        uses: actions/checkout@v4
+
+      - name: Установить .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'ga'
+
+      # ---------- Windows: Inno Setup ----------
+      - name: Собрать приложение (Windows)
+        if: matrix.platform == 'windows'
+        run: >
+          dotnet publish src/EHOT.Launcher.UI/EHOT.Launcher.UI.csproj
+          -c Release -r ${{ matrix.rid }} --self-contained true
+          -p:DebugType=embedded -o artifacts/${{ matrix.rid }}
+
+      - name: Установить Inno Setup
+        if: matrix.platform == 'windows'
+        run: choco install innosetup --no-progress -y
+
+      - name: Собрать установщик .exe
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          & $iscc "packaging\windows\ehot-launcher.iss" "/DAppVersion=${{ env.APP_VERSION }}" "/DSourceDir=artifacts\${{ matrix.rid }}" "/DOutputDir=artifacts\installers"
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup завершился с кодом $LASTEXITCODE" }
+
+      # ---------- macOS: .app + .dmg ----------
+      - name: Собрать приложение (macOS)
+        if: startsWith(matrix.platform, 'macos')
+        run: >
+          dotnet publish src/EHOT.Launcher.UI/EHOT.Launcher.UI.csproj
+          -c Release -r ${{ matrix.rid }} --self-contained true
+          -p:DebugType=embedded -o artifacts/${{ matrix.rid }}
+
+      - name: Собрать .dmg
+        if: startsWith(matrix.platform, 'macos')
+        env:
+          ARCH: ${{ matrix.platform == 'macos-arm64' && 'arm64' || 'x64' }}
+        run: |
+          bash packaging/macos/make-dmg.sh "artifacts/${{ matrix.rid }}" "${APP_VERSION}" "${ARCH}" artifacts/installers
+
+      - name: (macOS) ad-hoc подпись — чтобы .app запускался на своей машине
+        if: startsWith(matrix.platform, 'macos')
+        run: |
+          APP="artifacts/installers/EHOT Launcher.app"
+          codesign --force --deep --sign - "$APP" || echo "ad-hoc подпись недоступна, продолжаем без неё"
+          # Gatekeeper: собственная сборка не считается карантинной, но проверим структуру
+          codesign --verify --deep "$APP" || true
+
+      - name: Выложить установщик
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.platform }}
+          path: |
+            artifacts/installers/*.exe
+            artifacts/installers/*.dmg
           if-no-files-found: error
