@@ -15,29 +15,30 @@
 может только владелец репозитория. Чтобы кнопки на сайте действительно качали установщики,
 репозиторий должен стать публичным (это же снимет блокер автообновления лаунчера).
 
-## Публикация на Vercel
+## Публикация на Vercel — сделано
 
-Проект `ehot-launcher-site` уже создан в Vercel и связан с этим репозиторием
-(Root Directory: `site`, Framework: Other). Первый деплой через MCP-коннектор невозможен:
-Vercel требует `projectSettings`, а коннектор этот параметр не передаёт. Дальше — вручную,
-два равнозначных варианта.
+Сайт живой: **https://ehot-launcher-site.vercel.app**
 
-**Вариант А — из панели Vercel (проще, без установки программ):**
-1. Открыть https://vercel.com/tgargach12-7359s-projects/ehot-launcher-site
-2. Вкладка **Deployments** → кнопка **Deploy** / **Redeploy** (или **Create Deployment**).
-3. Готово: адрес будет вида `ehot-launcher-site-<hash>.vercel.app`
-   (после деплоя можно добавить красивый домен: Settings → Domains).
+Проект: `ehot-launcher-site` (`prj_tmkDfijS53JE2MrT1nIxkcZrjpVS`), команда
+`tgargach12-7359s-projects`, Root Directory: `site`, сборки нет (статика).
 
-**Вариант Б — из терминала (одна команда):**
+Почему пришлось повозиться (чтобы не повторять ошибок):
+
+1. MCP-коннектор Vercel не передаёт `projectSettings` → первый деплой нового проекта
+   через него невозможен (`400 missing_project_settings`).
+2. Деплой из Git блокируется Vercel: `COMMIT_AUTHOR_REQUIRED` — автор коммита
+   должен быть подтверждённым участником команды Vercel.
+   Поэтому в репозитории настроен локальный автор
+   `git config user.email tgargach12@gmail.com` (без этого деплой блокируется).
+3. Каталог `.vercelignore` в корне репозитория оставляет для Vercel только `site/`,
+   иначе уезжают все исходники лаунчера.
+
+Обновление сайта после правок:
 ```bash
 cd site
 npx vercel@latest deploy --prod --yes --token ВАШ_ТОКЕН --scope tgargach12-7359s-projects
 ```
-`--yes` принимает настройки проекта (Root Directory `site`, статика без сборки),
-токен создаётся здесь: https://vercel.com/account/settings/tokens
-
-После первого успешного деплоя каждый `git push` в `main` будет обновлять сайт
-автоматически, если в проекте включён Git-автодеплой (Settings → Git).
+(CLI подхватывает настройки связанного проекта из `.vercel/`, он в `.gitignore`.)
 
 ## Локальная проверка
 
