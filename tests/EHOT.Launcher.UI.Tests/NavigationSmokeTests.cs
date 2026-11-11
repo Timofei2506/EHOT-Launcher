@@ -79,8 +79,10 @@ public sealed class NavigationSmokeTests
         var page = main.CurrentPage;
         Assert.NotNull(page);
 
-        // Имя View, которое построил ViewLocator: ищем в визуальном дереве.
-        var section = FindSection(window);
+        // Имя View, которое построил ViewLocator: ищем в визуальном дереве именно
+        // то представление, чей DataContext — открытая страница (страницы меняются
+        // через переход, поэтому старое дерево какое-то время ещё висит в окне).
+        var section = FindSection(window, page!);
         Assert.True(
             section is not null,
             $"Раздел «{key}» не показал содержимое (ViewModel {page!.GetType().Name}).");
@@ -94,25 +96,11 @@ public sealed class NavigationSmokeTests
         window.Close();
     }
 
-    private static UserControl? FindSection(Visual root)
-    {
-        foreach (var child in root.GetVisualDescendants())
-        {
-            if (child is ContentControl { Content: ViewModelBase } presenter)
-            {
-                // Presentation-контейнер страницы: ищем его визуального ребёнка-View.
-                foreach (var view in presenter.GetVisualDescendants())
-                {
-                    if (view is UserControl userControl)
-                    {
-                        return userControl;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
+    private static UserControl? FindSection(Visual root, ViewModelBase page)
+        => root.GetVisualDescendants()
+            .OfType<UserControl>()
+            // Обход идёт сверху вниз: первый совпавший — сам раздел, следующие — его дочерние View.
+            .FirstOrDefault(view => ReferenceEquals(view.DataContext, page));
 
     private static TextBlock? FindText(Visual root, string value) =>
         root.GetVisualDescendants()
