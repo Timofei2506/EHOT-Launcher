@@ -1,0 +1,114 @@
+name: CI
+
+# Что делает этот workflow (по-простому):
+#  1. build-test — на каждый push и pull request собирает решение и прогоняет тесты
+#     на Linux, Windows и macOS. Если где-то ошибка — тут будет красный крестик.
+#  2. publish — собирает готовые к запуску сборки (Windows .exe, macOS для Intel и Apple Silicon)
+#     и кладёт их в «Artifacts». Это не установщик, а папка с программой.
+# Секретов не требует: всё, что нужно, ставится автоматически.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+
+jobs:
+  build-test:
+    name: Сборка и тесты (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Получить код
+        uses: actions/checkout@v4
+
+      - name: Установить .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'ga'
+
+      - name: Показать версию SDK
+        run: dotnet --version
+
+      - name: Восстановить пакеты
+        run: dotnet restore EHOT.Launcher.slnx
+
+      - name: Собрать (ошибки в предупреждениях запрещены)
+        run: dotnet build EHOT.Launcher.slnx -c Debug --no-restore -warnaserror
+
+      - name: Тесты
+        # XUnit v3 сам сообщает о падениях кодом возврата; UI-тесты работают headless (без экрана).
+        run: dotnet test EHOT.Launcher.slnx -c Debug --no-build --logger "trx;LogFileName=results.trx"
+
+      - name: Сохранить отчёт о тестах
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: '**/results.trx'
+          if-no-files-found: ignore
+
+  publish:
+    name: Сборка приложения (${{ matrix.rid }})
+    # Запускаем только если сборка и тесты прошли на всех системах.
+    needs: build-test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+          - os: macos-latest
+            rid: osx-arm64
+          - os: macos-latest
+            rid: osx-x64
+
+    steps:
+      - name: Получить код
+        uses: actions/checkout@v4
+
+      - name: Установить .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'ga'
+
+      - name: Собрать self-contained приложение
+        # --self-contained true: .NET внутри, пользователю не нужно ничего ставить.
+        run: >
+          dotnet publish src/EHOT.Launcher.UI/EHOT.Launcher.UI.csproj
+          -c Release -r ${{ matrix.rid }} --self-contained true
+          -p:DebugType=embedded -o artifacts/${{ matrix.rid }}
+
+      - name: Упаковать в архив
+        shell: bash
+        run: |
+          cd artifacts
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            7z a "EHOT-Launcher-${{ matrix.rid }}.zip" "${{ matrix.rid }}" > /dev/null
+          else
+            # macOS: сохраняем права на исполняемые файлы и .app-структуру
+            ditto -c -k --sequesterRsrc --keepParent "${{ matrix.rid }}" "EHOT-Launcher-${{ matrix.rid }}.zip"
+          fi
+
+      - name: Выложить артефакт
+        uses: actions/upload-artifact@v4
+        with:
+          name: EHOT-Launcher-${{ matrix.rid }}
+          path: artifacts/EHOT-Launcher-${{ matrix.rid }}.zip
+          if-no-files-found: error
