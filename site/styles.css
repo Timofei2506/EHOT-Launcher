@@ -410,3 +410,20 @@ details p { color: var(--muted); font-size: 14px; margin: 10px 0 0; }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* ───────────────────────── Проверка файла ───────────────────────── */
+.verify {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: rgba(21, 25, 35, .9);
+  border: 1px solid var(--border);
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.verify b { color: var(--text); }
+.verify a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+.verify span { display: block; margin-top: 8px; }
+.verify code { word-break: break-all; }
+.verify-how { margin: 10px 0 0; font-size: 12px; color: #64748B; }
+.verify-how code { font-size: 11.5px; }

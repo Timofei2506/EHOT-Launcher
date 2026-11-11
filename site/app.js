@@ -1,33 +1,32 @@
 /* ===========================================================================
    EHOT Launcher — логика сайта.
-   Данные о версии и файлах берутся из GitHub Releases API, чтобы сайт не врал
-   про версию и всегда вёл на актуальный установщик.
-   Если API недоступен (нет сети, репозиторий приватный) — кнопки ведут на
-   страницу релизов, а версия честно помечается как неизвестная.
+
+   Скачивание работает БЕЗ этого скрипта: кнопки в index.html ведут на файлы
+   вида /downloads/EHOT-Launcher-...-setup.exe, которые лежат на самом сайте
+   (Vercel их раздаёт). Никаких редиректов на GitHub.
+
+   Что делает скрипт:
+   * читает /downloads/manifest.json — версия и контрольные суммы текущей сборки;
+   * спрашивает публичный репозиторий релизов; если там уже есть версия новее,
+     кнопки начинают вести на её файлы в этом релизе (тоже прямое скачивание);
+   * если GitHub недоступен — остаётся локальная сборка и честная подпись.
    =========================================================================== */
 
-const REPO = 'Timofei2506/EHOT-Launcher';
-const API = `https://api.github.com/repos/${REPO}/releases?per_page=5`;
-
-/** Пути к установщикам, если API недоступен. */
-const FALLBACK = {
-  releases: `https://github.com/${REPO}/releases`,
-  repo: `https://github.com/${REPO}`
-};
+/** Публичный репозиторий ТОЛЬКО с установщиками (исходный код — в закрытом). */
+const RELEASES_REPO = 'Timofei2506/EHOT-Launcher-Releases';
+const SOURCE_REPO = 'Timofei2506/EHOT-Launcher';
+const RELEASES_API = `https://api.github.com/repos/${RELEASES_REPO}/releases?per_page=5`;
 
 const el = {
   versionPill: document.getElementById('version-pill'),
   buildVersion: document.getElementById('build-version'),
-  ctaMain: document.getElementById('cta-main'),
-  repoLink: document.getElementById('repo-link'),
-  releasesLink: document.getElementById('releases-link'),
-  downloads: document.getElementById('downloads')
+  sourceLink: document.getElementById('repo-link'),
+  releasesLink: document.getElementById('releases-link')
 };
 
-const humanSize = (bytes) =>
-  bytes ? `${(bytes / 1048576).toFixed(1)} МБ` : '';
+const humanSize = (bytes) => (bytes ? `${(bytes / 1048576).toFixed(1)} МБ` : '');
 
-/** Разбирает тег вида v0.2.0-beta.1 → { major, minor, patch, pre } */
+/** «v0.2.0» → { major, minor, patch, pre } */
 function parseTag(tag) {
   const m = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?/.exec(tag || '');
   if (!m) return null;
@@ -39,11 +38,9 @@ function isNewer(a, b) {
   if (a.major !== b.major) return a.major > b.major;
   if (a.minor !== b.minor) return a.minor > b.minor;
   if (a.patch !== b.patch) return a.patch > b.patch;
-  // одинаковые номера: релиз (без pre) новее предрелиза
   return !a.pre && b.pre;
 }
 
-/** Выбирает лучший релиз: последний опубликованный, предрелизы допускаем — проект в beta. */
 function pickRelease(releases) {
   const usable = (releases || []).filter((r) => !r.draft && r.assets && r.assets.length);
   if (!usable.length) return null;
@@ -53,39 +50,30 @@ function pickRelease(releases) {
     .sort((a, b) => (isNewer(a.version, b.version) ? -1 : 1))[0];
 }
 
+/** Ищет файл нужного типа среди ассетов релиза. */
 function findAsset(assets, kind) {
-  const names = (assets || []).map((a) => ({ a, n: a.name.toLowerCase() }));
+  const list = (assets || []).map((a) => ({ a, n: a.name.toLowerCase() }));
   const pick = (...needles) =>
-    names.find((x) => needles.every((needle) => x.n.includes(needle)))?.a || null;
+    list.find((x) => needles.every((needle) => x.n.includes(needle)))?.a || null;
 
   switch (kind) {
-    case 'win':      return pick('win') && (pick('win', '.exe') || pick('win', '.zip'));
-    case 'mac-arm':  return pick('osx', 'arm64') || pick('mac', 'arm64');
-    case 'mac-x64':  return pick('osx', 'x64') || pick('osx', 'intel');
-    default:         return null;
+    case 'win': return (pick('win') && (pick('win', '.exe') || pick('win', '.zip'))) || null;
+    case 'mac-arm': return pick('osx', 'arm64') || pick('mac', 'arm64');
+    case 'mac-x64': return pick('osx', 'x64') || pick('osx', 'intel');
+    default: return null;
   }
 }
 
-function paint(version, release) {
-  const label = version ? `Версия ${version.raw}` : 'Версия из GitHub';
-  if (el.versionPill) el.versionPill.textContent = version
-    ? `Актуальная версия ${version.raw}${version.pre ? ' (beta)' : ''}`
-    : 'Сборки на GitHub Releases';
+function setVersionLabel(label) {
+  if (el.versionPill) el.versionPill.textContent = label;
+}
 
-  if (el.buildVersion) {
-    el.buildVersion.textContent = version
-      ? `версия ${version.raw} · ${new Date(release.published_at).toLocaleDateString('ru-RU')}`
-      : 'версия не определена';
-  }
-
-  if (!release) return;
-
-  // Подставляем прямые ссылки на файлы, чтобы «Скачать» вело сразу на установщик.
-  const map = { win: 'win', 'mac-arm': 'mac-arm', 'mac-x64': 'mac-x64' };
+/** Подставляет ссылки, подпись «файл · размер» и версию. */
+function applyLinks(assets, version, date) {
   document.querySelectorAll('[data-asset]').forEach((link) => {
-    const asset = findAsset(release.assets, map[link.dataset.asset]);
+    const asset = findAsset(assets, link.dataset.asset);
     if (!asset) return;
-    link.href = asset.browser_download_url;
+    link.href = asset.browser_download_url || asset.url;
     const size = humanSize(asset.size);
     if (size) {
       let meta = link.parentElement.querySelector('.dl-meta');
@@ -98,35 +86,108 @@ function paint(version, release) {
     }
   });
 
-  if (el.ctaMain) {
-    const win = findAsset(release.assets, 'win');
-    if (win) el.ctaMain.href = win.browser_download_url;
+  const cta = document.getElementById('cta-main');
+  const win = findAsset(assets, 'win');
+  if (cta && win) cta.href = win.browser_download_url || win.url;
+
+  if (version) {
+    setVersionLabel(`Актуальная версия ${version.raw}${version.pre ? ' (beta)' : ''}`);
+    if (el.buildVersion && date) {
+      el.buildVersion.textContent =
+        `версия ${version.raw} · ${new Date(date).toLocaleDateString('ru-RU')}`;
+    }
   }
 }
 
-async function load() {
-  if (el.repoLink) el.repoLink.href = FALLBACK.repo;
-  if (el.releasesLink) el.releasesLink.href = FALLBACK.releases;
+/** Подпись суммы из SHA256SUMS.txt в блок «проверка файла». */
+function showChecksum(text, fileName) {
+  const line = (text || '').split('\n').find((l) => l.includes(fileName));
+  const box = document.getElementById('checksum');
+  const wrap = document.getElementById('checksum-line');
+  if (line && box && wrap) {
+    box.textContent = line.trim().split(/\s+/)[0];
+    wrap.hidden = false;
+  }
+}
+
+async function loadLocalManifest() {
+  try {
+    const response = await fetch('downloads/manifest.json', { cache: 'no-cache' });
+    if (!response.ok) throw new Error(String(response.status));
+    const manifest = await response.json();
+
+    setVersionLabel(`Версия ${manifest.version}`);
+    if (el.buildVersion) {
+      el.buildVersion.textContent =
+        `версия ${manifest.version} · ${new Date(manifest.publishedAt).toLocaleDateString('ru-RU')}`;
+    }
+    document.querySelectorAll('[data-asset]').forEach((link) => {
+      const file = (manifest.files || []).find((f) => f.kind === link.dataset.asset);
+      if (!file) return;
+      link.href = `downloads/${file.name}`;
+      let meta = link.parentElement.querySelector('.dl-meta');
+      if (!meta) {
+        meta = document.createElement('p');
+        meta.className = 'dl-meta';
+        link.insertAdjacentElement('afterend', meta);
+      }
+      meta.textContent = `${file.name} · ${humanSize(file.size)}`;
+    });
+
+    const cta = document.getElementById('cta-main');
+    const win = (manifest.files || []).find((f) => f.kind === 'win');
+    if (cta && win) cta.href = `downloads/${win.name}`;
+
+    if (win && win.sha256) {
+      const box = document.getElementById('checksum-local');
+      if (box) {
+        box.querySelector('code').textContent = win.sha256;
+        box.hidden = false;
+      }
+    }
+    return manifest;
+  } catch (error) {
+    // Локальная копия не найдена — не выдумываем версию.
+    console.warn('manifest.json недоступен:', error.message);
+    setVersionLabel('Сборки на сайте и GitHub Releases');
+    return null;
+  }
+}
+
+async function preferNewerRelease(localManifest) {
+  const link = el.releasesLink;
+  if (link) link.href = `https://github.com/${RELEASES_REPO}/releases`;
 
   try {
-    const response = await fetch(API, { headers: { Accept: 'application/vnd.github+json' } });
+    const response = await fetch(RELEASES_API, { headers: { Accept: 'application/vnd.github+json' } });
     if (!response.ok) throw new Error(`GitHub ответил ${response.status}`);
-
     const best = pickRelease(await response.json());
-    if (!best) throw new Error('Нет опубликованных релизов');
+    if (!best) throw new Error('нет опубликованных релизов');
 
-    paint(best.version, best.release);
+    const local = localManifest ? parseTag(localManifest.version) : null;
+    if (!local || isNewer(best.version, local)) {
+      // На GitHub лежит версия новее той, что вшита в сайт — ведём на неё.
+      applyLinks(best.release.assets, best.version, best.release.published_at);
+      if (link) link.href = best.release.html_url;
+      console.info(`На сайте v${localManifest?.version ?? '?'}, на GitHub ${best.version.raw} — показываю GitHub.`);
+    }
+
+    const sums = (best.release.assets || []).find((a) => /sha256sums/i.test(a.name));
+    if (sums) {
+      const text = await (await fetch(sums.browser_download_url)).text();
+      const win = findAsset(best.release.assets, 'win');
+      if (win) showChecksum(text, win.name);
+    }
   } catch (error) {
-    // Честное поведение: не показываем выдуманную версию, а ведём на страницу релизов.
-    console.warn('Не удалось получить релизы:', error.message);
-    if (el.versionPill) el.versionPill.textContent = 'Сборки на GitHub Releases';
-    if (el.buildVersion) el.buildVersion.textContent = 'версия не определена';
-    document.querySelectorAll('[data-asset]').forEach((link) => {
-      link.href = FALLBACK.releases;
-      link.title = 'Откроется страница релизов на GitHub';
-    });
-    if (el.ctaMain) el.ctaMain.href = FALLBACK.releases;
+    // Это нормальный, ожидаемый путь: сайт живёт на своих файлах.
+    console.info('Релизы GitHub недоступны, работаем на файлах сайта:', error.message);
   }
 }
 
-load();
+async function start() {
+  if (el.sourceLink) el.sourceLink.href = `https://github.com/${SOURCE_REPO}`;
+  const manifest = await loadLocalManifest();
+  await preferNewerRelease(manifest);
+}
+
+start();

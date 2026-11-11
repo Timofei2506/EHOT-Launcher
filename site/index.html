@@ -50,7 +50,7 @@
         если что-то недоступно — лаунчер так и говорит.
       </p>
       <div class="cta">
-        <a class="btn btn-primary" href="#install" id="cta-main">Скачать для Windows</a>
+        <a class="btn btn-primary" href="downloads/EHOT-Launcher-0.1.0-win-x64-setup.exe" id="cta-main" download>Скачать для Windows</a>
         <a class="btn btn-ghost" href="#install">Версия для macOS</a>
       </div>
       <ul class="hero-facts">
@@ -169,7 +169,8 @@
   <!-- ───────────────────────── Установка ───────────────────────── -->
   <section class="wrap section" id="install">
     <h2>Установка</h2>
-    <p class="section-lead">Файлы берутся с GitHub Releases — это те же сборки, что проходят все тесты.</p>
+    <p class="section-lead">Файлы лежат прямо на сайте — кнопка сразу начинает скачивание, без редиректов на GitHub.
+      Контрольные суммы и те же файлы дублируются в <a href="https://github.com/Timofei2506/EHOT-Launcher-Releases/releases" rel="noopener">репозитории релизов</a>.</p>
 
     <div class="downloads" id="downloads">
       <article class="dl-card">
@@ -177,7 +178,7 @@
           <span class="dl-os">Windows</span>
           <span class="dl-arch">x64 · 10/11</span>
         </div>
-        <a class="btn btn-primary btn-block" data-asset="win" href="#install" rel="noopener">Скачать установщик</a>
+        <a class="btn btn-primary btn-block" data-asset="win" href="downloads/EHOT-Launcher-0.1.0-win-x64-setup.exe" download>Скачать установщик</a>
         <p class="dl-note">Обычный установщик: ярлык в «Пуск», удаление через «Приложения», протокол <code>ehot://</code>.</p>
       </article>
 
@@ -186,7 +187,7 @@
           <span class="dl-os">macOS</span>
           <span class="dl-arch">Apple Silicon</span>
         </div>
-        <a class="btn btn-ghost btn-block" data-asset="mac-arm" href="#install" rel="noopener">Скачать .dmg</a>
+        <a class="btn btn-ghost btn-block" data-asset="mac-arm" href="downloads/EHOT-Launcher-0.1.0-osx-arm64.dmg" download>Скачать .dmg</a>
         <p class="dl-note">M1–M4. Открыть образ и перетащить приложение в Applications.</p>
       </article>
 
@@ -195,9 +196,17 @@
           <span class="dl-os">macOS</span>
           <span class="dl-arch">Intel</span>
         </div>
-        <a class="btn btn-ghost btn-block" data-asset="mac-x64" href="#install" rel="noopener">Скачать .dmg</a>
+        <a class="btn btn-ghost btn-block" data-asset="mac-x64" href="downloads/EHOT-Launcher-0.1.0-osx-x64.dmg" download>Скачать .dmg</a>
         <p class="dl-note">Mac на процессорах Intel. Тот же образ с приложением.</p>
       </article>
+    </div>
+
+    <div class="verify">
+      <b>Проверьте файл после скачивания.</b>
+      Все суммы — в <a href="downloads/SHA256SUMS.txt" download>SHA256SUMS.txt</a>.
+      <span id="checksum-line" hidden>Установщик Windows: <code id="checksum"></code></span>
+      <span id="checksum-local" hidden>Установщик Windows: <code></code></span>
+      <p class="verify-how">Windows: <code>certutil -hashfile файл SHA256</code> · macOS: <code>shasum -a 256 файл</code></p>
     </div>
 
     <ol class="steps">
@@ -273,8 +282,8 @@
       </p>
     </div>
     <div class="footer-links">
-      <a href="https://github.com/Timofei2506/EHOT-Launcher" rel="noopener" id="repo-link">Исходный код</a>
-      <a href="https://github.com/Timofei2506/EHOT-Launcher/releases" rel="noopener" id="releases-link">Все релизы</a>
+      <a href="https://github.com/Timofei2506/EHOT-Launcher" rel="noopener" id="repo-link">Исходный код (закрытый)</a>
+      <a href="https://github.com/Timofei2506/EHOT-Launcher-Releases/releases" rel="noopener" id="releases-link">Все релизы</a>
       <a href="#faq">Вопросы</a>
     </div>
   </div>

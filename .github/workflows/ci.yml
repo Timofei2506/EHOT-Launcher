@@ -20,7 +20,9 @@ permissions:
 env:
   # Версия приложения в одном месте: Directory.Build.props → <Version>. Здесь только читаем.
   APP_VERSION: '0.1.0'
-  UPDATE_REPOSITORY: ${{ github.repository }}
+  # Релизы (установщики) публикуются в отдельном публичном репозитории.
+  # Из него же лаунчер и сайт берут список версий — без токена.
+  UPDATE_REPOSITORY: Timofei2506/EHOT-Launcher-Releases
   DOTNET_NOLOGO: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true

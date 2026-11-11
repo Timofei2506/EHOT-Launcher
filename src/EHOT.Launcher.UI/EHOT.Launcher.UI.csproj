@@ -44,10 +44,11 @@
     <ProjectReference Include="../EHOT.Launcher.Update/EHOT.Launcher.Update.csproj" />
   </ItemGroup>
 
-  <!-- Канал обновлений: репозиторий релизов подставляется при сборке.
-       Переопределяется в CI: -p:UpdateRepository=owner/repo -->
+  <!-- Канал обновлений: отдельный ПУБЛИЧНЫЙ репозиторий с установщиками
+       (исходный код остаётся в закрытом репозитории). Переопределяется в CI:
+       -p:UpdateRepository=owner/repo -->
   <PropertyGroup>
-    <UpdateRepository Condition="'$(UpdateRepository)' == ''">Timofei2506/EHOT-Launcher</UpdateRepository>
+    <UpdateRepository Condition="'$(UpdateRepository)' == ''">Timofei2506/EHOT-Launcher-Releases</UpdateRepository>
   </PropertyGroup>
   <ItemGroup>
     <AssemblyMetadata Include="UpdateRepository" Value="$(UpdateRepository)" />
