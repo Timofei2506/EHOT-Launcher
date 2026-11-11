@@ -5,52 +5,82 @@
              x:Class="EHOT.Launcher.UI.Views.PlayView"
              x:DataType="vm:PlayViewModel">
 
-  <Grid RowDefinitions="Auto,*" RowSpacing="14">
+  <Grid RowDefinitions="Auto,*" RowSpacing="16">
 
+    <!-- ══════ Заголовок ══════ -->
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-      <StackPanel Spacing="3">
+      <StackPanel Spacing="4">
         <TextBlock Text="Играть" Classes="h1" />
-        <TextBlock Text="Профили, параметры Java, установка и запуск Minecraft" Classes="body" />
+        <TextBlock Text="Профили, память, Java, установка и запуск Minecraft" Classes="body" />
       </StackPanel>
       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-        <Button Classes="ghost" Command="{Binding InstallVersionCommand}" Content="Установить версию" />
-        <Button Classes="primary" Command="{Binding LaunchCommand}" Content="Запустить" />
+        <Button Classes="ghost" Command="{Binding InstallVersionCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Path Data="{StaticResource IconDownload}" Classes="icon" Width="15" Height="15" />
+            <TextBlock Text="Установить версию" FontSize="12.5" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+        <Button Classes="primary" Command="{Binding LaunchCommand}">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Path Data="{StaticResource IconPlay}" Fill="White" Width="12" Height="12" Stretch="Uniform" />
+            <TextBlock Text="Запустить" FontSize="12.5" FontWeight="SemiBold" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
       </StackPanel>
     </Grid>
 
-    <Grid Grid.Row="1" ColumnDefinitions="320,*" ColumnSpacing="14">
+    <Grid Grid.Row="1" ColumnDefinitions="336,*" ColumnSpacing="16">
 
-      <!-- Список профилей -->
-      <Border Classes="card" Padding="14">
-        <Grid RowDefinitions="Auto,*,Auto">
-          <StackPanel Grid.Row="0" Spacing="10">
-            <TextBlock Text="Профили" Classes="h3" />
-            <TextBox Classes="ehot" Text="{Binding NewProfileName, Mode=TwoWay}" PlaceholderText="Название профиля" />
-            <ComboBox ItemsSource="{Binding MinecraftVersions}" SelectedItem="{Binding NewProfileVersion, Mode=TwoWay}"
-                      PlaceholderText="Версия Minecraft" HorizontalAlignment="Stretch" />
-            <ComboBox ItemsSource="{Binding AvailableLoaders}" SelectedItem="{Binding NewProfileLoader, Mode=TwoWay}"
+      <!-- ══════ Список профилей ══════ -->
+      <Border CornerRadius="16" Padding="16" Background="#141A26"
+              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+        <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
+
+          <TextBlock Grid.Row="0" Text="Профили" Classes="h3" />
+
+          <!-- Создание профиля -->
+          <Border Grid.Row="1" CornerRadius="12" Padding="12" Background="#171E2C"
+                  BorderBrush="#1E2739" BorderThickness="1">
+            <StackPanel Spacing="8">
+              <TextBlock Text="Новый профиль" Classes="caption" FontSize="10.5" />
+              <TextBox Text="{Binding NewProfileName, Mode=TwoWay}" PlaceholderText="Название" />
+              <ComboBox ItemsSource="{Binding MinecraftVersions}" SelectedItem="{Binding NewProfileVersion, Mode=TwoWay}"
+                        PlaceholderText="Версия Minecraft" HorizontalAlignment="Stretch" />
+              <ComboBox ItemsSource="{Binding AvailableLoaders}" SelectedItem="{Binding NewProfileLoader, Mode=TwoWay}"
+                        HorizontalAlignment="Stretch" />
+              <Button Classes="primary" Command="{Binding CreateProfileCommand}" Content="Создать профиль"
                       HorizontalAlignment="Stretch" />
-            <Button Classes="primary" Command="{Binding CreateProfileCommand}" Content="Создать профиль"
-                    HorizontalAlignment="Stretch" />
-          </StackPanel>
+            </StackPanel>
+          </Border>
 
-          <ScrollViewer Grid.Row="1" Margin="0,12,0,12">
+          <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <Grid>
+            <StackPanel Spacing="6" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,20"
+                        IsVisible="{Binding Profiles.Count, Converter={x:Static vm:TextConverters.IsZero}}">
+              <TextBlock Text="Профилей нет" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Center"
+                         Foreground="{StaticResource TextBrush}" />
+              <TextBlock Classes="caption" TextAlignment="Center" MaxWidth="240" TextWrapping="Wrap"
+                         Text="Создайте первый профиль: выберите версию Minecraft и загрузчик выше." />
+            </StackPanel>
             <ItemsControl ItemsSource="{Binding Profiles}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="models:GameProfile">
-                  <Border Classes="card" Padding="12" Margin="0,0,0,8">
-                    <StackPanel Spacing="6">
-                      <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
-                                 Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
-                      <TextBlock Text="{Binding DisplayVersion}" Classes="caption" />
+                  <Border CornerRadius="12" Padding="12" Margin="0,0,0,8" Background="#171E2C"
+                          BorderBrush="#1E2739" BorderThickness="1">
+                    <StackPanel Spacing="8">
+                      <StackPanel Spacing="2">
+                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
+                                   Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding DisplayVersion}" Classes="caption" FontSize="10.5" />
+                      </StackPanel>
                       <StackPanel Orientation="Horizontal" Spacing="6">
-                        <Button Classes="ghost" Padding="8,4" FontSize="10.5"
+                        <Button Classes="pill"
                                 Command="{Binding $parent[ItemsControl].((vm:PlayViewModel)DataContext).SelectProfileCommand}"
                                 CommandParameter="{Binding}" Content="Выбрать" />
-                        <Button Classes="ghost" Padding="8,4" FontSize="10.5"
+                        <Button Classes="pill"
                                 Command="{Binding $parent[ItemsControl].((vm:PlayViewModel)DataContext).CloneProfileCommand}"
                                 CommandParameter="{Binding}" Content="Копия" />
-                        <Button Classes="danger" Padding="8,4" FontSize="10.5"
+                        <Button Classes="danger" Padding="12,5" FontSize="11.5"
                                 Command="{Binding $parent[ItemsControl].((vm:PlayViewModel)DataContext).DeleteProfileCommand}"
                                 CommandParameter="{Binding}" Content="Удалить" />
                       </StackPanel>
@@ -59,56 +89,92 @@
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
+            </Grid>
           </ScrollViewer>
 
-          <TextBlock Grid.Row="2" Classes="caption" TextWrapping="Wrap"
-                     Text="Удаление профиля убирает его из лаунчера; папка с файлами остаётся на диске." />
+          <TextBlock Grid.Row="3" Classes="caption" FontSize="10.5" TextWrapping="Wrap"
+                     Text="Удаление убирает профиль из лаунчера; папка с файлами остаётся на диске." />
         </Grid>
       </Border>
 
-      <!-- Настройки выбранного профиля -->
+      <!-- ══════ Выбранный профиль ══════ -->
       <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
-        <StackPanel Spacing="14">
+        <StackPanel Spacing="16">
 
-          <Border Classes="card">
-            <StackPanel Spacing="12">
-              <TextBlock Text="Выбранный профиль" Classes="h3" />
-              <TextBlock Text="{Binding SelectedProfile.Name, FallbackValue='Профиль не выбран'}" Classes="h2" />
-              <TextBlock Text="{Binding SelectedProfile.InstanceDirectory, FallbackValue='—'}" Classes="caption" />
+          <Border CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="14">
 
-              <Border Classes="divider" />
+              <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Spacing="3">
+                  <TextBlock Text="ВЫБРАННЫЙ ПРОФИЛЬ" Classes="eyebrow" />
+                  <TextBlock Text="{Binding SelectedProfile.Name, FallbackValue='Профиль не выбран'}"
+                             FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextBrush}" />
+                  <TextBlock Text="{Binding SelectedProfile.InstanceDirectory, FallbackValue='—'}"
+                             Classes="caption" FontSize="10.5" TextTrimming="CharacterEllipsis" MaxWidth="520" />
+                </StackPanel>
+                <Border Grid.Column="1" Classes="chip" VerticalAlignment="Top" Padding="11,5"
+                        IsVisible="{Binding SelectedProfile, Converter={x:Static ObjectConverters.IsNotNull}}">
+                  <TextBlock Text="{Binding SelectedProfile.DisplayVersion}" FontSize="11"
+                             Foreground="{StaticResource TextBrush}" />
+                </Border>
+              </Grid>
 
-              <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto" RowSpacing="10">
-                <TextBlock Text="Оперативная память" Classes="body" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{Binding MemoryMb, StringFormat='{}{0} МБ'}" Classes="h3"
-                           HorizontalAlignment="Right" Margin="0,0,10,0" />
-                <Slider Grid.Column="2" Width="260" Minimum="1024" Maximum="{Binding MaxMemoryMb}"
-                        Value="{Binding MemoryMb, Mode=TwoWay}" TickFrequency="512" />
+              <Border Classes="divider" Margin="0" />
 
-                <TextBlock Grid.Row="1" Text="Java" Classes="body" VerticalAlignment="Center" />
-                <ComboBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" HorizontalAlignment="Stretch"
-                          ItemsSource="{Binding JavaRuntimes}" SelectedItem="{Binding SelectedJava, Mode=TwoWay}">
+              <!-- Память -->
+              <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="Оперативная память" Classes="body" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding MemoryMb, StringFormat='{}{0} МБ'}"
+                             FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                </Grid>
+                <Slider Minimum="1024" Maximum="{Binding MaxMemoryMb}" Value="{Binding MemoryMb, Mode=TwoWay}"
+                        TickFrequency="512" />
+                <TextBlock Text="Больше памяти — не всегда быстрее: оставьте 2–4 ГБ системе."
+                           Classes="caption" FontSize="10.5" TextWrapping="Wrap" />
+              </StackPanel>
+
+              <!-- Java -->
+              <StackPanel Spacing="6">
+                <TextBlock Text="Java" Classes="body" />
+                <ComboBox ItemsSource="{Binding JavaRuntimes}" SelectedItem="{Binding SelectedJava, Mode=TwoWay}"
+                          HorizontalAlignment="Stretch">
                   <ComboBox.ItemTemplate>
                     <DataTemplate>
-                      <TextBlock Text="{Binding DisplayName}" />
+                      <TextBlock Text="{Binding DisplayName}" FontSize="12.5" />
                     </DataTemplate>
                   </ComboBox.ItemTemplate>
                 </ComboBox>
-              </Grid>
-
-              <TextBox Classes="ehot" Text="{Binding JvmArgs, Mode=TwoWay}"
-                       PlaceholderText="Дополнительные JVM-аргументы (например -XX:+UseG1GC)" />
-
-              <ComboBox ItemsSource="{Binding MinecraftVersions}" SelectedItem="{Binding NewProfileVersion, Mode=TwoWay}"
-                        PlaceholderText="Версия Minecraft для установки" HorizontalAlignment="Stretch" />
-
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Classes="primary" Command="{Binding SaveSettingsCommand}" Content="Сохранить настройки" />
-                <Button Classes="ghost" Command="{Binding InstallVersionCommand}" Content="Установить" />
-                <Button Classes="ghost" Command="{Binding StopCommand}" Content="Остановить игру" IsVisible="{Binding IsRunning}" />
               </StackPanel>
 
-              <Border Classes="divider" />
+              <!-- Версия для установки -->
+              <StackPanel Spacing="6">
+                <TextBlock Text="Версия Minecraft для установки" Classes="body" />
+                <ComboBox ItemsSource="{Binding MinecraftVersions}" SelectedItem="{Binding NewProfileVersion, Mode=TwoWay}"
+                          PlaceholderText="Выберите версию" HorizontalAlignment="Stretch" />
+              </StackPanel>
+
+              <!-- JVM-аргументы -->
+              <StackPanel Spacing="6">
+                <TextBlock Text="JVM-аргументы" Classes="body" />
+                <TextBox Text="{Binding JvmArgs, Mode=TwoWay}"
+                         PlaceholderText="например -XX:+UseG1GC" />
+              </StackPanel>
+
+              <StackPanel Spacing="8">
+                <Button Classes="primary" Command="{Binding SaveSettingsCommand}" Content="Сохранить настройки"
+                        HorizontalAlignment="Stretch" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                  <Button Classes="ghost" Command="{Binding InstallVersionCommand}" Content="Установить версию"
+                          HorizontalAlignment="Stretch" />
+                  <Button Grid.Column="1" Classes="danger" Command="{Binding StopCommand}" Content="Остановить игру"
+                          IsVisible="{Binding IsRunning}" />
+                </Grid>
+              </StackPanel>
+
+              <Border Classes="divider" Margin="0" />
+
               <StackPanel Spacing="6">
                 <TextBlock Text="{Binding InstallStatusText}" Classes="caption" />
                 <ProgressBar Classes="ehot" Value="{Binding InstallProgress}" Maximum="1" />
@@ -116,16 +182,24 @@
             </StackPanel>
           </Border>
 
-          <Border Classes="card">
-            <StackPanel Spacing="10">
+          <!-- Аккаунт -->
+          <Border CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="8">
               <TextBlock Text="Аккаунт для запуска" Classes="h3" />
-              <ComboBox ItemsSource="{Binding JavaRuntimes}" IsVisible="False" />
-              <TextBlock Text="{Binding SelectedAccount.Username, FallbackValue='Аккаунт не выбран'}" Classes="body" />
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border Width="30" Height="30" CornerRadius="9" Background="{StaticResource AccentGradient}">
+                  <TextBlock Text="{Binding SelectedAccount.Username, FallbackValue='?', Converter={x:Static vm:TextConverters.FirstLetter}}"
+                             FontWeight="Bold" Foreground="White"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <TextBlock Text="{Binding SelectedAccount.Username, FallbackValue='Аккаунт не выбран'}"
+                           Classes="body" VerticalAlignment="Center" />
+              </StackPanel>
               <TextBlock Classes="caption" TextWrapping="Wrap"
                          Text="Локальные профили запускаются в оффлайн-режиме. Для официальных серверов подключите Microsoft-аккаунт в разделе «Аккаунты»." />
             </StackPanel>
           </Border>
-
         </StackPanel>
       </ScrollViewer>
     </Grid>

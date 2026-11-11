@@ -1,56 +1,118 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
-             xmlns:models="using:EHOT.Launcher.Core.Models"
              x:Class="EHOT.Launcher.UI.Views.VersionsView"
              x:DataType="vm:VersionsViewModel">
 
-  <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14">
+  <Grid RowDefinitions="Auto,*" RowSpacing="16">
 
+    <!-- ══════ Заголовок ══════ -->
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-      <StackPanel Spacing="3">
+      <StackPanel Spacing="4">
         <TextBlock Text="Версии" Classes="h1" />
-        <TextBlock Text="{Binding LatestRelease, StringFormat='Актуальный релиз: {0}'}" Classes="body" />
+        <TextBlock Text="{Binding LatestRelease, StringFormat='Актуальный релиз Minecraft: {0}'}"
+                   Classes="body" />
       </StackPanel>
-      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-        <ComboBox ItemsSource="{Binding Loaders}" SelectedItem="{Binding SelectedLoader, Mode=TwoWay}" Width="140" />
-        <ComboBox ItemsSource="{Binding LoaderVersions}" SelectedItem="{Binding SelectedLoaderVersion, Mode=TwoWay}"
-                  Width="160" PlaceholderText="Версия лоадера" />
-        <Button Classes="ghost" Command="{Binding RefreshCommand}" Content="Обновить" />
-      </StackPanel>
+      <Button Grid.Column="1" Classes="ghost" Command="{Binding RefreshCommand}" VerticalAlignment="Center"
+              ToolTip.Tip="Обновить список версий">
+        <StackPanel Orientation="Horizontal" Spacing="8">
+          <Path Data="{StaticResource IconRefresh}" Classes="icon" Width="15" Height="15" />
+          <TextBlock Text="Обновить" FontSize="12.5" VerticalAlignment="Center" />
+        </StackPanel>
+      </Button>
     </Grid>
 
-    <Border Grid.Row="1" Classes="card" Padding="14">
-      <StackPanel Spacing="8">
-        <TextBlock Text="{Binding InstallStage, FallbackValue='Готово к установке'}" Classes="caption" />
-        <ProgressBar Classes="ehot" Value="{Binding InstallProgress}" Maximum="1" />
-      </StackPanel>
-    </Border>
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="16">
 
-    <Grid Grid.Row="2" ColumnDefinitions="*,320" ColumnSpacing="14">
-      <Border Classes="card" Padding="14">
-        <Grid RowDefinitions="Auto,*">
-          <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,10">
-            <TextBlock Text="Релизы" Classes="h3" />
-            <TextBlock Grid.Column="1" Text="{Binding Releases.Count, StringFormat='{}{0} версий'}" Classes="caption" />
+        <!-- ══════ Панель установки ══════ -->
+        <Border CornerRadius="18" Padding="20,18" Background="#141A26"
+                BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
+
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+              <StackPanel Spacing="3">
+                <TextBlock Text="УСТАНОВКА" Classes="eyebrow" />
+                <TextBlock Text="Выберите загрузчик, версию лоадера и стабильный релиз Minecraft"
+                           Classes="body" />
+              </StackPanel>
+            </Grid>
+
+            <Grid Grid.Row="1" ColumnDefinitions="1.1*,1.3*,*" ColumnSpacing="14">
+
+              <StackPanel Grid.Column="0" Spacing="6">
+                <TextBlock Text="Загрузчик" Classes="caption" FontSize="11" />
+                <ComboBox ItemsSource="{Binding Loaders}" SelectedItem="{Binding SelectedLoader, Mode=TwoWay}"
+                          HorizontalAlignment="Stretch" ToolTip.Tip="Загрузчик модов" />
+              </StackPanel>
+
+              <StackPanel Grid.Column="1" Spacing="6">
+                <TextBlock Text="Версия загрузчика" Classes="caption" FontSize="11" />
+                <ComboBox ItemsSource="{Binding LoaderVersions}" SelectedItem="{Binding SelectedLoaderVersion, Mode=TwoWay}"
+                          PlaceholderText="Не выбрана" HorizontalAlignment="Stretch" />
+              </StackPanel>
+
+              <StackPanel Grid.Column="2" Spacing="6">
+                <TextBlock Text="Прогресс" Classes="caption" FontSize="11" />
+                <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                  <ProgressBar Classes="ehot" Height="5" Value="{Binding InstallProgress}" Maximum="1"
+                               VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding InstallProgress, StringFormat='{}{0:P0}'}"
+                             Classes="caption" FontSize="11" VerticalAlignment="Center" MinWidth="34" />
+                </Grid>
+              </StackPanel>
+
+            </Grid>
+
+            <TextBlock Grid.Row="2" Text="{Binding InstallStage, FallbackValue='Готово к установке — выберите версию в списке'}"
+                       Classes="caption" FontSize="11" TextTrimming="CharacterEllipsis" />
           </Grid>
-          <ScrollViewer Grid.Row="1">
-            <ItemsControl ItemsSource="{Binding Releases}">
+        </Border>
+
+        <!-- ══════ Список релизов ══════ -->
+        <Border CornerRadius="18" Padding="20,18" Background="#141A26"
+                BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Grid RowDefinitions="Auto,*">
+
+            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+              <StackPanel Orientation="Horizontal" Spacing="9">
+                <TextBlock Text="Релизы" Classes="h2" VerticalAlignment="Center" />
+                <Border Classes="chip" Padding="8,2" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Releases.Count, StringFormat='{}{0}'}" FontSize="10"
+                             Foreground="{StaticResource TextSecondaryBrush}" />
+                </Border>
+              </StackPanel>
+              <TextBlock Grid.Column="1" Text="стабильные версии" Classes="caption" VerticalAlignment="Center" />
+            </Grid>
+
+            <ItemsControl Grid.Row="1" ItemsSource="{Binding Releases}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:VersionRowViewModel">
-                  <Border BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="0,8">
-                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                      <Border Width="8" Height="8" CornerRadius="4" Background="{StaticResource AccentGradient}"
-                              VerticalAlignment="Center" />
-                      <StackPanel Grid.Column="1" Margin="10,0,0,0">
-                        <TextBlock Text="{Binding Id}" FontWeight="SemiBold" FontSize="13"
-                                   Foreground="{StaticResource TextBrush}" />
-                        <TextBlock Text="{Binding RelativeLabel}" Classes="caption" />
+                  <Border CornerRadius="12" Padding="14,10" Margin="0,0,0,6" Background="#171E2C"
+                          BorderBrush="#1E2739" BorderThickness="1">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="14">
+
+                      <Border Width="34" Height="34" CornerRadius="10" Background="#1B2333" VerticalAlignment="Center">
+                        <TextBlock Text="E" FontFamily="Inter" FontWeight="Bold" FontSize="13"
+                                   Foreground="#A5B4FC" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+
+                      <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                          <TextBlock Text="{Binding Id}" FontWeight="SemiBold" FontSize="13.5"
+                                     Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" />
+                          <Border Classes="chip" Padding="7,2" IsVisible="{Binding IsLatest}" VerticalAlignment="Center"
+                                  Background="#1E2A4A" BorderBrush="#31427A">
+                            <TextBlock Text="актуальная" FontSize="9.5" Foreground="#A5B4FC" />
+                          </Border>
+                        </StackPanel>
+                        <TextBlock Text="{Binding RelativeLabel}" Classes="caption" FontSize="11" />
                       </StackPanel>
-                      <TextBlock Grid.Column="2" Text="{Binding DateLabel}" Classes="caption"
-                                 VerticalAlignment="Center" Margin="0,0,12,0" />
-                      <Button Grid.Column="3" Classes="ghost" Padding="10,5" FontSize="11"
-                              Content="Установить"
+
+                      <TextBlock Grid.Column="2" Text="{Binding DateLabel}" Classes="caption" FontSize="11.5"
+                                 VerticalAlignment="Center" MinWidth="96" TextAlignment="Right" />
+
+                      <Button Grid.Column="3" Classes="pill" Content="Установить" VerticalAlignment="Center"
                               Command="{Binding $parent[ItemsControl].((vm:VersionsViewModel)DataContext).InstallCommand}"
                               CommandParameter="{Binding}" />
                     </Grid>
@@ -58,22 +120,58 @@
                 </DataTemplate>
               </ItemsControl.ItemTemplate>
             </ItemsControl>
-          </ScrollViewer>
-        </Grid>
-      </Border>
+          </Grid>
+        </Border>
 
-      <Border Grid.Column="1" Classes="card" Padding="14">
-        <StackPanel Spacing="12">
-          <TextBlock Text="Снапшоты" Classes="h3" />
-          <TextBlock Text="{Binding LatestSnapshot}" Classes="h2" Foreground="{StaticResource AccentBlueBrush}" />
-          <TextBlock Classes="caption" TextWrapping="Wrap"
-                     Text="Снапшоты нестабильны и могут ломать мир. Используйте отдельный профиль." />
-          <Border Classes="divider" />
-          <TextBlock Text="Как это работает" Classes="h3" />
-          <TextBlock Classes="caption" TextWrapping="Wrap"
-                     Text="Лаунчер скачивает client.jar, библиотеки и ассеты напрямую из официальных серверов Mojang и проверяет SHA-1 каждого файла. Fabric и Quilt устанавливаются из официальных метаданных, Forge и NeoForge — через их официальный установщик." />
-        </StackPanel>
-      </Border>
-    </Grid>
+        <!-- ══════ Снапшоты + как проходит установка ══════ -->
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+
+          <Border CornerRadius="18" Padding="20,18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="10">
+              <TextBlock Text="СНАПШОТЫ" Classes="eyebrow" />
+              <TextBlock Text="{Binding LatestSnapshot}" FontSize="24" FontWeight="Bold"
+                         Foreground="{StaticResource AccentBlueBrush}" />
+              <TextBlock Classes="caption" TextWrapping="Wrap"
+                         Text="Нестабильные сборки: могут ломать мир и моды. Ставьте в отдельный профиль." />
+            </StackPanel>
+          </Border>
+
+          <Border Grid.Column="1" CornerRadius="18" Padding="20,18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="10">
+              <TextBlock Text="КАК ПРОХОДИТ УСТАНОВКА" Classes="eyebrow" />
+              <StackPanel Spacing="9">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
+                  <Border Width="18" Height="18" CornerRadius="6" Background="#1E2740" VerticalAlignment="Top">
+                    <TextBlock Text="1" FontSize="10" FontWeight="Bold" Foreground="#A5B4FC"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                  <TextBlock Grid.Column="1" Text="client.jar, библиотеки и ассеты — с серверов Mojang"
+                             Classes="caption" TextWrapping="Wrap" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
+                  <Border Width="18" Height="18" CornerRadius="6" Background="#1E2740" VerticalAlignment="Top">
+                    <TextBlock Text="2" FontSize="10" FontWeight="Bold" Foreground="#A5B4FC"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                  <TextBlock Grid.Column="1" Text="проверка SHA-1 каждого файла" Classes="caption" TextWrapping="Wrap" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
+                  <Border Width="18" Height="18" CornerRadius="6" Background="#1E2740" VerticalAlignment="Top">
+                    <TextBlock Text="3" FontSize="10" FontWeight="Bold" Foreground="#A5B4FC"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                  <TextBlock Grid.Column="1"
+                             Text="Fabric и Quilt — из официальных метаданных, Forge и NeoForge — их установщиком"
+                             Classes="caption" TextWrapping="Wrap" />
+                </Grid>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+        </Grid>
+
+      </StackPanel>
+    </ScrollViewer>
   </Grid>
 </UserControl>

@@ -5,93 +5,137 @@
              x:Class="EHOT.Launcher.UI.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
 
-  <ScrollViewer VerticalScrollBarVisibility="Auto">
-    <StackPanel Spacing="14">
+  <Grid RowDefinitions="Auto,*" RowSpacing="16">
 
-      <Grid ColumnDefinitions="*,Auto">
-        <StackPanel Spacing="3">
-          <TextBlock Text="Настройки" Classes="h1" />
-          <TextBlock Text="{Binding PlatformSummary}" Classes="body" />
-        </StackPanel>
-        <Button Grid.Column="1" Classes="primary" Content="Сохранить" Command="{Binding SaveCommand}"
-                VerticalAlignment="Center" />
-      </Grid>
+    <!-- ══════ Заголовок ══════ -->
+    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Настройки" Classes="h1" />
+        <TextBlock Text="{Binding PlatformSummary}" Classes="body" />
+      </StackPanel>
+      <Button Grid.Column="1" Classes="primary" Content="Сохранить изменения" Command="{Binding SaveCommand}"
+              VerticalAlignment="Center" />
+    </Grid>
 
-      <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
 
-        <StackPanel Spacing="12">
-          <Border Classes="card" Padding="16">
+        <!-- ══════ Левая колонка ══════ -->
+        <StackPanel Spacing="16">
+
+          <Border CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
-              <TextBlock Text="Файлы" Classes="h3" />
-              <TextBlock Text="Каталог Minecraft" Classes="caption" />
-              <TextBox Classes="ehot" Text="{Binding MinecraftDirectory, Mode=TwoWay}" />
-              <TextBlock Text="Каталог загрузок" Classes="caption" />
-              <TextBox Classes="ehot" Text="{Binding DownloadsDirectory, Mode=TwoWay}" />
-              <TextBlock Text="{Binding AppDataPath, StringFormat='Данные лаунчера: {0}'}" Classes="caption" />
+              <TextBlock Text="ФАЙЛЫ" Classes="eyebrow" />
+
+              <StackPanel Spacing="5">
+                <TextBlock Text="Каталог Minecraft" Classes="caption" FontSize="11" />
+                <TextBox Text="{Binding MinecraftDirectory, Mode=TwoWay}" />
+              </StackPanel>
+
+              <StackPanel Spacing="5">
+                <TextBlock Text="Каталог загрузок" Classes="caption" FontSize="11" />
+                <TextBox Text="{Binding DownloadsDirectory, Mode=TwoWay}" />
+              </StackPanel>
+
+              <Border CornerRadius="10" Padding="11" Background="#101724">
+                <TextBlock Text="{Binding AppDataPath, StringFormat='Данные лаунчера: {0}'}"
+                           Classes="caption" FontSize="10.5" TextWrapping="Wrap" />
+              </Border>
             </StackPanel>
           </Border>
 
-          <Border Classes="card" Padding="16">
-            <StackPanel Spacing="10">
-              <TextBlock Text="Производительность" Classes="h3" />
-              <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="Максимум RAM" Classes="body" />
-                <TextBlock Grid.Column="1" Text="{Binding MaxMemoryMb, StringFormat='{}{0} МБ'}" Classes="h3" />
-              </Grid>
-              <Slider Minimum="1024" Maximum="32768" TickFrequency="512" Value="{Binding MaxMemoryMb, Mode=TwoWay}" />
-              <Grid ColumnDefinitions="*,Auto">
-                <TextBlock Text="Параллельных загрузок" Classes="body" />
-                <TextBlock Grid.Column="1" Text="{Binding MaxParallelDownloads}" Classes="h3" />
-              </Grid>
-              <Slider Minimum="1" Maximum="8" TickFrequency="1" Value="{Binding MaxParallelDownloads, Mode=TwoWay}" />
-              <CheckBox Content="Уменьшить анимации" IsChecked="{Binding ReduceAnimations, Mode=TwoWay}" />
+          <Border CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="14">
+              <TextBlock Text="ПРОИЗВОДИТЕЛЬНОСТЬ" Classes="eyebrow" />
+
+              <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="Максимум RAM" Classes="body" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding MaxMemoryMb, StringFormat='{}{0} МБ'}"
+                             FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                </Grid>
+                <Slider Minimum="1024" Maximum="32768" TickFrequency="512"
+                        Value="{Binding MaxMemoryMb, Mode=TwoWay}" />
+              </StackPanel>
+
+              <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="Параллельных загрузок" Classes="body" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding MaxParallelDownloads}"
+                             FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                </Grid>
+                <Slider Minimum="1" Maximum="8" TickFrequency="1"
+                        Value="{Binding MaxParallelDownloads, Mode=TwoWay}" />
+              </StackPanel>
+
+              <CheckBox IsChecked="{Binding ReduceAnimations, Mode=TwoWay}"><TextBlock Text="Уменьшить анимации" TextWrapping="Wrap" /></CheckBox>
             </StackPanel>
           </Border>
 
-          <Border Classes="card" Padding="16">
+          <Border CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
-              <TextBlock Text="Java" Classes="h3" />
-              <ItemsControl ItemsSource="{Binding JavaRuntimes}" MaxHeight="140">
+              <TextBlock Text="JAVA" Classes="eyebrow" />
+              <ItemsControl ItemsSource="{Binding JavaRuntimes}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
-                    <TextBlock Text="{Binding DisplayName}" Classes="caption" Margin="0,2" />
+                    <Border CornerRadius="9" Padding="10,7" Margin="0,0,0,6" Background="#171E2C">
+                      <TextBlock Text="{Binding DisplayName}" FontSize="11.5"
+                                 Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                    </Border>
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
               <Button Classes="ghost" Content="Сканировать заново" Command="{Binding RescanJavaCommand}"
-                      HorizontalAlignment="Left" />
+                      HorizontalAlignment="Stretch" />
             </StackPanel>
           </Border>
         </StackPanel>
 
-        <StackPanel Grid.Column="1" Spacing="12">
-          <Border Classes="card" Padding="16">
+        <!-- ══════ Правая колонка ══════ -->
+        <StackPanel Grid.Column="1" Spacing="16">
+
+          <Border CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
-              <TextBlock Text="Сеть и Game Network" Classes="h3" />
-              <TextBlock Text="Адрес контрольного сервера" Classes="caption" />
-              <TextBox Classes="ehot" Text="{Binding ControlPlaneUrl, Mode=TwoWay}"
-                       PlaceholderText="https://api.ehot.example" />
-              <CheckBox Content="Предпочитать прямое соединение" IsChecked="{Binding PreferDirect, Mode=TwoWay}" />
-              <CheckBox Content="Разрешить relay как резерв" IsChecked="{Binding AllowRelay, Mode=TwoWay}" />
-              <TextBlock Classes="caption" TextWrapping="Wrap"
-                         Text="Без настроенного сервера комнаты недоступны — лаунчер сообщит об этом, а не создаст фиктивную комнату." />
+              <TextBlock Text="СЕТЬ И GAME NETWORK" Classes="eyebrow" />
+
+              <StackPanel Spacing="5">
+                <TextBlock Text="Адрес контрольного сервера" Classes="caption" FontSize="11" />
+                <TextBox Text="{Binding ControlPlaneUrl, Mode=TwoWay}"
+                         PlaceholderText="https://api.ehot.example" />
+              </StackPanel>
+
+              <CheckBox IsChecked="{Binding PreferDirect, Mode=TwoWay}"><TextBlock Text="Предпочитать прямое соединение" TextWrapping="Wrap" /></CheckBox>
+              <CheckBox IsChecked="{Binding AllowRelay, Mode=TwoWay}"><TextBlock Text="Разрешить relay как резерв" TextWrapping="Wrap" /></CheckBox>
+
+              <Border CornerRadius="10" Padding="11" Background="#101724">
+                <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
+                           Text="Без настроенного сервера комнаты недоступны — лаунчер сообщит об этом, а не создаст фиктивную комнату." />
+              </Border>
             </StackPanel>
           </Border>
 
-          <Border Classes="card" Padding="16">
+          <Border CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
-              <TextBlock Text="Поведение" Classes="h3" />
-              <CheckBox Content="Автоматически обновлять контент" IsChecked="{Binding AutoUpdateContent, Mode=TwoWay}" />
-              <CheckBox Content="Проверять обновления лаунчера при запуске" IsChecked="{Binding CheckLauncherUpdates, Mode=TwoWay}" />
-              <TextBlock Classes="caption" TextWrapping="Wrap"
-                         Text="Обновление никогда не ставится без вашего нажатия: лаунчер только показывает, что вышла новая версия." />
-              <CheckBox Content="Системные уведомления" IsChecked="{Binding NotificationsEnabled, Mode=TwoWay}" />
+              <TextBlock Text="ПОВЕДЕНИЕ" Classes="eyebrow" />
+              <CheckBox IsChecked="{Binding AutoUpdateContent, Mode=TwoWay}"><TextBlock Text="Автоматически обновлять контент" TextWrapping="Wrap" /></CheckBox>
+              <CheckBox IsChecked="{Binding CheckLauncherUpdates, Mode=TwoWay}"><TextBlock Text="Проверять обновления лаунчера при запуске" TextWrapping="Wrap" /></CheckBox>
+              <Border CornerRadius="10" Padding="11" Background="#101724">
+                <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
+                           Text="Обновление никогда не ставится без вашего нажатия: лаунчер только показывает, что вышла новая версия." />
+              </Border>
+              <CheckBox IsChecked="{Binding NotificationsEnabled, Mode=TwoWay}"><TextBlock Text="Системные уведомления" TextWrapping="Wrap" /></CheckBox>
             </StackPanel>
           </Border>
 
-          <Border Classes="card" Padding="16">
+          <Border CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
-              <TextBlock Text="Диагностика" Classes="h3" />
+              <TextBlock Text="ДИАГНОСТИКА" Classes="eyebrow" />
               <TextBlock Text="{Binding DiagnosticsSummary}" Classes="caption" TextWrapping="Wrap" />
               <StackPanel Orientation="Horizontal" Spacing="8">
                 <Button Classes="ghost" Content="Открыть логи" Command="{Binding OpenLogsCommand}" />
@@ -100,18 +144,19 @@
             </StackPanel>
           </Border>
 
-          <Border Classes="card" Padding="16">
-            <StackPanel Spacing="6">
-              <TextBlock Text="Возможности на этой системе" Classes="h3" />
+          <Border CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="8">
+              <TextBlock Text="ВОЗМОЖНОСТИ СИСТЕМЫ" Classes="eyebrow" />
               <ItemsControl ItemsSource="{Binding Capabilities}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="core:Capability">
-                    <Grid ColumnDefinitions="Auto,*" Margin="0,3">
+                    <Grid ColumnDefinitions="Auto,*" Margin="0,4">
                       <Ellipse Width="6" Height="6" Fill="{Binding State, Converter={x:Static vm:NetConverters.CapabilityBrush}}"
-                               VerticalAlignment="Center" />
-                      <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                               VerticalAlignment="Top" Margin="0,5,0,0" />
+                      <StackPanel Grid.Column="1" Margin="9,0,0,0" Spacing="1">
                         <TextBlock Text="{Binding Title}" FontSize="11.5" Foreground="{StaticResource TextBrush}" />
-                        <TextBlock Text="{Binding Detail}" Classes="caption" TextWrapping="Wrap"
+                        <TextBlock Text="{Binding Detail}" Classes="caption" FontSize="10.5" TextWrapping="Wrap"
                                    IsVisible="{Binding Detail, Converter={x:Static ObjectConverters.IsNotNull}}" />
                       </StackPanel>
                     </Grid>
@@ -122,6 +167,6 @@
           </Border>
         </StackPanel>
       </Grid>
-    </StackPanel>
-  </ScrollViewer>
+    </ScrollViewer>
+  </Grid>
 </UserControl>

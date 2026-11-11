@@ -24,6 +24,14 @@ public static class NetConverters
             _ => Red
         });
 
+    public static IValueConverter CapabilityStateLabel { get; } = new FuncValueConverter<CapabilityState, string>(
+        state => state switch
+        {
+            CapabilityState.Available => "доступно",
+            CapabilityState.Degraded => "с ограничениями",
+            _ => "недоступно"
+        });
+
     public static IValueConverter TunnelLabel { get; } = new FuncValueConverter<bool, string>(
         available => available ? "Туннель доступен" : "Туннель недоступен — используется relay/прямое соединение");
 

@@ -39,6 +39,9 @@ public sealed partial class VersionsViewModel : ViewModelBase
 
     public ObservableCollection<VersionRowViewModel> Snapshots { get; } = [];
 
+    [ObservableProperty]
+    private VersionRowViewModel? _latestReleaseRow;
+
     public ObservableCollection<LoaderVersionOption> LoaderVersions { get; } = [];
 
     public LoaderKind[] Loaders { get; } = [LoaderKind.Vanilla, LoaderKind.Fabric, LoaderKind.NeoForge, LoaderKind.Forge, LoaderKind.Quilt];
@@ -105,6 +108,12 @@ public sealed partial class VersionsViewModel : ViewModelBase
 
             LatestRelease = manifest.Value.Latest?.Release ?? "—";
             LatestSnapshot = manifest.Value.Latest?.Snapshot ?? "—";
+
+            LatestReleaseRow = Releases.FirstOrDefault();
+            if (LatestReleaseRow is not null)
+            {
+                LatestReleaseRow.IsLatest = true;
+            }
         }
         finally
         {
@@ -236,7 +245,7 @@ public sealed class VersionRowViewModel(VersionSummary summary)
         }
     }
 
-    public bool IsLatest { get; init; }
+    public bool IsLatest { get; set; }
 
     public VersionSummary Summary => summary;
 }

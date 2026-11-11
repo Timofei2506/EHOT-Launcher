@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Globalization;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EHOT.Launcher.Content.Install;
@@ -65,7 +66,8 @@ public partial class ContentBrowseViewModel : ViewModelBase, INavigationAware
 
     public string Subtitle { get; }
 
-    public ObservableCollection<ContentProject> Items { get; } = [];
+    /// <summary>Результаты поиска в виде готовых карточек (см. <see cref="ContentCard"/>).</summary>
+    public ObservableCollection<ContentCard> Items { get; } = [];
 
     public ObservableCollection<string> SortOptions { get; } = ["По релевантности", "По загрузкам", "По подпискам", "Новые", "Обновлённые"];
 
@@ -165,7 +167,7 @@ public partial class ContentBrowseViewModel : ViewModelBase, INavigationAware
 
             foreach (var item in page.Items)
             {
-                Items.Add(item);
+                Items.Add(new ContentCard(item));
             }
 
             TotalHits = page.TotalHits;
@@ -319,6 +321,47 @@ public partial class ContentBrowseViewModel : ViewModelBase, INavigationAware
             InstalledItems.Add(item);
         }
     }
+}
+
+/// <summary>
+/// Карточка каталога для разметки: исходный проект плюс готовые к показу поля
+/// (число загрузок, инициал, ссылка на иконку). Логика не дублируется в XAML.
+/// </summary>
+public sealed class ContentCard(ContentProject project)
+{
+    public ContentProject Project { get; } = project;
+
+    public string Title => Project.Title;
+
+    public string Author => string.IsNullOrWhiteSpace(Project.Author) ? "автор не указан" : Project.Author!;
+
+    public string Description => Project.Description;
+
+    public string? IconUrl => Project.IconUrl;
+
+    public bool HasIcon => !string.IsNullOrWhiteSpace(Project.IconUrl);
+
+    public string Initial => string.IsNullOrWhiteSpace(Project.Title) ? "?" : Project.Title[..1].ToUpperInvariant();
+
+    public string DownloadsLabel => FormatCount(Project.Downloads);
+
+    public string? CategoriesLabel => Project.Categories.Count > 0
+        ? string.Join(" · ", Project.Categories.Take(2))
+        : null;
+
+    public string? UpdatedLabel => Project.UpdatedAt is { } updated
+        ? "обновлён " + updated.ToLocalTime().ToString("dd.MM.yyyy", CultureInfo.InvariantCulture)
+        : null;
+
+    public bool HasUpdated => Project.UpdatedAt is not null;
+
+    /// <summary>12 345 678 → «12,3 млн»; 1 234 → «1,2 тыс.»</summary>
+    internal static string FormatCount(long value) => value switch
+    {
+        >= 1_000_000 => $"{(value / 1_000_000.0).ToString("0.#", CultureInfo.InvariantCulture)} млн",
+        >= 1_000 => $"{(value / 1_000.0).ToString("0.#", CultureInfo.InvariantCulture)} тыс.",
+        _ => value.ToString(CultureInfo.InvariantCulture)
+    };
 }
 
 public sealed class ModsViewModel : ContentBrowseViewModel

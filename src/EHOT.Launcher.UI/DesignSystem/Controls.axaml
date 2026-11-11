@@ -96,9 +96,35 @@
         </Style>
       </ControlTheme>
 
-      <!-- Поле ввода: внешний вид наследует встроенный шаблон Fluent (Avalonia 12),
-           переопределяются только палитра и геометрия. -->
+      <!-- Поле ввода: наследуем шаблон Fluent (в Avalonia 12 внутренний презентер
+           текста не публичный), но перекрашиваем фон, рамку и фокус через
+           ControlTheme Fluent — это официальные ключи темы. -->
       <ControlTheme x:Key="EhotTextBox" TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+        <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="12,9" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="MinHeight" Value="38" />
+        <Setter Property="CaretBrush" Value="{StaticResource AccentBlueBrush}" />
+        <Setter Property="SelectionBrush" Value="#5538BDF8" />
+        <Setter Property="SelectionForegroundBrush" Value="{StaticResource TextBrush}" />
+        <Setter Property="PlaceholderForeground" Value="#7C8AA0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Style Selector="^:pointerover">
+          <Setter Property="BorderBrush" Value="#3A4360" />
+        </Style>
+        <Style Selector="^:focus /template/ Border#PART_BorderElement">
+          <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}" />
+          <Setter Property="BorderThickness" Value="1" />
+        </Style>
+      </ControlTheme>
+
+      <!-- Комбобокс: тот же вид, что у поля ввода, но шаблон — штатный Fluent
+           (свой шаблон требует внутренний popup-контрол, который не публичный). -->
+      <ControlTheme x:Key="EhotComboBox" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
         <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
@@ -106,10 +132,60 @@
         <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Padding" Value="12,8" />
         <Setter Property="FontSize" Value="13" />
-        <Setter Property="CaretBrush" Value="{StaticResource AccentBlueBrush}" />
-        <Setter Property="SelectionBrush" Value="#5538BDF8" />
-        <Setter Property="PlaceholderForeground" Value="{StaticResource TextSecondaryBrush}" />
         <Setter Property="MinHeight" Value="38" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Style Selector="^:pointerover">
+          <Setter Property="BorderBrush" Value="#3A4360" />
+        </Style>
+        <Style Selector="^:focus /template/ Border#Background">
+          <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}" />
+        </Style>
+      </ControlTheme>
+
+      <!-- Чекбокс: квадрат 18×18 со скруглением 6, галочка акцентным цветом. -->
+      <ControlTheme x:Key="EhotCheckBox" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="FontSize" Value="12.5" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+          <ControlTemplate>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" Background="Transparent">
+              <Border Name="Box" Width="18" Height="18" CornerRadius="6"
+                      Background="{StaticResource SecondaryBrush}"
+                      BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                      VerticalAlignment="Center">
+                <Path Name="Check" Data="{StaticResource IconCheck}"
+                      Stroke="#FFFFFF" StrokeThickness="2" Fill="Transparent"
+                      Width="11" Height="11" Stretch="Uniform"
+                      HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="False" />
+              </Border>
+              <ContentPresenter Name="PART_ContentPresenter" Grid.Column="1"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                VerticalAlignment="Center" />
+            </Grid>
+          </ControlTemplate>
+        </Setter>
+        <Style Selector="^:pointerover /template/ Border#Box">
+          <Setter Property="BorderBrush" Value="#3A4360" />
+        </Style>
+        <Style Selector="^:checked /template/ Border#Box">
+          <Setter Property="Background" Value="{StaticResource AccentGradientHorizontal}" />
+          <Setter Property="BorderBrush" Value="#00000000" />
+        </Style>
+        <Style Selector="^:checked /template/ Path#Check">
+          <Setter Property="IsVisible" Value="True" />
+        </Style>
+      </ControlTheme>
+
+      <!-- Кнопка-«таблетка»: для строк списков (Установить, Открыть…). -->
+      <ControlTheme x:Key="EhotPillButton" TargetType="Button" BasedOn="{StaticResource EhotButton}">
+        <Setter Property="Background" Value="#1A2033" />
+        <Setter Property="BorderBrush" Value="#2A3350" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Padding" Value="14,6" />
+        <Setter Property="CornerRadius" Value="999" />
+        <Setter Property="FontSize" Value="12" />
       </ControlTheme>
 
       <ControlTheme x:Key="NavItemTheme" TargetType="RadioButton">
@@ -154,17 +230,50 @@
   </Styles.Resources>
 
 
-  <!-- Кнопка: базовая -->
+  <!-- ══════════════ Кнопки: классовые варианты ══════════════
+       В разметке используются классы (.primary, .ghost, .danger, .icon),
+       поэтому варианты заданы стилями, а не только ControlTheme по ключу. -->
 
-  <!-- Кнопка: акцентная -->
+  <Style Selector="Button">
+    <Setter Property="Theme" Value="{StaticResource EhotButton}" />
+  </Style>
 
-  <!-- Кнопка: призрачная -->
+  <Style Selector="Button.primary">
+    <Setter Property="Theme" Value="{StaticResource EhotPrimaryButton}" />
+  </Style>
 
-  <!-- Кнопка: опасная -->
+  <Style Selector="Button.ghost">
+    <Setter Property="Theme" Value="{StaticResource EhotGhostButton}" />
+  </Style>
 
-  <!-- Кнопка-иконка -->
+  <Style Selector="Button.danger">
+    <Setter Property="Theme" Value="{StaticResource EhotDangerButton}" />
+  </Style>
 
-  <!-- Поле ввода -->
+  <Style Selector="Button.icon">
+    <Setter Property="Theme" Value="{StaticResource EhotIconButton}" />
+  </Style>
+
+  <!-- Кнопка «таблетка» для второстепенных действий в списках -->
+  <Style Selector="Button.pill">
+    <Setter Property="Theme" Value="{StaticResource EhotPillButton}" />
+  </Style>
+
+  <!-- ══════════════ Поля ввода ══════════════
+       Fluent рисует фон/рамку вокруг ContentPresenter (Border#PART_BorderElement),
+       а не на самом TextBox — поэтому перекрашиваем именно шаблон. -->
+
+  <Style Selector="TextBox">
+    <Setter Property="Theme" Value="{StaticResource EhotTextBox}" />
+  </Style>
+
+  <Style Selector="ComboBox">
+    <Setter Property="Theme" Value="{StaticResource EhotComboBox}" />
+  </Style>
+
+  <Style Selector="CheckBox">
+    <Setter Property="Theme" Value="{StaticResource EhotCheckBox}" />
+  </Style>
 
   <!-- Карточка -->
   <Style Selector="Border.card">

@@ -14,5 +14,5 @@ public static class UiTestAppBuilder
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<EHOT.Launcher.UI.App>()
             .UseSkia()
-            .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = true });
+            .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false });
 }

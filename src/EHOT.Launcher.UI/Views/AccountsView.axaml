@@ -5,102 +5,161 @@
              x:Class="EHOT.Launcher.UI.Views.AccountsView"
              x:DataType="vm:AccountsViewModel">
 
-  <ScrollViewer VerticalScrollBarVisibility="Auto">
-    <StackPanel Spacing="14">
+  <Grid RowDefinitions="Auto,*" RowSpacing="16">
 
-      <StackPanel Spacing="3">
-        <TextBlock Text="Аккаунты" Classes="h1" />
-        <TextBlock Text="Лицензионный вход Microsoft или локальный оффлайн-профиль" Classes="body" />
-      </StackPanel>
-
-      <Grid ColumnDefinitions="*,*,*" ColumnSpacing="14">
-
-        <!-- Microsoft -->
-        <Border Classes="card" Padding="16">
-          <StackPanel Spacing="10">
-            <TextBlock Text="Microsoft Account" Classes="h3" />
-            <TextBlock Classes="caption" TextWrapping="Wrap"
-                       Text="Официальный вход через устройство-код: лаунчер не запрашивает пароль и не хранит его." />
-            <Button Classes="primary" HorizontalAlignment="Stretch" Content="Войти через Microsoft"
-                    Command="{Binding SignInMicrosoftCommand}" IsEnabled="{Binding MicrosoftConfigured}" />
-            <TextBlock Text="{Binding LoginStatus}" Classes="caption" TextWrapping="Wrap"
-                       Foreground="{StaticResource AccentBlueBrush}" />
-            <Border Padding="10" CornerRadius="10" Background="#1AFBBF24" IsVisible="{Binding !MicrosoftConfigured}">
-              <TextBlock Text="{Binding MicrosoftHint}" FontSize="11" TextWrapping="Wrap"
-                         Foreground="{StaticResource WarningBrush}" />
-            </Border>
-            <StackPanel Orientation="Horizontal" Spacing="8" IsVisible="{Binding IsLoggingIn}">
-              <TextBlock Text="{Binding DeviceCode}" Classes="h2" Foreground="{StaticResource AccentBlueBrush}" />
-              <TextBlock Text="{Binding DeviceVerificationUri}" Classes="caption" VerticalAlignment="Center" />
-            </StackPanel>
-          </StackPanel>
-        </Border>
-
-        <!-- Локальный профиль -->
-        <Border Classes="card" Padding="16">
-          <StackPanel Spacing="10">
-            <TextBlock Text="Локальный профиль" Classes="h3" />
-            <TextBlock Classes="caption" TextWrapping="Wrap"
-                       Text="Не является лицензией. Официальные серверы недоступны, скин не загружается на Mojang, но подходит для LAN и своего сервера с offline-mode." />
-            <TextBox Classes="ehot" Text="{Binding NewUsername, Mode=TwoWay}" PlaceholderText="Ник (3–16 символов)" />
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <Button Classes="ghost" Content="Проверить ник" Command="{Binding CheckUsernameCommand}" />
-              <Button Classes="primary" Content="Создать" Command="{Binding CreateLocalCommand}" />
-            </StackPanel>
-            <TextBlock Text="{Binding LookupResult}" Classes="caption" TextWrapping="Wrap" />
-          </StackPanel>
-        </Border>
-
-        <!-- Скин -->
-        <Border Classes="card" Padding="16">
-          <StackPanel Spacing="10">
-            <TextBlock Text="Скин" Classes="h3" />
-            <TextBlock Classes="caption" TextWrapping="Wrap"
-                       Text="PNG 64×64 или 64×32. Файл проверяется по сигнатуре и размеру, хранится локально." />
-            <TextBox Classes="ehot" Text="{Binding SkinPath, Mode=TwoWay}" PlaceholderText="/путь/к/skin.png" />
-            <Button Classes="ghost" Content="Применить скин" Command="{Binding ApplySkinCommand}" />
-          </StackPanel>
-        </Border>
-      </Grid>
-
-      <Border Classes="card" Padding="14">
-        <Grid RowDefinitions="Auto,*">
-          <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-            <TextBlock Text="Сохранённые профили" Classes="h3" />
-            <TextBlock Grid.Column="1" Text="{Binding Accounts.Count, StringFormat='{}{0}'}" Classes="caption" />
-          </Grid>
-          <ItemsControl Grid.Row="1" ItemsSource="{Binding Accounts}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="models:AccountInfo">
-                <Border BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="0,9">
-                  <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto">
-                    <Border Width="32" Height="32" CornerRadius="9" Background="{StaticResource AccentGradient}">
-                      <TextBlock Text="{Binding Username, Converter={x:Static vm:TextConverters.FirstLetter}}"
-                                 FontWeight="Bold" Foreground="White"
-                                 HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                      <TextBlock Text="{Binding Username}" FontWeight="SemiBold" FontSize="13"
-                                 Foreground="{StaticResource TextBrush}" />
-                      <TextBlock Text="{Binding DisplayKind}" Classes="caption" />
-                    </StackPanel>
-                    <Border Grid.Column="2" Classes="chip" VerticalAlignment="Center" Margin="0,0,8,0">
-                      <TextBlock Text="{Binding IsVerified, Converter={x:Static vm:NetConverters.VerifiedLabel}}"
-                                 FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
-                    </Border>
-                    <Button Grid.Column="3" Classes="ghost" Padding="10,4" FontSize="11" Content="Использовать"
-                            Command="{Binding $parent[ItemsControl].((vm:AccountsViewModel)DataContext).UseAccountCommand}"
-                            CommandParameter="{Binding}" />
-                    <Button Grid.Column="4" Classes="danger" Padding="10,4" FontSize="11" Content="Удалить"
-                            Command="{Binding $parent[ItemsControl].((vm:AccountsViewModel)DataContext).DeleteAccountCommand}"
-                            CommandParameter="{Binding}" />
-                  </Grid>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </Grid>
-      </Border>
+    <StackPanel Grid.Row="0" Spacing="4">
+      <TextBlock Text="Аккаунты" Classes="h1" />
+      <TextBlock Text="Лицензионный вход Microsoft или локальный оффлайн-профиль" Classes="body" />
     </StackPanel>
-  </ScrollViewer>
+
+    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="16">
+
+        <!-- ══════ Способ входа ══════ -->
+        <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+
+          <!-- Microsoft -->
+          <Border CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="12">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border Width="32" Height="32" CornerRadius="10" Background="#1E2740">
+                  <TextBlock Text="M" FontWeight="Bold" FontSize="14" Foreground="#A5B4FC"
+                             HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                  <TextBlock Text="Microsoft" Classes="h3" />
+                  <TextBlock Text="лицензионный вход" Classes="caption" FontSize="10.5" />
+                </StackPanel>
+              </StackPanel>
+
+              <TextBlock Classes="caption" TextWrapping="Wrap"
+                         Text="Вход по коду устройства, как в официальном лаунчере: пароль вводится на сайте Microsoft, лаунчер его не получает и не хранит." />
+
+              <Button Classes="primary" HorizontalAlignment="Stretch" Content="Войти через Microsoft"
+                      Command="{Binding SignInMicrosoftCommand}" IsEnabled="{Binding MicrosoftConfigured}" />
+
+              <TextBlock Text="{Binding LoginStatus}" Classes="caption" TextWrapping="Wrap"
+                         Foreground="{StaticResource AccentBlueBrush}" />
+
+              <Border Padding="12" CornerRadius="10" Background="#1AFBBF24" IsVisible="{Binding !MicrosoftConfigured}">
+                <StackPanel Orientation="Horizontal" Spacing="9">
+                  <Path Data="{StaticResource IconWarning}" Classes="icon" Stroke="{StaticResource WarningBrush}"
+                        Width="14" Height="14" VerticalAlignment="Top" />
+                  <TextBlock Text="{Binding MicrosoftHint}" FontSize="11" TextWrapping="Wrap"
+                             Foreground="{StaticResource WarningBrush}" MaxWidth="330" />
+                </StackPanel>
+              </Border>
+
+              <Border Padding="12" CornerRadius="10" Background="#1A38BDF8" IsVisible="{Binding IsLoggingIn}">
+                <StackPanel Spacing="6">
+                  <TextBlock Text="Код для входа" Classes="caption" FontSize="10.5" />
+                  <TextBlock Text="{Binding DeviceCode}" FontSize="22" FontWeight="Bold"
+                             Foreground="{StaticResource AccentBlueBrush}" LetterSpacing="1.6" />
+                  <TextBlock Text="{Binding DeviceVerificationUri}" Classes="caption" TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+            </StackPanel>
+          </Border>
+
+          <!-- Локальный профиль -->
+          <Border Grid.Column="1" CornerRadius="16" Padding="18" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="12">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <Border Width="32" Height="32" CornerRadius="10" Background="#1E2740">
+                  <Path Data="{StaticResource IconUser}" Classes="icon" Width="16" Height="16"
+                        HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                  <TextBlock Text="Локальный профиль" Classes="h3" />
+                  <TextBlock Text="без лицензии" Classes="caption" FontSize="10.5" />
+                </StackPanel>
+              </StackPanel>
+
+              <TextBlock Classes="caption" TextWrapping="Wrap"
+                         Text="Это не лицензия: официальные серверы недоступны, скин не попадает на Mojang. Подходит для LAN и своего сервера с offline-mode." />
+
+              <StackPanel Spacing="4">
+                <TextBlock Text="Ник" Classes="caption" FontSize="10.5" />
+                <TextBox Text="{Binding NewUsername, Mode=TwoWay}" PlaceholderText="3–16 символов" />
+              </StackPanel>
+
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Classes="ghost" Content="Проверить ник" Command="{Binding CheckUsernameCommand}" />
+                <Button Classes="primary" Content="Создать" Command="{Binding CreateLocalCommand}" />
+              </StackPanel>
+
+              <TextBlock Text="{Binding LookupResult}" Classes="caption" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+        </Grid>
+
+        <!-- ══════ Сохранённые профили ══════ -->
+        <Border CornerRadius="16" Padding="18" Background="#141A26"
+                BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <StackPanel Spacing="10">
+            <Grid ColumnDefinitions="*,Auto">
+              <TextBlock Text="Сохранённые профили" Classes="h3" />
+              <TextBlock Grid.Column="1" Text="{Binding Accounts.Count, StringFormat='{}{0} шт.'}"
+                         Classes="caption" VerticalAlignment="Center" />
+            </Grid>
+
+            <ItemsControl ItemsSource="{Binding Accounts}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="models:AccountInfo">
+                  <Border CornerRadius="12" Padding="12,10" Margin="0,0,0,6" Background="#171E2C"
+                          BorderBrush="#1E2739" BorderThickness="1">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="10">
+                      <Border Width="32" Height="32" CornerRadius="9" Background="{StaticResource AccentGradient}">
+                        <TextBlock Text="{Binding Username, Converter={x:Static vm:TextConverters.FirstLetter}}"
+                                   FontWeight="Bold" Foreground="White"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="{Binding Username}" FontWeight="SemiBold" FontSize="13"
+                                   Foreground="{StaticResource TextBrush}" />
+                        <TextBlock Text="{Binding DisplayKind}" Classes="caption" FontSize="10.5" />
+                      </StackPanel>
+                      <Border Grid.Column="2" Classes="chip" VerticalAlignment="Center" Padding="9,3">
+                        <TextBlock Text="{Binding IsVerified, Converter={x:Static vm:NetConverters.VerifiedLabel}}"
+                                   FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
+                      </Border>
+                      <Button Grid.Column="3" Classes="pill" Content="Использовать" VerticalAlignment="Center"
+                              Command="{Binding $parent[ItemsControl].((vm:AccountsViewModel)DataContext).UseAccountCommand}"
+                              CommandParameter="{Binding}" />
+                      <Button Grid.Column="4" Classes="danger" Padding="11,5" FontSize="11.5" Content="Удалить"
+                              VerticalAlignment="Center"
+                              Command="{Binding $parent[ItemsControl].((vm:AccountsViewModel)DataContext).DeleteAccountCommand}"
+                              CommandParameter="{Binding}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="Пока пусто. Войдите через Microsoft или создайте локальный профиль выше."
+                       Classes="caption"
+                       IsVisible="{Binding Accounts.Count, Converter={x:Static vm:TextConverters.IsZero}}" />
+          </StackPanel>
+        </Border>
+
+        <!-- ══════ Скин ══════ -->
+        <Border CornerRadius="16" Padding="18" Background="#141A26"
+                BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Скин" Classes="h3" />
+              <TextBlock Classes="caption" TextWrapping="Wrap" MaxWidth="560"
+                         Text="PNG 64×64 или 64×32. Лаунчер проверяет сигнатуру и размер файла, хранит скин локально." />
+              <TextBox Text="{Binding SkinPath, Mode=TwoWay}" PlaceholderText="Путь к файлу skin.png" />
+            </StackPanel>
+            <Button Grid.Column="1" Classes="ghost" Content="Применить скин" VerticalAlignment="Center"
+                    Command="{Binding ApplySkinCommand}" />
+          </Grid>
+        </Border>
+
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
 </UserControl>

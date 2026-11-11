@@ -5,14 +5,16 @@
              x:Class="EHOT.Launcher.UI.Views.GameNetworkView"
              x:DataType="vm:GameNetworkViewModel">
 
-  <Grid RowDefinitions="Auto,*" RowSpacing="14">
+  <Grid RowDefinitions="Auto,*" RowSpacing="16">
 
+    <!-- ══════ Заголовок ══════ -->
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-      <StackPanel Spacing="3">
+      <StackPanel Spacing="4">
         <TextBlock Text="EHOT Game Network" Classes="h1" />
-        <TextBlock Text="Виртуальная локальная сеть для совместной игры: WireGuard, STUN, relay" Classes="body" />
+        <TextBlock Text="Виртуальная локальная сеть для совместной игры: WireGuard, STUN, relay"
+                   Classes="body" />
       </StackPanel>
-      <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center">
+      <Border Grid.Column="1" Classes="chip" VerticalAlignment="Center" Padding="12,6">
         <StackPanel Orientation="Horizontal" Spacing="7">
           <Ellipse Width="7" Height="7" VerticalAlignment="Center"
                    Fill="{Binding IsConnected, Converter={x:Static vm:NetConverters.StatusBrush}}" />
@@ -21,90 +23,124 @@
       </Border>
     </Grid>
 
-    <Grid Grid.Row="1" ColumnDefinitions="360,*,320" ColumnSpacing="14">
+    <!-- ══════ Две колонки: действия слева, комната справа ══════ -->
+    <Grid Grid.Row="1" ColumnDefinitions="330,*" ColumnSpacing="16">
 
-      <!-- Создание / вход -->
-      <StackPanel Spacing="12">
-        <Border Classes="card" Padding="16">
-          <StackPanel Spacing="10">
-            <TextBlock Text="Создать комнату" Classes="h3" />
-            <TextBox Classes="ehot" Text="{Binding RoomName, Mode=TwoWay}" PlaceholderText="Название комнаты" />
-            <TextBox Classes="ehot" Text="{Binding DisplayName, Mode=TwoWay}" PlaceholderText="Ваше имя в комнате" />
-            <Button Classes="primary" HorizontalAlignment="Stretch" Content="Создать"
-                    Command="{Binding CreateRoomCommand}" />
-          </StackPanel>
-        </Border>
+      <!-- Действия -->
+      <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="12">
 
-        <Border Classes="card" Padding="16">
-          <StackPanel Spacing="10">
-            <TextBlock Text="Подключиться по коду" Classes="h3" />
-            <!-- Приглашение пришло по ссылке ehot://join/… — показываем, что код подставлен. -->
-            <Border Classes="chip" HorizontalAlignment="Left" IsVisible="{Binding PendingInvite, Converter={x:Static ObjectConverters.IsNotNull}}">
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <TextBlock Text="{Binding PendingInvite}" FontSize="10.5" Foreground="{StaticResource TextBrush}" />
-                <Button Classes="icon" Content="✕" Command="{Binding CancelInviteCommand}" Padding="2" FontSize="9" />
+          <Border CornerRadius="16" Padding="16" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Создать комнату" Classes="h3" />
+              <StackPanel Spacing="4">
+                <TextBlock Text="Название" Classes="caption" FontSize="10.5" />
+                <TextBox Text="{Binding RoomName, Mode=TwoWay}" PlaceholderText="Например, вечерний сервер" />
               </StackPanel>
-            </Border>
-            <TextBox Classes="ehot" Text="{Binding JoinCode, Mode=TwoWay}" PlaceholderText="Код приглашения (8 символов)" />
-            <Button Classes="ghost" HorizontalAlignment="Stretch" Content="Подключиться"
-                    Command="{Binding JoinRoomCommand}" />
-            <Button Classes="danger" HorizontalAlignment="Stretch" Content="Выйти из комнаты"
-                    Command="{Binding LeaveCommand}" IsVisible="{Binding IsConnected}" />
-          </StackPanel>
-        </Border>
+              <StackPanel Spacing="4">
+                <TextBlock Text="Ваше имя" Classes="caption" FontSize="10.5" />
+                <TextBox Text="{Binding DisplayName, Mode=TwoWay}" PlaceholderText="Как вас увидят в комнате" />
+              </StackPanel>
+              <Button Classes="primary" HorizontalAlignment="Stretch" Content="Создать комнату"
+                      Command="{Binding CreateRoomCommand}" Margin="0,4,0,0" />
+            </StackPanel>
+          </Border>
 
-        <Border Classes="card" Padding="14">
-          <StackPanel Spacing="6">
-            <TextBlock Text="Сетевой туннель" Classes="h3" />
-            <TextBlock Text="{Binding TunnelStatus}" Classes="caption" TextWrapping="Wrap" />
-            <Border Classes="chip" HorizontalAlignment="Left" Margin="0,4,0,0">
-              <TextBlock Text="{Binding TunnelAvailable, Converter={x:Static vm:NetConverters.TunnelLabel}}"
-                         FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" />
-            </Border>
-          </StackPanel>
-        </Border>
-      </StackPanel>
+          <Border CornerRadius="16" Padding="16" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="10">
+              <TextBlock Text="Подключиться по коду" Classes="h3" />
 
-      <!-- Участники и адрес -->
-      <StackPanel Grid.Column="1" Spacing="12">
-        <Border Classes="hero" Padding="18">
-          <StackPanel Spacing="10">
-            <TextBlock Text="Адрес для Minecraft" Classes="eyebrow" />
-            <TextBlock Text="{Binding MinecraftAddress}" Classes="display" FontSize="32" />
-            <TextBlock Text="{Binding StateDetail}" Classes="caption" TextWrapping="Wrap" MaxWidth="520" />
-            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
-              <Button Classes="primary" Content="Скопировать адрес" Command="{Binding CopyAddressCommand}" />
-              <Border Classes="chip" VerticalAlignment="Center">
-                <TextBlock Text="{Binding InviteCode, StringFormat='Код: {0}'}" FontSize="11"
-                           Foreground="{StaticResource TextBrush}" />
+              <Border Classes="chip" HorizontalAlignment="Left" Padding="9,4"
+                      IsVisible="{Binding PendingInvite, Converter={x:Static ObjectConverters.IsNotNull}}">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <TextBlock Text="{Binding PendingInvite}" FontSize="10.5"
+                             Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" />
+                  <Button Classes="icon" Command="{Binding CancelInviteCommand}" Padding="2"
+                          ToolTip.Tip="Отменить приглашение">
+                    <Path Data="{StaticResource IconClose}" Classes="icon" Width="10" Height="10" />
+                  </Button>
+                </StackPanel>
+              </Border>
+
+              <TextBox Text="{Binding JoinCode, Mode=TwoWay}" PlaceholderText="Код из 8 символов" />
+              <Button Classes="ghost" HorizontalAlignment="Stretch" Content="Подключиться"
+                      Command="{Binding JoinRoomCommand}" />
+              <Button Classes="danger" HorizontalAlignment="Stretch" Content="Выйти из комнаты"
+                      Command="{Binding LeaveCommand}" IsVisible="{Binding IsConnected}" />
+            </StackPanel>
+          </Border>
+
+          <Border CornerRadius="16" Padding="16" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="8">
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <Path Data="{StaticResource IconNetwork}" Classes="icon" Width="15" Height="15" />
+                <TextBlock Text="Сетевой туннель" Classes="h3" VerticalAlignment="Center" />
+              </StackPanel>
+              <TextBlock Text="{Binding TunnelStatus}" Classes="caption" TextWrapping="Wrap" />
+              <Border Classes="chip" HorizontalAlignment="Stretch" Margin="0,2,0,0" Padding="10,6">
+                <TextBlock Text="{Binding TunnelAvailable, Converter={x:Static vm:NetConverters.TunnelLabel}}"
+                           FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}"
+                           TextWrapping="Wrap" />
               </Border>
             </StackPanel>
-          </StackPanel>
-        </Border>
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
 
-        <Border Classes="card" Padding="14">
-          <Grid RowDefinitions="Auto,*">
-            <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
-              <TextBlock Text="Участники" Classes="h3" />
-              <TextBlock Grid.Column="1" Text="{Binding Peers.Count, StringFormat='{}{0}'}" Classes="caption" />
-            </Grid>
-            <ScrollViewer Grid.Row="1" MaxHeight="300">
+      <!-- Комната -->
+      <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+        <StackPanel Spacing="14">
+
+          <!-- Адрес для Minecraft -->
+          <Border Classes="hero" Padding="22">
+            <StackPanel Spacing="8">
+              <TextBlock Text="АДРЕС ДЛЯ MINECRAFT" Classes="eyebrow" />
+              <TextBlock Text="{Binding MinecraftAddress}"
+                         FontSize="30" FontWeight="Bold" LetterSpacing="0.6"
+                         Foreground="{StaticResource TextBrush}"
+                         TextTrimming="CharacterEllipsis" MaxLines="1" />
+              <TextBlock Text="{Binding StateDetail}" Classes="caption" TextWrapping="Wrap" MaxWidth="640" />
+              <StackPanel Spacing="10" Margin="0,8,0,0">
+                <Button Classes="primary" Content="Скопировать адрес" Command="{Binding CopyAddressCommand}"
+                        HorizontalAlignment="Left" />
+                <Border Classes="chip" HorizontalAlignment="Left" Padding="12,6">
+                  <TextBlock Text="{Binding InviteCode, StringFormat='Код приглашения: {0}'}" FontSize="11.5"
+                             Foreground="{StaticResource TextBrush}" />
+                </Border>
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- Участники -->
+          <Border CornerRadius="16" Padding="16" Background="#141A26"
+                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+            <StackPanel Spacing="10">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Text="Участники" Classes="h3" />
+                <TextBlock Grid.Column="1" Text="{Binding Peers.Count, StringFormat='{}{0} в комнате'}"
+                           Classes="caption" VerticalAlignment="Center" />
+              </Grid>
+
               <ItemsControl ItemsSource="{Binding Peers}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="net:RoomPeer">
-                    <Border BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="0,0,0,1" Padding="0,8">
-                      <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                        <Border Width="28" Height="28" CornerRadius="8" Background="#1A8B5CF6">
+                    <Border CornerRadius="12" Padding="10,8" Margin="0,0,0,6" Background="#171E2C"
+                            BorderBrush="#1E2739" BorderThickness="1">
+                      <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                        <Border Width="30" Height="30" CornerRadius="9" Background="{StaticResource AccentGradient}">
                           <TextBlock Text="{Binding DisplayName, Converter={x:Static vm:TextConverters.FirstLetter}}"
                                      FontWeight="Bold" FontSize="12" Foreground="White"
                                      HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
-                        <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1">
                           <TextBlock Text="{Binding DisplayName}" FontSize="12.5" FontWeight="SemiBold"
                                      Foreground="{StaticResource TextBrush}" />
-                          <TextBlock Text="{Binding VirtualIp}" Classes="caption" />
+                          <TextBlock Text="{Binding VirtualIp}" Classes="caption" FontSize="10.5" />
                         </StackPanel>
-                        <Border Grid.Column="2" Classes="chip" Margin="0,0,8,0" VerticalAlignment="Center">
+                        <Border Grid.Column="2" Classes="chip" Padding="8,3" VerticalAlignment="Center">
                           <TextBlock Text="{Binding Transport}" FontSize="10"
                                      Foreground="{StaticResource TextSecondaryBrush}" />
                         </Border>
@@ -118,40 +154,46 @@
                   </DataTemplate>
                 </ItemsControl.ItemTemplate>
               </ItemsControl>
-            </ScrollViewer>
+
+              <TextBlock Text="Пока никого нет. Отправьте другу код приглашения — он подключится в один клик."
+                         Classes="caption" TextWrapping="Wrap"
+                         IsVisible="{Binding Peers.Count, Converter={x:Static vm:TextConverters.IsZero}}" />
+            </StackPanel>
+          </Border>
+
+          <!-- Соединение + безопасность -->
+          <Grid RowDefinitions="Auto,Auto" RowSpacing="14">
+            <Border CornerRadius="16" Padding="16" Background="#141A26"
+                    BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="10">
+                <TextBlock Text="Соединение" Classes="h3" />
+                <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8" ColumnSpacing="10">
+                  <TextBlock Text="Транспорт" Classes="caption" />
+                  <TextBlock Grid.Column="1" Text="{Binding TransportLabel, FallbackValue='—'}" Classes="caption"
+                             Foreground="{StaticResource TextBrush}" TextAlignment="Right" />
+                  <TextBlock Grid.Row="1" Text="Задержка" Classes="caption" />
+                  <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding LatencyLabel, FallbackValue='—'}" Classes="caption"
+                             Foreground="{StaticResource TextBrush}" TextAlignment="Right" />
+                  <TextBlock Grid.Row="2" Text="Трафик" Classes="caption" />
+                  <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TrafficLabel, FallbackValue='—'}" Classes="caption"
+                             Foreground="{StaticResource TextBrush}" TextAlignment="Right" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <Border Grid.Row="1" CornerRadius="16" Padding="16" Background="#141A26"
+                    BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="8">
+                <TextBlock Text="Безопасность" Classes="h3" />
+                <TextBlock Classes="caption" TextWrapping="Wrap"
+                           Text="Трафик шифруется WireGuard (Curve25519 + ChaCha20-Poly1305). Сервер комнат видит только участников и открытые ключи, но не игровой трафик. Маршрут добавляется только на подсеть комнаты." />
+                <TextBlock Classes="caption" TextWrapping="Wrap"
+                           Text="Приглашение можно отозвать в любой момент." />
+              </StackPanel>
+            </Border>
           </Grid>
-        </Border>
-      </StackPanel>
-
-      <!-- Диагностика -->
-      <StackPanel Grid.Column="2" Spacing="12">
-        <Border Classes="card" Padding="16">
-          <StackPanel Spacing="10">
-            <TextBlock Text="Соединение" Classes="h3" />
-            <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="7">
-              <TextBlock Text="Транспорт" Classes="caption" />
-              <TextBlock Grid.Column="1" Text="{Binding TransportLabel}" Classes="caption"
-                         Foreground="{StaticResource TextBrush}" />
-              <TextBlock Grid.Row="1" Text="Задержка" Classes="caption" />
-              <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding LatencyLabel}" Classes="caption"
-                         Foreground="{StaticResource TextBrush}" />
-              <TextBlock Grid.Row="2" Text="Трафик" Classes="caption" />
-              <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding TrafficLabel}" Classes="caption"
-                         Foreground="{StaticResource TextBrush}" />
-            </Grid>
-          </StackPanel>
-        </Border>
-
-        <Border Classes="card" Padding="16">
-          <StackPanel Spacing="8">
-            <TextBlock Text="Безопасность" Classes="h3" />
-            <TextBlock Classes="caption" TextWrapping="Wrap"
-                       Text="Трафик шифруется WireGuard (Curve25519 + ChaCha20-Poly1305). Сервер комнат видит только список участников и открытые ключи, но не игровой трафик. Маршрут добавляется только на подсеть комнаты — доступа к домашней сети и интернету нет." />
-            <TextBlock Classes="caption" TextWrapping="Wrap"
-                       Text="Приглашение можно отозвать в любой момент; удалённый участник теряет доступ немедленно." />
-          </StackPanel>
-        </Border>
-      </StackPanel>
+        </StackPanel>
+      </ScrollViewer>
     </Grid>
   </Grid>
 </UserControl>

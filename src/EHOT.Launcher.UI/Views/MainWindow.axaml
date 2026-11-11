@@ -11,6 +11,7 @@
         Background="{StaticResource BackgroundBrush}"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1"
+        WindowDecorations="BorderOnly"
         TransparencyLevelHint="Mica, Blur, None">
 
   <Window.Resources>
@@ -23,40 +24,37 @@
   <Grid RowDefinitions="Auto,*">
 
     <!-- ══════════════ Titlebar ══════════════ -->
-    <Grid Grid.Row="0" Height="46" Background="#10131C" ColumnDefinitions="Auto,*,Auto">
-      <StackPanel Orientation="Horizontal" Spacing="10" Margin="18,0,0,0" VerticalAlignment="Center">
-        <Border Width="22" Height="22" CornerRadius="7" Background="{StaticResource AccentGradient}">
+    <Grid Grid.Row="0" Height="48" Background="#0E1119" ColumnDefinitions="Auto,*,Auto">
+      <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,0,0,0" VerticalAlignment="Center">
+        <Border Width="24" Height="24" CornerRadius="8" Background="{StaticResource AccentGradient}">
           <TextBlock Text="E" FontSize="13" FontWeight="Bold" Foreground="White"
                      HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Border>
-        <TextBlock Text="EHOT Launcher" FontSize="12.5" FontWeight="SemiBold"
+        <TextBlock Text="EHOT Launcher" FontSize="12.5" FontWeight="SemiBold" LetterSpacing="0.2"
                    Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" />
         <Border Classes="chip" Padding="8,2" VerticalAlignment="Center" Background="#1A8B5CF6">
-          <TextBlock Text="BETA" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource AccentBlueBrush}" />
+          <TextBlock Text="BETA" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentBlueBrush}" />
         </Border>
       </StackPanel>
 
       <!-- Перетаскивание окна -->
       <Border Grid.Column="1" Background="Transparent" PointerPressed="OnTitleBarPressed" />
 
-      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch">
-        <Button Classes="ghost" Width="46" Height="46" CornerRadius="0"
-                Click="OnMinimizeClick" ToolTip.Tip="Свернуть">
-          <Path Data="{StaticResource IconMinimize}" Stroke="{StaticResource TextSecondaryBrush}"
-                StrokeThickness="1.4" Width="14" Height="14" Stretch="Uniform" />
+      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Spacing="2">
+        <Button Classes="icon" Width="34" Height="30" Click="OnMinimizeClick" ToolTip.Tip="Свернуть">
+          <Path Data="{StaticResource IconMinimize}" Classes="icon" Width="13" Height="13" />
         </Button>
-        <Button Classes="ghost" Width="46" Height="46" CornerRadius="0"
-                Click="OnMaximizeClick" ToolTip.Tip="Развернуть">
-          <Path Data="{StaticResource IconMaximize}" Stroke="{StaticResource TextSecondaryBrush}"
-                StrokeThickness="1.4" Width="12" Height="12" Stretch="Uniform" />
+        <Button Classes="icon" Width="34" Height="30" Click="OnMaximizeClick" ToolTip.Tip="Развернуть">
+          <Path Data="{StaticResource IconMaximize}" Classes="icon" Width="11" Height="11" />
         </Button>
-        <Button Width="46" Height="46" CornerRadius="0" Background="Transparent" BorderThickness="0"
-                Click="OnCloseClick" ToolTip.Tip="Закрыть">
-          <Path Data="{StaticResource IconClose}" Stroke="{StaticResource TextSecondaryBrush}"
-                StrokeThickness="1.4" Width="13" Height="13" Stretch="Uniform" />
+        <Button Classes="icon" Width="34" Height="30" Click="OnCloseClick" ToolTip.Tip="Закрыть">
+          <Path Data="{StaticResource IconClose}" Classes="icon" Width="12" Height="12" />
           <Button.Styles>
-            <Style Selector="Button:pointerover">
-              <Setter Property="Background" Value="#F87171" />
+            <Style Selector="Button:pointerover /template/ Border#Root">
+              <Setter Property="Background" Value="#C4484E" />
+            </Style>
+            <Style Selector="Button:pointerover Path">
+              <Setter Property="Stroke" Value="#FFFFFF" />
             </Style>
           </Button.Styles>
         </Button>
@@ -210,29 +208,46 @@
               </StackPanel>
             </Border>
 
-            <TextBlock Text="СОСТОЯНИЕ СИСТЕМ" Classes="eyebrow" Margin="0,6,0,0" />
+            <TextBlock Text="БЫСТРЫЕ ДЕЙСТВИЯ" Classes="eyebrow" Margin="0,8,0,0" />
 
-            <ItemsControl ItemsSource="{Binding CapabilityRows}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:CapabilityRow">
-                  <Border Padding="0,6">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
-                      <Ellipse Width="7" Height="7" Fill="{Binding Brush}" VerticalAlignment="Center" />
-                      <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="9,0,0,0" FontSize="12"
-                                 Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
-                      <TextBlock Grid.Column="2" Text="{Binding StateLabel}" FontSize="10"
-                                 Foreground="{StaticResource TextSecondaryBrush}" />
-                    </Grid>
-                  </Border>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <StackPanel Spacing="8">
+              <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                      Command="{Binding NavigateCommand}" CommandParameter="play">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Path Data="{StaticResource IconPlay}" Classes="icon" Width="15" Height="15" />
+                  <TextBlock Text="Профили и запуск" FontSize="12.5" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                      Command="{Binding NavigateCommand}" CommandParameter="versions">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Path Data="{StaticResource IconLayers}" Classes="icon" Width="15" Height="15" />
+                  <TextBlock Text="Установить версию" FontSize="12.5" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                      Command="{Binding NavigateCommand}" CommandParameter="accounts">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Path Data="{StaticResource IconUser}" Classes="icon" Width="15" Height="15" />
+                  <TextBlock Text="Аккаунт и вход" FontSize="12.5" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+            </StackPanel>
 
             <Border Classes="divider" />
 
-            <TextBlock Text="EHOT GAME NETWORK" Classes="eyebrow" />
-            <TextBlock Classes="body" FontSize="11.5"
-                       Text="Комнаты с шифрованием WireGuard, приоритет прямого соединения, резервный relay. Требуется настроенный контрольный сервер." />
+            <TextBlock Text="СОСТОЯНИЕ" Classes="eyebrow" />
+            <ItemsControl ItemsSource="{Binding CapabilityRows}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:CapabilityRow">
+                  <Grid ColumnDefinitions="Auto,*" Margin="0,3">
+                    <Ellipse Width="6" Height="6" Fill="{Binding Brush}" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="8,0,0,0" FontSize="11.5"
+                               Foreground="{StaticResource TextSecondaryBrush}" TextTrimming="CharacterEllipsis" />
+                  </Grid>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
 
           </StackPanel>
         </ScrollViewer>

@@ -23,6 +23,7 @@ public static class ContentModule
         services.AddSingleton<IGameInstallerBridge, GameInstallerBridge>();
         services.AddSingleton<IModpackService, ModpackService>();
         services.AddSingleton<IInstalledContentRepository, InstalledContentRepository>();
+        services.AddSingleton<IMinecraftNewsService, MinecraftNewsService>();
         return services;
     }
 }
