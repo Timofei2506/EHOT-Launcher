@@ -62,11 +62,11 @@ public sealed class NavigationSmokeTests
         var window = new MainWindow { DataContext = main };
         window.Show();
 
-        // Ждём завершения стартовой навигации оболочки: на медленном раннере она ещё в полёте
-        // и может перезаписать раздел, открытый следующим шагом.
+        // Ждём полного завершения старта оболочки (инициализация состояния + переход на «Главную»):
+        // пока старт в полёте, его собственный переход может перезаписать открытый раздел.
         Assert.True(
-            WaitUntil(() => CurrentKey(services) == "home", TimeSpan.FromSeconds(20)),
-            "Оболочка не выполнила стартовую навигацию на «Главную».");
+            WaitUntil(() => !main.IsBusy && CurrentKey(services) == "home", TimeSpan.FromSeconds(30)),
+            "Оболочка не завершила стартовую навигацию на «Главную».");
 
         main.NavigateCommand.Execute(key);
         Assert.True(
