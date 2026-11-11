@@ -3,6 +3,10 @@ using Avalonia.Headless;
 
 [assembly: AvaloniaTestApplication(typeof(EHOT.Launcher.UI.Tests.UiTestAppBuilder))]
 
+// Headless-Avalonia живёт на одном диспетчере: параллельные UI-тесты делят его состояние
+// (навигацию, визуальные деревья), поэтому прогоны сериализуются.
+[assembly: Xunit.CollectionBehavior(DisableTestParallelization = true)]
+
 namespace EHOT.Launcher.UI.Tests;
 
 /// <summary>
