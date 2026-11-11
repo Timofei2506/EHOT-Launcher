@@ -38,6 +38,13 @@
         <Border Classes="card" Padding="16">
           <StackPanel Spacing="10">
             <TextBlock Text="Подключиться по коду" Classes="h3" />
+            <!-- Приглашение пришло по ссылке ehot://join/… — показываем, что код подставлен. -->
+            <Border Classes="chip" HorizontalAlignment="Left" IsVisible="{Binding PendingInvite, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <TextBlock Text="{Binding PendingInvite}" FontSize="10.5" Foreground="{StaticResource TextBrush}" />
+                <Button Classes="icon" Content="✕" Command="{Binding CancelInviteCommand}" Padding="2" FontSize="9" />
+              </StackPanel>
+            </Border>
             <TextBox Classes="ehot" Text="{Binding JoinCode, Mode=TwoWay}" PlaceholderText="Код приглашения (8 символов)" />
             <Button Classes="ghost" HorizontalAlignment="Stretch" Content="Подключиться"
                     Command="{Binding JoinRoomCommand}" />

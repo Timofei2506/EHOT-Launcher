@@ -29,6 +29,29 @@ public partial class App : Application
             };
 
             desktop.MainWindow = window;
+
+            // --- Ссылки ehot://… и файлы .mrpack -----------------------
+            // Аргументы приходят из установщика/браузера/ярлыка. Если лаунчер уже запущен,
+            // второй экземпляр передаёт ссылку первому и завершается (одно окно — один лаунчер).
+            var router = _services.GetRequiredService<DeepLinkRouter>();
+            var args = DeepLinkRouter.StartupArguments;
+
+            var alreadyRunning = args.Count > 0
+                                 && DeepLinkRouter.TryForwardToRunningInstanceAsync(args[0]).GetAwaiter().GetResult();
+            if (alreadyRunning)
+            {
+                logProvider.CreateLogger("UI").LogInformation("Ссылка передана запущенному экземпляру, выход");
+                desktop.Shutdown();
+                return;
+            }
+
+            router.StartListening();
+            foreach (var argument in args)
+            {
+                _ = router.HandleAsync(argument);
+            }
+
+            desktop.Exit += (_, _) => router.Dispose();
             desktop.ShutdownMode = Avalonia.Controls.ShutdownMode.OnMainWindowClose;
             desktop.Exit += (_, _) => (_services as IDisposable)?.Dispose();
 

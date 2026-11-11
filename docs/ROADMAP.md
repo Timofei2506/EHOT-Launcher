@@ -26,6 +26,9 @@
 - [x] Дизайн-система переведена на `Styles.Resources` (ControlTheme как ресурсы) — совместимо с Avalonia 12
 - [x] Поле ввода наследует шаблон Fluent (`BasedOn`) вместо собственного шаблона; `Watermark` → `PlaceholderText`
 - [x] Панель «Состояние систем» показывает реальные `Capability` (доступно / ограничено / недоступно)
+- [x] **Вход по ссылке-приглашению**: `ehot://join/CODE` (установщик, браузер, ярлык) подставляет код
+      в Game Network; `ehot://install?file=…` открывает установку модпака; один экземпляр приложения
+- [x] Копирование адреса комнаты в настоящий системный буфер обмена (через `IClipboardService`)
 
 ## Этап 4 — Minecraft Engine ✅
 - [x] Манифест версий и правило-движок (`rules`, os/features)
@@ -65,11 +68,16 @@
 - [ ] Тесты правил Mojang и сборки аргументов запуска (`RuleEvaluator`, `LaunchArgumentBuilder`)
 - [ ] Нагрузочные проверки Download Manager (параллелизм, повторы, докачка по Range)
 
-## Этап 8 — Релиз ⬜
-- [ ] CI: matrix windows/macos/ubuntu (build+test+publish)
-- [ ] Inno Setup (Windows), `.dmg` + notarization (macOS) — конфигурация готова, артефакты требуют CI/secrets
+## Этап 8 — Релиз 🟡
+- [x] CI: matrix windows/macos/ubuntu (build + test + publish + installers) — все 9 работ зелёные
+- [x] **Установщик Windows** (`packaging/windows/ehot-launcher.iss`, Inno Setup): ярлыки, удаление,
+      лицензия в мастере, ассоциация `ehot://`
+- [x] **macOS .app + .dmg** (`packaging/macos/make-dmg.sh`): бандл с `Info.plist` и `.icns`,
+      образ с drag-and-drop в Applications, ad-hoc подпись для локального запуска
+- [x] Иконка приложения `.icns` (генерируется из PNG), `LICENSE.txt`
+- [x] Релиз `v0.1.0-beta.1` с 6 файлами (3 zip + 3 установщика)
+- [ ] Нотаризация Apple (требует Developer ID) и подпись Windows EV — нужны сертификаты и secrets
 - [ ] Автообновление (signed manifest + delta)
-- [ ] Подпись кода (EV / Apple Developer ID)
 
 ## Журнал верификации
 

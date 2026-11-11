@@ -20,7 +20,7 @@ using EHOT.Launcher.UI.Services;
 namespace EHOT.Launcher.UI.ViewModels;
 
 /// <summary>Главный экран: игровой профиль, кнопка ИГРАТЬ, новости, тренды, недавнее, Game Network.</summary>
-public sealed partial class HomeViewModel : ViewModelBase
+public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
 {
     private readonly IAppState _state;
     private readonly IGameLauncher _launcher;
@@ -33,6 +33,7 @@ public sealed partial class HomeViewModel : ViewModelBase
     private readonly ICapabilityRegistry _capabilities;
     private readonly IRoomSession _room;
     private readonly ILogService _log;
+    private readonly IClipboardService _clipboard;
 
     public HomeViewModel(
         IAppState state,
@@ -45,7 +46,8 @@ public sealed partial class HomeViewModel : ViewModelBase
         INavigationService navigation,
         ICapabilityRegistry capabilities,
         IRoomSession room,
-        ILogService log)
+        ILogService log,
+        IClipboardService clipboard)
     {
         _state = state;
         _launcher = launcher;
@@ -58,6 +60,7 @@ public sealed partial class HomeViewModel : ViewModelBase
         _capabilities = capabilities;
         _room = room;
         _log = log;
+        _clipboard = clipboard;
 
         _launcher.SessionEnded += OnSessionEnded;
         _room.SnapshotChanged += snapshot => Dispatcher.UIThread.Post(() => ApplyRoom(snapshot));
@@ -423,9 +426,22 @@ public sealed partial class HomeViewModel : ViewModelBase
             return;
         }
 
-        _toasts.Success("Адрес скопирован", NetworkAddress);
-        await Task.CompletedTask;
+        // Копирование через буфер обмена доступно только из UI-потока: ViewModel не должен
+        // знать про TopLevel, поэтому берём его через сервис.
+        var copied = await _clipboard.SetTextAsync(NetworkAddress).ConfigureAwait(true);
+        if (copied)
+        {
+            _toasts.Success("Адрес скопирован", NetworkAddress);
+        }
+        else
+        {
+            _toasts.Warning("Не удалось скопировать", $"Адрес: {NetworkAddress}");
+        }
     }
+
+    /// <summary>Приход по ссылке ehot://join/… с главного экрана — уводим в Game Network с кодом.</summary>
+    public Task OnNavigatedToAsync(object? parameter, CancellationToken ct = default)
+        => parameter is DeepLink ? _navigation.NavigateAsync("network", parameter, ct) : Task.CompletedTask;
 }
 
 public sealed class NewsCardViewModel(NewsItem item)

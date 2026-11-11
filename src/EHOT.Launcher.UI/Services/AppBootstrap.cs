@@ -116,6 +116,12 @@ public static class AppBootstrap
 
         // --- UI-сервисы --------------------------------------------------
         services.AddSingleton<IToastService, ToastService>();
+        services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<DeepLinkRouter>(sp => new DeepLinkRouter(
+            sp.GetRequiredService<ILoggerFactory>().CreateLogger("DeepLink"),
+            sp.GetRequiredService<INavigationService>(),
+            () => (Avalonia.Application.Current?.ApplicationLifetime
+                   as Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime)?.MainWindow));
         services.AddSingleton<INavigationService, NavigationService>();
         services.AddSingleton<IAppState, AppState>();
 

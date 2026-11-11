@@ -12,7 +12,7 @@ namespace EHOT.Launcher.UI.ViewModels;
 /// Game Network: создание/вход в комнату, участники, адрес для Minecraft, диагностика.
 /// Все значения берутся из реального состояния сессии; при отсутствии сервера — честное сообщение.
 /// </summary>
-public sealed partial class GameNetworkViewModel : ViewModelBase
+public sealed partial class GameNetworkViewModel : ViewModelBase, INavigationAware
 {
     private readonly IRoomSession _session;
     private readonly IToastService _toasts;
@@ -163,6 +163,7 @@ public sealed partial class GameNetworkViewModel : ViewModelBase
                 return;
             }
 
+            PendingInvite = null;
             _toasts.Success("Подключено", $"Адрес для Minecraft: {result.Value!.MinecraftAddress}");
         }
         finally
@@ -170,6 +171,9 @@ public sealed partial class GameNetworkViewModel : ViewModelBase
             IsBusyNetwork = false;
         }
     }
+
+    [RelayCommand]
+    private void CancelInvite() => PendingInvite = null;
 
     [RelayCommand]
     private async Task LeaveAsync()
@@ -212,6 +216,41 @@ public sealed partial class GameNetworkViewModel : ViewModelBase
             _toasts.Success("Адрес", address.Value ?? "Адрес скопирован.");
         }
     }
+
+    /// <summary>
+    /// Приход по ссылке ehot://join/CODE (установщик, браузер, второй экземпляр приложения).
+    /// Код подставляется в поле, дальше пользователь сам нажимает «Подключиться» —
+    /// автоматически вступать в чужую комнату без подтверждения нельзя.
+    /// </summary>
+    public Task OnNavigatedToAsync(object? parameter, CancellationToken ct = default)
+    {
+        switch (parameter)
+        {
+            case DeepLink { Kind: DeepLinkKind.Join or DeepLinkKind.Room } link when link.JoinCode is { } code:
+                JoinCode = code;
+                PendingInvite = $"Приглашение: {code}";
+                if (!string.IsNullOrWhiteSpace(link.RoomName))
+                {
+                    RoomName = link.RoomName!;
+                }
+
+                StateDetail = "Проверьте код и нажмите «Подключиться».";
+                _toasts.Show("Приглашение", $"Код {code} подставлен в поле ввода.", ToastKind.Info);
+                break;
+
+            case string raw when DeepLinkParser.IsValidCode(raw):
+                JoinCode = raw.ToUpperInvariant();
+                PendingInvite = $"Приглашение: {JoinCode}";
+                StateDetail = "Проверьте код и нажмите «Подключиться».";
+                break;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>Текст «висит» в интерфейсе, пока пользователь не вступит в комнату.</summary>
+    [ObservableProperty]
+    private string? _pendingInvite;
 
     /// <summary>Код приглашения всегда вводится в верхнем регистре (в Avalonia 12 нет CharacterCasing).</summary>
     partial void OnJoinCodeChanged(string value)
