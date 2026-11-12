@@ -43,12 +43,12 @@
                          Foreground="{StaticResource AccentBlueBrush}" />
 
               <Border Padding="12" CornerRadius="10" Background="#1AFBBF24" IsVisible="{Binding !MicrosoftConfigured}">
-                <StackPanel Orientation="Horizontal" Spacing="9">
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
                   <Path Data="{StaticResource IconWarning}" Classes="icon" Stroke="{StaticResource WarningBrush}"
                         Width="14" Height="14" VerticalAlignment="Top" />
-                  <TextBlock Text="{Binding MicrosoftHint}" FontSize="11" TextWrapping="Wrap"
-                             Foreground="{StaticResource WarningBrush}" MaxWidth="330" />
-                </StackPanel>
+                  <TextBlock Grid.Column="1" Text="{Binding MicrosoftHint}" FontSize="11" TextWrapping="Wrap"
+                             Foreground="{StaticResource WarningBrush}" />
+                </Grid>
               </Border>
 
               <Border Padding="12" CornerRadius="10" Background="#1A38BDF8" IsVisible="{Binding IsLoggingIn}">
