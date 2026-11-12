@@ -172,12 +172,9 @@ async function preferNewerRelease(localManifest) {
       console.info(`На сайте v${localManifest?.version ?? '?'}, на GitHub ${best.version.raw} — показываю GitHub.`);
     }
 
-    const sums = (best.release.assets || []).find((a) => /sha256sums/i.test(a.name));
-    if (sums) {
-      const text = await (await fetch(sums.browser_download_url)).text();
-      const win = findAsset(best.release.assets, 'win');
-      if (win) showChecksum(text, win.name);
-    }
+    // Суммы уже показаны из манифеста (downloads/manifest.json) — он всегда свежий.
+    // SHA256SUMS.txt с GitHub напрямую не читаем: у релизных файлов нет CORS-заголовков,
+    // и запрос честно падал бы в консоль. Ссылка на файл при этом остаётся рабочей.
   } catch (error) {
     // Это нормальный, ожидаемый путь: сайт живёт на своих файлах.
     console.info('Релизы GitHub недоступны, работаем на файлах сайта:', error.message);
