@@ -7,7 +7,15 @@ namespace EHOT.Launcher.UI.ViewModels;
 
 public sealed partial class AboutViewModel(IPlatformInfo platform, ICapabilityRegistry capabilities) : ViewModelBase
 {
-    public static string Version => "0.1.0 (beta)";
+    /// <summary>Версия берётся из сборки (Directory.Build.props), а не дублируется вручную.</summary>
+    public static string Version
+    {
+        get
+        {
+            var version = typeof(AboutViewModel).Assembly.GetName().Version;
+            return version is null ? "версия не определена" : $"{version.Major}.{version.Minor}.{version.Build} (beta)";
+        }
+    }
 
     public string Runtime => $"Avalonia 12.1.6 · .NET {platform.RuntimeVersion}";
 

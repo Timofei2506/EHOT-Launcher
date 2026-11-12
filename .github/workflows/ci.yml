@@ -15,11 +15,11 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   # Версия приложения в одном месте: Directory.Build.props → <Version>. Здесь только читаем.
-  APP_VERSION: '0.1.0'
+  APP_VERSION: '0.2.0'
   # Релизы (установщики) публикуются в отдельном публичном репозитории.
   # Из него же лаунчер и сайт берут список версий — без токена.
   UPDATE_REPOSITORY: Timofei2506/EHOT-Launcher-Releases
@@ -200,3 +200,110 @@ jobs:
             artifacts/installers/*.exe
             artifacts/installers/*.dmg
           if-no-files-found: error
+
+  release:
+    # Публикация релиза: тег v<версия>, установщики в публичный репозиторий релизов,
+    # обновление downloads/ на сайте и деплой лендинга в Vercel.
+    # Запускается вручную (workflow_dispatch) — чтобы релиз никогда не выходил «сам собой».
+    name: Публикация релиза
+    if: github.event_name == 'workflow_dispatch'
+    needs: [build-test, installers]
+    runs-on: ubuntu-latest
+    env:
+      RELEASES_REPO: ${{ env.UPDATE_REPOSITORY }}
+
+    steps:
+      - name: Получить код
+        uses: actions/checkout@v4
+
+      - name: Скачать установщики
+        uses: actions/download-artifact@v4
+        with:
+          pattern: installer-*
+          path: artifacts/installers
+          merge-multiple: true
+
+      - name: Показать собранные файлы
+        run: ls -lR artifacts/installers
+
+      - name: Проверить, что все три установщика на месте
+        run: |
+          set -euo pipefail
+          for f in "EHOT-Launcher-${APP_VERSION}-win-x64-setup.exe" \
+                   "EHOT-Launcher-${APP_VERSION}-osx-arm64.dmg" \
+                   "EHOT-Launcher-${APP_VERSION}-osx-x64.dmg"; do
+            test -f "artifacts/installers/$f" || { echo "нет файла $f"; ls artifacts/installers; exit 1; }
+          done
+
+      - name: Контрольные суммы
+        run: |
+          cd artifacts/installers
+          sha256sum *.exe *.dmg | sort -k2 > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Создать релиз и приложить установщики
+        env:
+          # Токен с правом записи в репозиторий релизов (секрет репозитория).
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="v${APP_VERSION}"
+          if gh release view "$TAG" --repo "$RELEASES_REPO" > /dev/null 2>&1; then
+            echo "Релиз $TAG уже есть — обновляю файлы"
+            gh release upload "$TAG" artifacts/installers/*.exe artifacts/installers/*.dmg --repo "$RELEASES_REPO" --clobber
+          else
+            gh release create "$TAG" --repo "$RELEASES_REPO" --title "EHOT Launcher ${APP_VERSION}" \
+              --notes "Сборка ${APP_VERSION} (beta). Установщики для Windows и macOS." \
+              artifacts/installers/*.exe artifacts/installers/*.dmg
+          fi
+
+      - name: Обновить манифест загрузок на сайте
+        run: |
+          python3 - <<'PYEOF'
+          import json, hashlib, os, datetime
+          root = "artifacts/installers"
+          def entry(kind, name, platform):
+              path = os.path.join(root, name)
+              data = open(path, "rb").read()
+              return {"kind": kind, "name": name, "size": len(data),
+                      "sha256": hashlib.sha256(data).hexdigest(), "platform": platform}
+          v = os.environ["APP_VERSION"]
+          manifest = {
+              "version": v,
+              "publishedAt": datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+              "notes": "Обновление интерфейса: переработаны все разделы лаунчера.",
+              "files": [
+                  entry("win", f"EHOT-Launcher-{v}-win-x64-setup.exe", "Windows x64"),
+                  entry("mac-arm", f"EHOT-Launcher-{v}-osx-arm64.dmg", "macOS Apple Silicon"),
+                  entry("mac-x64", f"EHOT-Launcher-{v}-osx-x64.dmg", "macOS Intel"),
+              ],
+              "checksums": "SHA256SUMS.txt",
+          }
+          os.makedirs("site/downloads", exist_ok=True)
+          json.dump(manifest, open("site/downloads/manifest.json", "w"), ensure_ascii=False, indent=2)
+          print(json.dumps(manifest, ensure_ascii=False, indent=2))
+          PYEOF
+          cp artifacts/installers/SHA256SUMS.txt site/downloads/SHA256SUMS.txt
+
+      - name: Закоммитить манифест и ссылки на сайте
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add site/downloads/manifest.json site/downloads/SHA256SUMS.txt site/index.html
+          git diff --cached --quiet || git commit -m "site: загрузки ${APP_VERSION}"
+          git push
+
+      - name: Установить Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Деплой сайта в Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          npm i -g vercel@latest
+          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+          vercel deploy --prod --yes --token="$VERCEL_TOKEN"

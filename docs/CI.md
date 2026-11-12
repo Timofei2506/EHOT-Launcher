@@ -74,5 +74,5 @@ CI (Continuous Integration, «непрерывная интеграция») —
 Проверить локально (нужен Windows + Inno Setup):
 
 ```
-iscc.exe packaging\windows\ehot-launcher.iss /DAppVersion=0.1.0 /DSourceDir=<папка publish> /DOutputDir=<куда положить>
+iscc.exe packaging\windows\ehot-launcher.iss /DAppVersion=0.2.0 /DSourceDir=<папка publish> /DOutputDir=<куда положить>
 ```
