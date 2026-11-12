@@ -247,12 +247,14 @@ jobs:
         run: |
           set -euo pipefail
           TAG="v${APP_VERSION}"
+          NOTES_FILE="notes/${APP_VERSION}.md"
+          if [ -f "$NOTES_FILE" ]; then RELEASE_NOTES=$(cat "$NOTES_FILE"); else RELEASE_NOTES="Сборка ${APP_VERSION} (beta)."; fi
           if gh release view "$TAG" --repo "$RELEASES_REPO" > /dev/null 2>&1; then
             echo "Релиз $TAG уже есть — обновляю файлы"
             gh release upload "$TAG" artifacts/installers/*.exe artifacts/installers/*.dmg artifacts/installers/SHA256SUMS.txt --repo "$RELEASES_REPO" --clobber
           else
             gh release create "$TAG" --repo "$RELEASES_REPO" --title "EHOT Launcher ${APP_VERSION}" \
-              --notes "Сборка ${APP_VERSION} (beta). Установщики для Windows и macOS." \
+              --notes "$RELEASE_NOTES" \
               artifacts/installers/*.exe artifacts/installers/*.dmg artifacts/installers/SHA256SUMS.txt
           fi
 
@@ -267,10 +269,15 @@ jobs:
               return {"kind": kind, "name": name, "size": len(data),
                       "sha256": hashlib.sha256(data).hexdigest(), "platform": platform}
           v = os.environ["APP_VERSION"]
+          # Текст изменений берём из notes/<версия>.md: он относится к релизу, а не к воркфлоу,
+          # и не должен расходиться с тем, что реально изменилось.
+          notes_path = os.path.join("notes", f"{v}.md")
+          notes = open(notes_path, encoding="utf-8").read().strip() if os.path.exists(notes_path) \
+              else f"Сборка {v}."
           manifest = {
               "version": v,
               "publishedAt": datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
-              "notes": "Обновление интерфейса: переработаны все разделы лаунчера.",
+              "notes": notes,
               "files": [
                   entry("win", f"EHOT-Launcher-{v}-win-x64-setup.exe", "Windows x64"),
                   entry("mac-arm", f"EHOT-Launcher-{v}-osx-arm64.dmg", "macOS Apple Silicon"),

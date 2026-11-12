@@ -1,27 +1,27 @@
 {
-  "version": "0.2.1",
-  "publishedAt": "2026-11-12T07:06:01Z",
+  "version": "0.2.0",
+  "publishedAt": "2026-11-12T01:57:34Z",
   "notes": "Обновление интерфейса: переработаны все разделы лаунчера.",
   "files": [
     {
       "kind": "win",
-      "name": "EHOT-Launcher-0.2.1-win-x64-setup.exe",
-      "size": 37860929,
-      "sha256": "7bb58fe42e0738f92c3dc1e72847717f9d1c3792d84a074639b022e0ab06bf7e",
+      "name": "EHOT-Launcher-0.2.0-win-x64-setup.exe",
+      "size": 37832018,
+      "sha256": "36761e24176cbf3c7a3a0c625fc082c87f98531bac17d0b8f4949950ec6dccd3",
       "platform": "Windows x64"
     },
     {
       "kind": "mac-arm",
-      "name": "EHOT-Launcher-0.2.1-osx-arm64.dmg",
-      "size": 54958718,
-      "sha256": "e82b38df32ee3335eef89e490cb1e8787e33994e262da146e1a18a4b857d6202",
+      "name": "EHOT-Launcher-0.2.0-osx-arm64.dmg",
+      "size": 54865514,
+      "sha256": "b559addbb0e4bc79537f45b4913336f982ec8305e00e09a5132be35b8258ce79",
       "platform": "macOS Apple Silicon"
     },
     {
       "kind": "mac-x64",
-      "name": "EHOT-Launcher-0.2.1-osx-x64.dmg",
-      "size": 56860497,
-      "sha256": "233b870e5d1675c5ee2aa77a76272e641e00e235a9a0396ce4c3f952aacc3a02",
+      "name": "EHOT-Launcher-0.2.0-osx-x64.dmg",
+      "size": 56707130,
+      "sha256": "cee95a9dcf6159ba5c6cc431ed6423da38568ec8b7abef42eafdcaed4e551229",
       "platform": "macOS Intel"
     }
   ],

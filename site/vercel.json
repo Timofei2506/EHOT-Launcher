@@ -54,16 +54,16 @@
   ],
   "rewrites": [
     {
-      "source": "/downloads/EHOT-Launcher-0.2.1-win-x64-setup.exe",
-      "destination": "https://github.com/Timofei2506/EHOT-Launcher-Releases/releases/download/v0.2.1/EHOT-Launcher-0.2.1-win-x64-setup.exe"
+      "source": "/downloads/EHOT-Launcher-0.2.0-win-x64-setup.exe",
+      "destination": "https://github.com/Timofei2506/EHOT-Launcher-Releases/releases/download/v0.2.0/EHOT-Launcher-0.2.0-win-x64-setup.exe"
     },
     {
-      "source": "/downloads/EHOT-Launcher-0.2.1-osx-arm64.dmg",
-      "destination": "https://github.com/Timofei2506/EHOT-Launcher-Releases/releases/download/v0.2.1/EHOT-Launcher-0.2.1-osx-arm64.dmg"
+      "source": "/downloads/EHOT-Launcher-0.2.0-osx-arm64.dmg",
+      "destination": "https://github.com/Timofei2506/EHOT-Launcher-Releases/releases/download/v0.2.0/EHOT-Launcher-0.2.0-osx-arm64.dmg"
     },
     {
-      "source": "/downloads/EHOT-Launcher-0.2.1-osx-x64.dmg",
-      "destination": "https://github.com/Timofei2506/EHOT-Launcher-Releases/releases/download/v0.2.1/EHOT-Launcher-0.2.1-osx-x64.dmg"
+      "source": "/downloads/EHOT-Launcher-0.2.0-osx-x64.dmg",
+      "destination": "https://github.com/Timofei2506/EHOT-Launcher-Releases/releases/download/v0.2.0/EHOT-Launcher-0.2.0-osx-x64.dmg"
     },
     {
       "source": "/downloads/EHOT-Launcher-:file",
