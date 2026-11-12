@@ -209,8 +209,6 @@ jobs:
     if: github.event_name == 'workflow_dispatch'
     needs: [build-test, installers]
     runs-on: ubuntu-latest
-    env:
-      RELEASES_REPO: ${{ env.UPDATE_REPOSITORY }}
 
     steps:
       - name: Получить код
@@ -245,6 +243,7 @@ jobs:
         env:
           # Токен с правом записи в репозиторий релизов (секрет репозитория).
           GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+          RELEASES_REPO: ${{ env.UPDATE_REPOSITORY }}
         run: |
           set -euo pipefail
           TAG="v${APP_VERSION}"
