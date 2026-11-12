@@ -249,11 +249,11 @@ jobs:
           TAG="v${APP_VERSION}"
           if gh release view "$TAG" --repo "$RELEASES_REPO" > /dev/null 2>&1; then
             echo "Релиз $TAG уже есть — обновляю файлы"
-            gh release upload "$TAG" artifacts/installers/*.exe artifacts/installers/*.dmg --repo "$RELEASES_REPO" --clobber
+            gh release upload "$TAG" artifacts/installers/*.exe artifacts/installers/*.dmg artifacts/installers/SHA256SUMS.txt --repo "$RELEASES_REPO" --clobber
           else
             gh release create "$TAG" --repo "$RELEASES_REPO" --title "EHOT Launcher ${APP_VERSION}" \
               --notes "Сборка ${APP_VERSION} (beta). Установщики для Windows и macOS." \
-              artifacts/installers/*.exe artifacts/installers/*.dmg
+              artifacts/installers/*.exe artifacts/installers/*.dmg artifacts/installers/SHA256SUMS.txt
           fi
 
       - name: Обновить манифест загрузок на сайте
@@ -284,11 +284,38 @@ jobs:
           PYEOF
           cp artifacts/installers/SHA256SUMS.txt site/downloads/SHA256SUMS.txt
 
+      - name: Направить ссылки /downloads на файлы релиза
+        env:
+          UPDATE_REPOSITORY: ${{ env.UPDATE_REPOSITORY }}
+        # Установщики не хранятся в git (иначе репозиторий распухает), поэтому ссылки
+        # на сайте проксируются на файлы релиза: адрес остаётся на домене сайта.
+        run: |
+          python3 - <<'PYEOF'
+          import json, os
+          v = os.environ["APP_VERSION"]
+          repo = os.environ["UPDATE_REPOSITORY"]
+          cfg = json.load(open("site/vercel.json", encoding="utf-8"))
+          base = f"https://github.com/{repo}/releases"
+          cfg["rewrites"] = [
+              {"source": f"/downloads/EHOT-Launcher-{v}-win-x64-setup.exe",
+               "destination": f"{base}/download/v{v}/EHOT-Launcher-{v}-win-x64-setup.exe"},
+              {"source": f"/downloads/EHOT-Launcher-{v}-osx-arm64.dmg",
+               "destination": f"{base}/download/v{v}/EHOT-Launcher-{v}-osx-arm64.dmg"},
+              {"source": f"/downloads/EHOT-Launcher-{v}-osx-x64.dmg",
+               "destination": f"{base}/download/v{v}/EHOT-Launcher-{v}-osx-x64.dmg"},
+              {"source": "/downloads/EHOT-Launcher-:file",
+               "destination": f"{base}/latest/download/EHOT-Launcher-:file"},
+          ]
+          json.dump(cfg, open("site/vercel.json", "w", encoding="utf-8"), ensure_ascii=False, indent=2)
+          open("site/vercel.json", "a", encoding="utf-8").write("\n")
+          print(json.dumps(cfg["rewrites"], ensure_ascii=False, indent=2))
+          PYEOF
+
       - name: Закоммитить манифест и ссылки на сайте
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add site/downloads/manifest.json site/downloads/SHA256SUMS.txt site/index.html
+          git add site/downloads/manifest.json site/downloads/SHA256SUMS.txt site/index.html site/vercel.json
           git diff --cached --quiet || git commit -m "site: загрузки ${APP_VERSION}"
           git push
 
