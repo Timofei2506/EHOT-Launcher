@@ -71,6 +71,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private string _accountInitials = "?";
 
     [ObservableProperty]
+    private string _accountUuid = "—";
+
+    [ObservableProperty]
+    private string _accountUuidSource = "—";
+
+    [ObservableProperty]
+    private string? _accountSkinPath;
+
+    [ObservableProperty]
+    private string _accountSkinLabel = "Скин не выбран";
+
+    [ObservableProperty]
     private string? _searchText;
 
     [ObservableProperty]
@@ -83,6 +95,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private string _networkIndicator = "Game Network: не подключено";
 
     public static bool CanClose => true;
+
+    /// <summary>Правая панель показывает данные аккаунта только когда он выбран.</summary>
+    public bool IsAccountSelected => AccountUuid != "—";
 
     public ObservableCollection<CapabilityRow> CapabilityRows { get; } = [];
 
@@ -142,6 +157,24 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         AccountInitials = string.IsNullOrEmpty(account?.Username)
             ? "?"
             : account!.Username[..1].ToUpperInvariant();
+
+        // Карточка «как я захожу в игру»: ник, откуда UUID, есть ли скин.
+        AccountUuid = account?.Uuid.ToString("D") ?? "—";
+        OnPropertyChanged(nameof(IsAccountSelected));
+        AccountUuidSource = account switch
+        {
+            null => "—",
+            { UuidFromOfficialProfile: true } => "UUID официального игрока",
+            _ => "UUID оффлайн (online-mode сервер не пустит)"
+        };
+        AccountSkinPath = account?.LocalSkinPath;
+        AccountSkinLabel = account switch
+        {
+            null => "Скин не выбран",
+            { SkinSource: "mojang" } => "Скин с официального аккаунта",
+            { SkinSource: "local" } => "Свой скин (виден только вам)",
+            _ => "Скин не задан — стандартный персонаж"
+        };
 
         var profile = _state.CurrentProfile;
         ProfileName = profile?.Name ?? "Профиль не выбран";

@@ -1,7 +1,7 @@
 ; ---------------------------------------------------------------------------
 ; EHOT Launcher — установщик для Windows (Inno Setup 6).
 ; Собирается автоматически в CI: см. .github/workflows/ci.yml, job "installers".
-; Локально: iscc.exe packaging\windows\ehot-launcher.iss /DAppVersion=0.2.0
+; Локально: iscc.exe packaging\windows\ehot-launcher.iss /DAppVersion=0.2.1
 ; Пути по умолчанию считаются от расположения этого файла, поэтому запускать можно из любой папки.
 ; ---------------------------------------------------------------------------
 
@@ -9,7 +9,7 @@
 #define AppPublisher   "EHOT"
 #define AppExeName     "EHOT.Launcher.exe"
 #ifndef AppVersion
-  #define AppVersion   "0.2.0"
+  #define AppVersion   "0.2.1"
 #endif
 #ifndef SourceDir
   #define SourceDir    AddBackslash(SourcePath) + "..\..\artifacts\win-x64"

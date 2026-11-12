@@ -96,6 +96,14 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
     [ObservableProperty]
     private string _accountInitials = "?";
 
+    /// <summary>Путь к PNG-скина текущего аккаунта (null — скина нет, показываем инициал).</summary>
+    [ObservableProperty]
+    private string? _skinPath;
+
+    /// <summary>Честная подпись, откуда скин и UUID: официальные данные или оффлайн-режим.</summary>
+    [ObservableProperty]
+    private string _accountUuidLabel = string.Empty;
+
     [ObservableProperty]
     private bool _isMicrosoftAccount;
 
@@ -137,6 +145,13 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
 
     public string MinecraftRoot => (_state as AppState)?.MinecraftRoot ?? "—";
 
+    /// <summary>Каталог игры существует только после первой загрузки версии — не обещаем раньше времени.</summary>
+    public bool CanOpenGameFolder => Directory.Exists(MinecraftRoot);
+
+    public string MinecraftFolderDetail => CanOpenGameFolder
+        ? "Открыть папку .minecraft"
+        : "Появится после установки игры";
+
     private void Refresh()
     {
         var account = _state.CurrentAccount;
@@ -154,6 +169,13 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
         AccountKindLabel = account?.Kind == AccountKind.Microsoft ? "Microsoft · лицензия" : "Локальный профиль";
         IsMicrosoftAccount = account?.Kind == AccountKind.Microsoft;
         AccountInitials = string.IsNullOrEmpty(account?.Username) ? "?" : account.Username[..1].ToUpperInvariant();
+        SkinPath = account?.LocalSkinPath;
+        AccountUuidLabel = account switch
+        {
+            null => "аккаунт не выбран",
+            { UuidFromOfficialProfile: true } => "UUID официального профиля",
+            _ => "оффлайн-UUID"
+        };
 
         ProfileName = profile?.Name ?? "Профиль не выбран";
         ProfileVersion = profile?.DisplayVersion ?? "Сначала создайте профиль";
@@ -165,23 +187,67 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
         CapabilityWarning = tunnel.Detail ?? string.Empty;
 
         OnPropertyChanged(nameof(MinecraftRoot));
+        OnPropertyChanged(nameof(CanOpenGameFolder));
+        OnPropertyChanged(nameof(MinecraftFolderDetail));
     }
 
-    public override async Task OnNavigatedToAsync(CancellationToken ct = default)
+    public override Task OnNavigatedToAsync(CancellationToken ct = default) => LoadHomeAsync(ct);
+
+    private async Task LoadHomeAsync(CancellationToken ct)
     {
         IsBusy = true;
         try
         {
             Refresh();
-            await LoadNewsAsync(ct).ConfigureAwait(true);
-            await LoadPopularAsync(ct).ConfigureAwait(true);
-            await LoadRecentAsync(ct).ConfigureAwait(true);
+            _log.Info("UI", "Главная: обновление данных");
+            // Секции независимы: сбой одного источника не должен оставлять пустыми остальные.
+            await LoadNewsSectionAsync(ct).ConfigureAwait(true);
+            await LoadPopularSectionAsync(ct).ConfigureAwait(true);
+            try
+            {
+                await LoadRecentAsync(ct).ConfigureAwait(true);
+            }
+            catch (Exception ex)
+            {
+                _log.Warn("UI", "История запусков недоступна: " + ex.Message);
+            }
+
             await RefreshInstallStatusAsync(ct).ConfigureAwait(true);
         }
         finally
         {
             IsBusy = false;
         }
+    }
+
+    private async Task LoadNewsSectionAsync(CancellationToken ct)
+    {
+        try
+        {
+            await LoadNewsAsync(ct).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _log.Warn("UI", "Новости не загрузились: " + ex.Message);
+        }
+
+        _log.Info("UI", $"Главная: новостей {News.Count}");
+    }
+
+    private async Task LoadPopularSectionAsync(CancellationToken ct)
+    {
+        try
+        {
+            await LoadPopularAsync(ct).ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _log.Warn("UI", "Популярные моды и сборки не загрузились: " + ex.Message);
+            PopularMods.Clear();
+            PopularModpacks.Clear();
+        }
+
+        _log.Info("UI", $"Главная: модов {PopularMods.Count}, сборок {PopularModpacks.Count}");
     }
 
     private async Task LoadNewsAsync(CancellationToken ct)
@@ -410,6 +476,25 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
     private Task OpenNetworkAsync() => _navigation.NavigateAsync("network");
 
     [RelayCommand]
+    private void OpenGameFolder()
+    {
+        if (!CanOpenGameFolder)
+        {
+            return;
+        }
+
+        try
+        {
+            var info = new System.Diagnostics.ProcessStartInfo(MinecraftRoot) { UseShellExecute = true };
+            System.Diagnostics.Process.Start(info)?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Папка не открылась", ex.Message);
+        }
+    }
+
+    [RelayCommand]
     private Task OpenContentAsync(string? type) => _navigation.NavigateAsync(type switch
     {
         "mods" => "mods",
@@ -440,8 +525,18 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
     }
 
     /// <summary>Приход по ссылке ehot://join/… с главного экрана — уводим в Game Network с кодом.</summary>
-    public Task OnNavigatedToAsync(object? parameter, CancellationToken ct = default)
-        => parameter is DeepLink ? _navigation.NavigateAsync("network", parameter, ct) : Task.CompletedTask;
+    public async Task OnNavigatedToAsync(object? parameter, CancellationToken ct = default)
+    {
+        if (parameter is DeepLink)
+        {
+            await _navigation.NavigateAsync("network", parameter, ct).ConfigureAwait(true);
+            return;
+        }
+
+        // Без этой ветки главная не загружала новости и тренды: навигация вызывает именно
+        // интерфейсный перегруз, а не override базового класса.
+        await LoadHomeAsync(ct).ConfigureAwait(true);
+    }
 }
 
 public sealed class NewsCardViewModel(NewsItem item)

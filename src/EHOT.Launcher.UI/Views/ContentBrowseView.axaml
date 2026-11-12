@@ -3,6 +3,8 @@
              xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
              xmlns:content="using:EHOT.Launcher.Content.Models"
              xmlns:storage="using:EHOT.Launcher.Core.Models"
+             xmlns:imgs="using:EHOT.Launcher.UI.Converters"
+             xmlns:controls="using:EHOT.Launcher.UI.Controls"
              x:Class="EHOT.Launcher.UI.Views.ContentBrowseView"
              x:DataType="vm:ContentBrowseViewModel">
 
@@ -72,24 +74,29 @@
                           Cursor="Hand">
                     <StackPanel Spacing="10">
 
-                      <!-- Иконка / инициал + название -->
-                      <Grid ColumnDefinitions="Auto,*">
-                        <Border Width="42" Height="42" CornerRadius="11" Background="#1E2740">
+                      <!-- Аватар проекта: настоящая иконка с CDN, пока грузится — первая буква названия -->
+                      <Grid ColumnDefinitions="Auto,*" ColumnSpacing="11">
+                        <Border Width="52" Height="52" CornerRadius="13" Background="#1E2740"
+                                BorderBrush="#26314A" BorderThickness="1" ClipToBounds="True">
                           <Panel>
-                            <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="17"
+                            <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="20"
                                        Foreground="#C4B5FD"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"
                                        IsVisible="{Binding !HasIcon}" />
-                            <Image Source="{Binding IconUrl}" Width="42" Height="42"
-                                   IsVisible="{Binding HasIcon}" />
+                            <controls:RemoteImage Url="{Binding IconUrl}"
+                                                  Stretch="Uniform" Width="46" Height="46"
+                                                  IsVisible="{Binding HasIcon}" />
                           </Panel>
                         </Border>
 
-                        <StackPanel Grid.Column="1" Margin="11,0,0,0" VerticalAlignment="Center" Spacing="2">
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
                           <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13"
                                      Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis"
                                      MaxLines="1" />
-                          <TextBlock Text="{Binding Author}" Classes="caption" TextTrimming="CharacterEllipsis" />
+                          <TextBlock Text="{Binding Author}" Classes="caption" FontSize="11"
+                                     TextTrimming="CharacterEllipsis" MaxLines="1" />
+                          <TextBlock Text="{Binding TypeLabel}" Classes="caption" FontSize="10"
+                                     Foreground="{StaticResource AccentBlueBrush}" />
                         </StackPanel>
                       </Grid>
 

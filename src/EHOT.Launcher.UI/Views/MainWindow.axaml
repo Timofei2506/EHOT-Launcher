@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             xmlns:conv2="using:EHOT.Launcher.UI.Converters"
         xmlns:conv="using:EHOT.Launcher.UI.Converters"
         xmlns:services="using:EHOT.Launcher.UI.Services"
         x:Class="EHOT.Launcher.UI.Views.MainWindow"
@@ -242,11 +243,28 @@
 
             <Border Classes="divider" />
 
-            <StackPanel Spacing="6">
-              <TextBlock Text="ПОДСКАЗКА" Classes="eyebrow" />
+            <StackPanel Spacing="6" IsVisible="{Binding IsAccountSelected}">
+              <TextBlock Text="КАК Я ЗАХОЖУ В ИГРУ" Classes="eyebrow" />
               <Border CornerRadius="12" Padding="12" Background="#101724">
-                <TextBlock Classes="caption" FontSize="11" TextWrapping="Wrap"
-                           Text="Полная матрица возможностей системы — в разделе «О программе». Здесь показывается только то, что влияет на запуск." />
+                <StackPanel Spacing="8">
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
+                    <Border Width="34" Height="34" CornerRadius="9" Background="#1E2740" ClipToBounds="True"
+                            BorderBrush="#26314A" BorderThickness="1">
+                      <Image Source="{Binding AccountSkinPath, Converter={x:Static conv2:SkinFaceConverter.Instance}}"
+                             Width="34" Height="34" Stretch="Uniform" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding AccountName}" FontSize="12.5" FontWeight="SemiBold"
+                                 Foreground="{StaticResource TextBrush}" />
+                      <TextBlock Text="{Binding AccountSkinLabel}" Classes="caption" FontSize="10.5"
+                                 TextWrapping="Wrap" />
+                    </StackPanel>
+                  </Grid>
+                  <Border Classes="divider" />
+                  <TextBlock Text="{Binding AccountUuidSource}" Classes="caption" FontSize="10.5" TextWrapping="Wrap" />
+                  <TextBlock Text="{Binding AccountUuid}" FontSize="9.5" TextWrapping="Wrap" FontFamily="monospace"
+                             Foreground="{StaticResource TextMutedBrush}" />
+                </StackPanel>
               </Border>
             </StackPanel>
 

@@ -32,6 +32,12 @@ public static class NetConverters
             _ => "недоступно"
         });
 
+    public static IValueConverter UuidSourceLabel { get; } = new FuncValueConverter<bool, string>(
+        official => official ? "UUID официальный" : "UUID оффлайн");
+
+    public static IValueConverter OfficialNickBrush { get; } = new FuncValueConverter<bool, IBrush>(
+        official => official ? new SolidColorBrush(Color.Parse("#34D399")) : new SolidColorBrush(Color.Parse("#FBBF24")));
+
     public static IValueConverter TunnelLabel { get; } = new FuncValueConverter<bool, string>(
         available => available ? "Туннель доступен" : "Туннель недоступен — используется relay/прямое соединение");
 

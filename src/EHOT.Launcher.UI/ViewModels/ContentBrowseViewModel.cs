@@ -345,6 +345,17 @@ public sealed class ContentCard(ContentProject project)
 
     public string DownloadsLabel => FormatCount(Project.Downloads);
 
+    /// <summary>Тип проекта по-русски — чтобы в карточке было видно, мод это или сборка.</summary>
+    public string TypeLabel => Project.Type switch
+    {
+        ContentType.Mod => "мод",
+        ContentType.Modpack => "сборка",
+        ContentType.ResourcePack => "текстуры",
+        ContentType.Shader => "шейдер",
+        ContentType.World => "карта",
+        _ => "проект"
+    };
+
     public string? CategoriesLabel => Project.Categories.Count > 0
         ? string.Join(" · ", Project.Categories.Take(2))
         : null;

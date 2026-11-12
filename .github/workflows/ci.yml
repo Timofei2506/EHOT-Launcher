@@ -19,7 +19,7 @@ permissions:
 
 env:
   # Версия приложения в одном месте: Directory.Build.props → <Version>. Здесь только читаем.
-  APP_VERSION: '0.2.0'
+  APP_VERSION: '0.2.1'
   # Релизы (установщики) публикуются в отдельном публичном репозитории.
   # Из него же лаунчер и сайт берут список версий — без токена.
   UPDATE_REPOSITORY: Timofei2506/EHOT-Launcher-Releases

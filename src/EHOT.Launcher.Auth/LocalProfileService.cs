@@ -7,55 +7,126 @@ namespace EHOT.Launcher.Auth;
 
 public sealed record LocalProfileRequest(string Username, SkinModel SkinModel = SkinModel.Classic);
 
+/// <summary>Результат создания профиля: аккаунт плюс честное описание, откуда взялись UUID и скин.</summary>
+public sealed record LocalProfileOutcome(AccountInfo Account, bool CopiedOfficialSkin, string Note);
+
 /// <summary>
-/// Локальные (оффлайн) профили. Это НЕ лицензионные аккаунты:
-/// они не проходят проверку на серверах Mojang и не дают доступа к официальным серверам.
-/// UUID детерминирован от ника и помечен как локальный, чтобы не выдавать себя за официальный.
+/// Локальные (оффлайн) профили — основа пиратского режима, как в TLauncher:
+/// никакой лицензии не требуется, играть можно на своём сервере и в одиночке.
+/// <para>
+/// Если ник занят официальным аккаунтом, лаунчер берёт у него <b>публичный</b> UUID и копию скина —
+/// так игрок выглядит как привычный персонаж с этим ником. Это не даёт доступа к чужим данным:
+/// UUID и текстура скина публичны, а вход на серверы с online-mode по-прежнему требует лицензии.
+/// Если такого ника в официальном сервисе нет — UUID считается оффлайн-способом (как у ванильного
+/// сервера), а скин можно загрузить свой: его увидит только владелец профиля.
+/// </para>
 /// </summary>
 public interface ILocalProfileService
 {
-    Task<OperationResult<AccountInfo>> CreateAsync(LocalProfileRequest request, CancellationToken ct = default);
+    Task<OperationResult<LocalProfileOutcome>> CreateAsync(LocalProfileRequest request, CancellationToken ct = default);
 
     Task<OperationResult> SetSkinAsync(string accountId, string pngPath, CancellationToken ct = default);
+
+    /// <summary>Сохраняет скин из памяти (например, копию скина официального игрока).</summary>
+    Task<OperationResult> SaveSkinFromBytesAsync(string accountId, byte[] png, bool slim, string source,
+        CancellationToken ct = default);
 
     Task<OperationResult> DeleteAsync(string accountId, CancellationToken ct = default);
 }
 
 public sealed class LocalProfileService(
     IAccountRepository accounts,
+    IProfileLookupService lookup,
     Core.Platform.IAppPaths paths,
     Core.Diagnostics.ILogService log) : ILocalProfileService
 {
-    public async Task<OperationResult<AccountInfo>> CreateAsync(LocalProfileRequest request, CancellationToken ct = default)
+    public async Task<OperationResult<LocalProfileOutcome>> CreateAsync(LocalProfileRequest request, CancellationToken ct = default)
     {
         var name = request.Username?.Trim() ?? string.Empty;
         if (!PathGuard.IsValidMinecraftUsername(name))
         {
-            return OperationResult<AccountInfo>.Fail(ErrorCode.Validation,
+            return OperationResult<LocalProfileOutcome>.Fail(ErrorCode.Validation,
                 "Ник: 3–16 символов, только латинские буквы, цифры и подчёркивание.");
         }
 
         var existing = await accounts.GetAllAsync(ct).ConfigureAwait(false);
         if (existing.Any(a => string.Equals(a.Username, name, StringComparison.OrdinalIgnoreCase) && a.Kind == AccountKind.Local))
         {
-            return OperationResult<AccountInfo>.Fail(ErrorCode.Conflict, "Локальный профиль с таким ником уже существует.");
+            return OperationResult<LocalProfileOutcome>.Fail(ErrorCode.Conflict, "Локальный профиль с таким ником уже существует.");
+        }
+
+        // 1. Ищем официальный профиль с этим ником: у него берём UUID и скин.
+        var uuid = PathGuard.OfflineUuidFor(name);
+        var model = request.SkinModel;
+        string? skinPath = null;
+        string? skinSource = null;
+        var uuidFromOfficial = false;
+        var copiedOfficialSkin = false;
+        var note = string.Empty;
+
+        var remote = await lookup.FetchSkinAsync(name, ct).ConfigureAwait(false);
+        if (remote.IsSuccess && remote.Value is not null)
+        {
+            var skin = remote.Value;
+
+            if (Guid.TryParse(skin.Uuid, out var officialUuid))
+            {
+                uuid = officialUuid;
+                uuidFromOfficial = true;
+            }
+
+            model = skin.IsSlim ? SkinModel.Slim : SkinModel.Classic;
+            skinPath = await SaveSkinFileAsync(name, Guid.NewGuid().ToString("N")[..12], skin.Png, ct).ConfigureAwait(false);
+            skinSource = "mojang";
+            copiedOfficialSkin = true;
+
+            note = $"Ник занят официальным аккаунтом: взят его публичный UUID и копия скина " +
+                   $"({(model == SkinModel.Slim ? "slim" : "classic")}). Вход на серверы с online-mode " +
+                   "всё равно требует лицензии — это ограничение сервера, а не лаунчера.";
+        }
+        else
+        {
+            note = remote.IsSuccess
+                ? "Такого ника в официальном сервисе нет: UUID посчитан в оффлайн-режиме (как у ванильного сервера). " +
+                  "Загрузите свой скин — его будет видеть только этот профиль."
+                : $"Скин официального игрока получить не удалось ({remote.Message}). UUID посчитан оффлайн. " +
+                  "Можно загрузить свой скин — его будет видеть только этот профиль.";
         }
 
         var account = new AccountInfo
         {
             Id = Guid.NewGuid().ToString("N")[..12],
             Username = name,
-            Uuid = PathGuard.OfflineUuidFor(name),
+            Uuid = uuid,
             Kind = AccountKind.Local,
-            SkinModel = request.SkinModel,
+            SkinModel = model,
+            LocalSkinPath = skinPath,
+            SkinSource = skinSource,
+            UuidFromOfficialProfile = uuidFromOfficial,
             IsVerified = false,
             CreatedAt = DateTimeOffset.UtcNow,
             LastUsedAt = DateTimeOffset.UtcNow
         };
 
         await accounts.SaveAsync(account, ct).ConfigureAwait(false);
-        log.Info("Auth", $"Создан локальный профиль {name} (не лицензионный)");
-        return OperationResult<AccountInfo>.Ok(account);
+        log.Info("Auth", $"Создан локальный профиль {name} (UUID {(uuidFromOfficial ? "официальный" : "оффлайн")}, скин {(copiedOfficialSkin ? "скопирован" : "не задан")})");
+        return OperationResult<LocalProfileOutcome>.Ok(new LocalProfileOutcome(account, copiedOfficialSkin, note));
+    }
+
+    /// <summary>Сохраняет PNG-скин в каталог лаунчера и возвращает путь (или null, если это не скин).</summary>
+    private async Task<string?> SaveSkinFileAsync(string username, string accountId, byte[] png, CancellationToken ct)
+    {
+        if (!PathGuard.LooksLikeMinecraftSkin(png))
+        {
+            log.Warn("Auth", $"Скин для {username} отклонён: не PNG 64×64 / 64×32.");
+            return null;
+        }
+
+        var skinsDir = Path.Combine(paths.AppDataDirectory, "skins");
+        Directory.CreateDirectory(skinsDir);
+        var target = Path.Combine(skinsDir, $"{PathGuard.ToSafeFileName(username, "skin")}-{accountId}.png");
+        await File.WriteAllBytesAsync(target, png, ct).ConfigureAwait(false);
+        return target;
     }
 
     public async Task<OperationResult> SetSkinAsync(string accountId, string pngPath, CancellationToken ct = default)
@@ -110,7 +181,38 @@ public sealed class LocalProfileService(
             await src.CopyToAsync(dst, ct).ConfigureAwait(false);
         }
 
-        await accounts.SaveAsync(account with { LocalSkinPath = target, LastUsedAt = DateTimeOffset.UtcNow }, ct).ConfigureAwait(false);
+        await accounts.SaveAsync(account with
+        {
+            LocalSkinPath = target,
+            SkinSource = "local",
+            LastUsedAt = DateTimeOffset.UtcNow
+        }, ct).ConfigureAwait(false);
+        return OperationResult.Ok();
+    }
+
+    public async Task<OperationResult> SaveSkinFromBytesAsync(string accountId, byte[] png, bool slim, string source,
+        CancellationToken ct = default)
+    {
+        var account = await accounts.GetAsync(accountId, ct).ConfigureAwait(false);
+        if (account is null)
+        {
+            return OperationResult.Fail(ErrorCode.NotFound, "Профиль не найден.");
+        }
+
+        var path = await SaveSkinFileAsync(account.Username, account.Id, png, ct).ConfigureAwait(false);
+        if (path is null)
+        {
+            return OperationResult.Fail(ErrorCode.Validation, "Файл не похож на скин Minecraft (нужен PNG 64×64 или 64×32).");
+        }
+
+        await accounts.SaveAsync(account with
+        {
+            LocalSkinPath = path,
+            SkinModel = slim ? SkinModel.Slim : SkinModel.Classic,
+            SkinSource = source,
+            LastUsedAt = DateTimeOffset.UtcNow
+        }, ct).ConfigureAwait(false);
+
         return OperationResult.Ok();
     }
 

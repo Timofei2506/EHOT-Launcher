@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
              xmlns:models="using:EHOT.Launcher.Core.Models"
+             xmlns:imgs="using:EHOT.Launcher.UI.Converters"
              x:Class="EHOT.Launcher.UI.Views.AccountsView"
              x:DataType="vm:AccountsViewModel">
 
@@ -9,7 +10,8 @@
 
     <StackPanel Grid.Row="0" Spacing="4">
       <TextBlock Text="Аккаунты" Classes="h1" />
-      <TextBlock Text="Лицензионный вход Microsoft или локальный оффлайн-профиль" Classes="body" />
+      <TextBlock Text="Играйте как в TLauncher: введите любой ник — скин и UUID подтянутся автоматически, лицензия не нужна"
+                 Classes="body" TextWrapping="Wrap" />
     </StackPanel>
 
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -78,19 +80,30 @@
               </StackPanel>
 
               <TextBlock Classes="caption" TextWrapping="Wrap"
-                         Text="Это не лицензия: официальные серверы недоступны, скин не попадает на Mojang. Подходит для LAN и своего сервера с offline-mode." />
+                         Text="Лицензия не нужна: подходит для своего сервера и LAN. Если ник занят официальным игроком, лаунчер возьмёт его публичный UUID и копию скина." />
 
               <StackPanel Spacing="4">
                 <TextBlock Text="Ник" Classes="caption" FontSize="10.5" />
                 <TextBox Text="{Binding NewUsername, Mode=TwoWay}" PlaceholderText="3–16 символов" />
               </StackPanel>
 
+              <Border Padding="10,8" CornerRadius="10" Background="#101724"
+                      IsVisible="{Binding HasUsernameStatus}">
+                <StackPanel Spacing="3">
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Ellipse Width="7" Height="7" VerticalAlignment="Center"
+                             Fill="{Binding NickIsOfficial, Converter={x:Static vm:NetConverters.OfficialNickBrush}}" />
+                    <TextBlock Grid.Column="1" Text="{Binding UsernameStatus}" FontSize="11" TextWrapping="Wrap"
+                               Foreground="{StaticResource TextBrush}" />
+                  </Grid>
+                  <TextBlock Text="{Binding LookupResult}" Classes="caption" FontSize="10.5" TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+
               <StackPanel Orientation="Horizontal" Spacing="8">
                 <Button Classes="ghost" Content="Проверить ник" Command="{Binding CheckUsernameCommand}" />
-                <Button Classes="primary" Content="Создать" Command="{Binding CreateLocalCommand}" />
+                <Button Classes="primary" Content="Создать профиль" Command="{Binding CreateLocalCommand}" />
               </StackPanel>
-
-              <TextBlock Text="{Binding LookupResult}" Classes="caption" TextWrapping="Wrap" />
             </StackPanel>
           </Border>
         </Grid>
@@ -110,25 +123,39 @@
                 <DataTemplate x:DataType="models:AccountInfo">
                   <Border CornerRadius="12" Padding="12,10" Margin="0,0,0,6" Background="#171E2C"
                           BorderBrush="#1E2739" BorderThickness="1">
-                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="10">
-                      <Border Width="32" Height="32" CornerRadius="9" Background="{StaticResource AccentGradient}">
-                        <TextBlock Text="{Binding Username, Converter={x:Static vm:TextConverters.FirstLetter}}"
-                                   FontWeight="Bold" Foreground="White"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="10">
+                      <!-- Голова со скина; пока скина нет — инициал ника -->
+                      <Border Width="38" Height="38" CornerRadius="10" Background="#1E2740" ClipToBounds="True"
+                              BorderBrush="#26314A" BorderThickness="1">
+                        <Panel>
+                          <TextBlock Text="{Binding Username, Converter={x:Static vm:TextConverters.FirstLetter}}"
+                                     FontWeight="Bold" Foreground="White"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                     IsVisible="{Binding LocalSkinPath, Converter={x:Static ObjectConverters.IsNull}}" />
+                          <Image Width="38" Height="38" Stretch="Uniform"
+                                 RenderOptions.BitmapInterpolationMode="None"
+                                 IsVisible="{Binding LocalSkinPath, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                 Source="{Binding LocalSkinPath, Converter={x:Static imgs:SkinFaceConverter.Instance}}" />
+                        </Panel>
                       </Border>
                       <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                         <TextBlock Text="{Binding Username}" FontWeight="SemiBold" FontSize="13"
                                    Foreground="{StaticResource TextBrush}" />
-                        <TextBlock Text="{Binding DisplayKind}" Classes="caption" FontSize="10.5" />
+                        <TextBlock Text="{Binding Uuid}" Classes="caption" FontSize="10"
+                                   TextTrimming="CharacterEllipsis" MaxLines="1" />
                       </StackPanel>
                       <Border Grid.Column="2" Classes="chip" VerticalAlignment="Center" Padding="9,3">
-                        <TextBlock Text="{Binding IsVerified, Converter={x:Static vm:NetConverters.VerifiedLabel}}"
+                        <TextBlock Text="{Binding UuidFromOfficialProfile, Converter={x:Static vm:NetConverters.UuidSourceLabel}}"
                                    FontSize="10" Foreground="{StaticResource TextSecondaryBrush}" />
                       </Border>
-                      <Button Grid.Column="3" Classes="pill" Content="Использовать" VerticalAlignment="Center"
+                      <Button Grid.Column="3" Classes="pill" Content="Скин с Mojang" VerticalAlignment="Center"
+                              ToolTip.Tip="Скопировать скин официального игрока с этим ником"
+                              Command="{Binding $parent[ItemsControl].((vm:AccountsViewModel)DataContext).CopyOfficialSkinCommand}"
+                              CommandParameter="{Binding}" />
+                      <Button Grid.Column="4" Classes="pill" Content="Использовать" VerticalAlignment="Center"
                               Command="{Binding $parent[ItemsControl].((vm:AccountsViewModel)DataContext).UseAccountCommand}"
                               CommandParameter="{Binding}" />
-                      <Button Grid.Column="4" Classes="danger" Padding="11,5" FontSize="11.5" Content="Удалить"
+                      <Button Grid.Column="5" Classes="danger" Padding="11,5" FontSize="11.5" Content="Удалить"
                               VerticalAlignment="Center"
                               Command="{Binding $parent[ItemsControl].((vm:AccountsViewModel)DataContext).DeleteAccountCommand}"
                               CommandParameter="{Binding}" />
@@ -147,14 +174,26 @@
         <!-- ══════ Скин ══════ -->
         <Border CornerRadius="16" Padding="18" Background="#141A26"
                 BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
-          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-            <StackPanel Spacing="6">
-              <TextBlock Text="Скин" Classes="h3" />
-              <TextBlock Classes="caption" TextWrapping="Wrap" MaxWidth="560"
-                         Text="PNG 64×64 или 64×32. Лаунчер проверяет сигнатуру и размер файла, хранит скин локально." />
-              <TextBox Text="{Binding SkinPath, Mode=TwoWay}" PlaceholderText="Путь к файлу skin.png" />
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
+            <Border Width="64" Height="64" CornerRadius="14" Background="#1E2740" ClipToBounds="True"
+                    BorderBrush="#26314A" BorderThickness="1" VerticalAlignment="Center">
+              <Panel>
+                <Path Data="{StaticResource IconUser}" Classes="icon" Width="26" Height="26"
+                      HorizontalAlignment="Center" VerticalAlignment="Center"
+                      IsVisible="{Binding SelectedSkinPath, Converter={x:Static ObjectConverters.IsNull}}" />
+                <Image Width="64" Height="64" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="None"
+                       IsVisible="{Binding SelectedSkinPath, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       Source="{Binding SelectedSkinPath, Converter={x:Static imgs:SkinFaceConverter.Instance}}" />
+              </Panel>
+            </Border>
+
+            <StackPanel Grid.Column="1" Spacing="6" VerticalAlignment="Center">
+              <TextBlock Text="Скин профиля" Classes="h3" />
+              <TextBlock Text="{Binding SelectedSkinHint}" Classes="caption" TextWrapping="Wrap" />
+              <TextBox Text="{Binding SkinPath, Mode=TwoWay}" PlaceholderText="Путь к файлу skin.png (64×64 или 64×32)" />
             </StackPanel>
-            <Button Grid.Column="1" Classes="ghost" Content="Применить скин" VerticalAlignment="Center"
+
+            <Button Grid.Column="2" Classes="ghost" Content="Применить свой скин" VerticalAlignment="Center"
                     Command="{Binding ApplySkinCommand}" />
           </Grid>
         </Border>

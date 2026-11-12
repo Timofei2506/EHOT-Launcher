@@ -26,6 +26,10 @@ public sealed record HttpSettings
         "libraries.minecraft.net",
         "api.mojang.com",
         "sessionserver.mojang.com",
+        // Официальные текстуры скинов и их публичный рендер: нужны для пиратского режима
+        // (ник → скин официального игрока).
+        "textures.minecraft.net",
+        "crafatar.com",
         "cdn.modrinth.com",
         "api.modrinth.com",
         "cdn-raw.modrinth.com",

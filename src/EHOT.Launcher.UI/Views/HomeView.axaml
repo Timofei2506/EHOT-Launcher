@@ -3,6 +3,8 @@
              xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
              xmlns:conv="using:EHOT.Launcher.UI.Converters"
              xmlns:models="using:EHOT.Launcher.Core.Models"
+             xmlns:conv2="using:EHOT.Launcher.UI.Converters"
+             xmlns:controls="using:EHOT.Launcher.UI.Controls"
              x:Class="EHOT.Launcher.UI.Views.HomeView"
              x:DataType="vm:HomeViewModel">
 
@@ -17,7 +19,7 @@
       <Border Classes="hero">
         <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
 
-          <!-- Левая часть: профиль -->
+          <!-- Левая часть: скин игрока, ник и профиль -->
           <StackPanel Grid.Row="0" Grid.Column="0" Spacing="6" Margin="0,0,20,0">
             <StackPanel Orientation="Horizontal" Spacing="8">
               <TextBlock Text="{Binding Greeting}" Classes="eyebrow" />
@@ -26,11 +28,31 @@
                          Foreground="{StaticResource TextSecondaryBrush}" />
             </StackPanel>
 
-            <TextBlock Text="{Binding ProfileName}" FontSize="34" FontWeight="Bold" LetterSpacing="-0.6"
-                       Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" MaxLines="1"
-                       Margin="0,2,0,0" />
-            <TextBlock Text="{Binding ProfileVersion}" FontSize="13.5"
-                       Foreground="{StaticResource AccentBlueBrush}" />
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Margin="0,4,0,0">
+              <!-- Голова со скина игрока; если скина нет — инициал ника -->
+              <Border Width="72" Height="72" CornerRadius="16" Background="#1E2740"
+                      BorderBrush="#2A3350" BorderThickness="1" VerticalAlignment="Center">
+                <Panel>
+                  <TextBlock Text="{Binding AccountInitials}" FontSize="30" FontWeight="Bold"
+                             Foreground="#C4B5FD" HorizontalAlignment="Center" VerticalAlignment="Center"
+                             IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNull}}" />
+                  <Border CornerRadius="16" ClipToBounds="True"
+                          IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNotNull}}">
+                    <Image Source="{Binding SkinPath, Converter={x:Static conv2:SkinFaceConverter.Instance}}"
+                           Width="72" Height="72" Stretch="Uniform"
+                           RenderOptions.BitmapInterpolationMode="None" />
+                  </Border>
+                </Panel>
+              </Border>
+
+              <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
+                <TextBlock Text="{Binding AccountName}" FontSize="32" FontWeight="Bold" LetterSpacing="-0.6"
+                           Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                <TextBlock Text="{Binding ProfileName}" FontSize="14" FontWeight="SemiBold"
+                           Foreground="{StaticResource AccentBlueBrush}" TextTrimming="CharacterEllipsis" MaxLines="1" />
+                <TextBlock Text="{Binding ProfileVersion}" Classes="caption" FontSize="11" />
+              </StackPanel>
+            </Grid>
           </StackPanel>
 
           <!-- Кнопка ИГРАТЬ справа, всегда одной ширины -->
@@ -61,8 +83,10 @@
             </StackPanel>
 
             <StackPanel Grid.Column="2" Spacing="5">
-              <TextBlock Text="СЕТЬ" Classes="caption" FontSize="9.5" LetterSpacing="1.1" />
-              <TextBlock Text="{Binding NetworkStatus}" FontSize="12" Foreground="{StaticResource TextBrush}"
+              <TextBlock Text="АККАУНТ" Classes="caption" FontSize="9.5" LetterSpacing="1.1" />
+              <TextBlock Text="{Binding AccountUuidLabel}" FontSize="12" Foreground="{StaticResource TextBrush}"
+                         TextTrimming="CharacterEllipsis" />
+              <TextBlock Text="{Binding NetworkStatus}" FontSize="10.5" Classes="caption"
                          TextTrimming="CharacterEllipsis" />
             </StackPanel>
           </Grid>
@@ -85,7 +109,7 @@
           <Button Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Stretch"
                   Command="{Binding OpenContentCommand}" CommandParameter="mods">
             <StackPanel Spacing="8">
-              <Border Width="34" Height="34" CornerRadius="10" Background="#1A8B5CF6" HorizontalAlignment="Left">
+              <Border Width="38" Height="38" CornerRadius="11" Background="#1A8B5CF6" HorizontalAlignment="Left">
                 <Path Data="{StaticResource IconPuzzle}" Classes="icon" Stroke="{StaticResource AccentBrush}"
                       HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
@@ -99,7 +123,7 @@
           <Button Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Stretch"
                   Command="{Binding OpenContentCommand}" CommandParameter="modpacks">
             <StackPanel Spacing="8">
-              <Border Width="34" Height="34" CornerRadius="10" Background="#1A38BDF8" HorizontalAlignment="Left">
+              <Border Width="38" Height="38" CornerRadius="11" Background="#1A38BDF8" HorizontalAlignment="Left">
                 <Path Data="{StaticResource IconBox}" Classes="icon blue"
                       HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
@@ -113,7 +137,7 @@
           <Button Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Stretch"
                   Command="{Binding OpenNetworkCommand}">
             <StackPanel Spacing="8">
-              <Border Width="34" Height="34" CornerRadius="10" Background="#1A34D399" HorizontalAlignment="Left">
+              <Border Width="38" Height="38" CornerRadius="11" Background="#1A34D399" HorizontalAlignment="Left">
                 <Path Data="{StaticResource IconNetwork}" Classes="icon" Stroke="{StaticResource SuccessBrush}"
                       HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
@@ -124,14 +148,18 @@
         </Border>
 
         <Border Grid.Column="3" Classes="card" Padding="16">
-          <StackPanel Spacing="8">
-            <Border Width="34" Height="34" CornerRadius="10" Background="#1AFBBF24" HorizontalAlignment="Left">
-              <Path Data="{StaticResource IconFolder}" Classes="icon" Stroke="{StaticResource WarningBrush}"
-                    HorizontalAlignment="Center" VerticalAlignment="Center" />
-            </Border>
-            <TextBlock Text="Каталог игры" Classes="h3" />
-            <TextBlock Text="{Binding MinecraftRoot}" Classes="caption" TextWrapping="Wrap" MaxLines="2" />
-          </StackPanel>
+          <Button Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Stretch"
+                  Command="{Binding OpenGameFolderCommand}" IsVisible="{Binding CanOpenGameFolder}"
+                  ToolTip.Tip="{Binding MinecraftRoot}">
+            <StackPanel Spacing="8">
+              <Border Width="38" Height="38" CornerRadius="11" Background="#1AFBBF24" HorizontalAlignment="Left">
+                <Path Data="{StaticResource IconFolder}" Classes="icon" Stroke="{StaticResource WarningBrush}"
+                      HorizontalAlignment="Center" VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Text="Каталог игры" Classes="h3" />
+              <TextBlock Text="{Binding MinecraftFolderDetail}" Classes="caption" TextWrapping="Wrap" MaxLines="2" />
+            </StackPanel>
+          </Button>
         </Border>
       </Grid>
 
@@ -199,10 +227,16 @@
                     BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
               <StackPanel Spacing="6">
                 <Grid ColumnDefinitions="Auto,*">
-                  <Border Width="38" Height="38" CornerRadius="10" Background="#1A8B5CF6">
-                    <TextBlock Text="{Binding Title, Converter={x:Static vm:TextConverters.FirstLetter}}"
-                               FontWeight="Bold" FontSize="16" Foreground="White"
-                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  <Border Width="38" Height="38" CornerRadius="10" Background="#1E2740" ClipToBounds="True"
+                          BorderBrush="#26314A" BorderThickness="1">
+                    <Panel>
+                      <TextBlock Text="{Binding Title, Converter={x:Static vm:TextConverters.FirstLetter}}"
+                                 FontWeight="Bold" FontSize="16" Foreground="#C4B5FD"
+                                 HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 IsVisible="{Binding Title, Converter={x:Static ObjectConverters.IsNotNull}, ConverterParameter=x}" />
+                      <controls:RemoteImage Url="{Binding IconUrl}"
+                                            Width="34" Height="34" Stretch="Uniform" />
+                    </Panel>
                   </Border>
                   <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center" Spacing="2">
                     <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12.5"

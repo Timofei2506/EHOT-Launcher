@@ -12,7 +12,7 @@ namespace EHOT.Launcher.Storage;
 /// </summary>
 public sealed class SqliteDatabase
 {
-    private const int CurrentSchemaVersion = 1;
+    private const int CurrentSchemaVersion = 2;
 
     private readonly string _connectionString;
 
@@ -66,6 +66,14 @@ public sealed class SqliteDatabase
             Execute(connection, transaction, SchemaV1);
         }
 
+        if (version >= 1 && version < 2)
+        {
+            // v2: откуда взят скин и официальный ли UUID — часть сценария «ввёл ник → его скин и UUID».
+            // Только для существующих баз: свежая база создаётся по SchemaV1 сразу с этими колонками.
+            AddColumnIfMissing(connection, transaction, "accounts", "skin_source", "TEXT NULL");
+            AddColumnIfMissing(connection, transaction, "accounts", "uuid_official", "INTEGER NOT NULL DEFAULT 0");
+        }
+
         SetUserVersion(connection, transaction, CurrentSchemaVersion);
         transaction.Commit();
     }
@@ -81,7 +89,9 @@ public sealed class SqliteDatabase
             skin_model INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL,
             last_used_at TEXT NULL,
-            is_verified INTEGER NOT NULL DEFAULT 0
+            is_verified INTEGER NOT NULL DEFAULT 0,
+            skin_source TEXT NULL,
+            uuid_official INTEGER NOT NULL DEFAULT 0
         );
 
         CREATE TABLE IF NOT EXISTS profiles (
@@ -177,6 +187,26 @@ public sealed class SqliteDatabase
         using var cmd = connection.CreateCommand();
         cmd.CommandText = "PRAGMA user_version;";
         return Convert.ToInt32(cmd.ExecuteScalar(), CultureInfo.InvariantCulture);
+    }
+
+    private static void AddColumnIfMissing(SqliteConnection connection, SqliteTransaction transaction, string table,
+        string column, string definition)
+    {
+        using (var probe = connection.CreateCommand())
+        {
+            probe.Transaction = transaction;
+            probe.CommandText = $"PRAGMA table_info({table});";
+            using var reader = probe.ExecuteReader();
+            while (reader.Read())
+            {
+                if (string.Equals(reader.GetString(1), column, StringComparison.OrdinalIgnoreCase))
+                {
+                    return;
+                }
+            }
+        }
+
+        Execute(connection, transaction, $"ALTER TABLE {table} ADD COLUMN {column} {definition};");
     }
 
     private static void SetUserVersion(SqliteConnection connection, SqliteTransaction tx, int version)

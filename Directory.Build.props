@@ -19,7 +19,7 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <Product>EHOT Launcher</Product>
     <Company>EHOT</Company>
-    <Version>0.2.0</Version>
+    <Version>0.2.1</Version>
     <Authors>EHOT Launcher Team</Authors>
     <Copyright>Copyright (c) 2026 EHOT</Copyright>
     <RepositoryType>git</RepositoryType>

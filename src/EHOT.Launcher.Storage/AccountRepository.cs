@@ -23,7 +23,7 @@ public sealed class AccountRepository(SqliteDatabase database) : IAccountReposit
         await using var connection = database.Open();
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = """
-            SELECT id, username, uuid, kind, xbox_user_id, skin_path, skin_model, created_at, last_used_at, is_verified
+            SELECT id, username, uuid, kind, xbox_user_id, skin_path, skin_model, created_at, last_used_at, is_verified, skin_source, uuid_official
             FROM accounts ORDER BY kind DESC, last_used_at DESC, username;
             """;
         await using var reader = await cmd.ExecuteReaderAsync(ct).ConfigureAwait(false);
@@ -42,7 +42,7 @@ public sealed class AccountRepository(SqliteDatabase database) : IAccountReposit
         await using var connection = database.Open();
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = """
-            SELECT id, username, uuid, kind, xbox_user_id, skin_path, skin_model, created_at, last_used_at, is_verified
+            SELECT id, username, uuid, kind, xbox_user_id, skin_path, skin_model, created_at, last_used_at, is_verified, skin_source, uuid_official
             FROM accounts WHERE id = $id;
             """;
         cmd.Parameters.AddWithValue("$id", id);
@@ -55,8 +55,8 @@ public sealed class AccountRepository(SqliteDatabase database) : IAccountReposit
         await using var connection = database.Open();
         await using var cmd = connection.CreateCommand();
         cmd.CommandText = """
-            INSERT INTO accounts (id, username, uuid, kind, xbox_user_id, skin_path, skin_model, created_at, last_used_at, is_verified)
-            VALUES ($id, $username, $uuid, $kind, $xbox, $skin, $skinModel, $created, $used, $verified)
+            INSERT INTO accounts (id, username, uuid, kind, xbox_user_id, skin_path, skin_model, created_at, last_used_at, is_verified, skin_source, uuid_official)
+            VALUES ($id, $username, $uuid, $kind, $xbox, $skin, $skinModel, $created, $used, $verified, $skinSource, $uuidOfficial)
             ON CONFLICT(id) DO UPDATE SET
                 username = excluded.username,
                 uuid = excluded.uuid,
@@ -64,6 +64,8 @@ public sealed class AccountRepository(SqliteDatabase database) : IAccountReposit
                 xbox_user_id = excluded.xbox_user_id,
                 skin_path = excluded.skin_path,
                 skin_model = excluded.skin_model,
+                skin_source = excluded.skin_source,
+                uuid_official = excluded.uuid_official,
                 last_used_at = excluded.last_used_at,
                 is_verified = excluded.is_verified;
             """;
@@ -74,6 +76,8 @@ public sealed class AccountRepository(SqliteDatabase database) : IAccountReposit
         cmd.Parameters.AddWithValue("$xbox", (object?)account.XboxUserId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$skin", (object?)account.LocalSkinPath ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$skinModel", (int)account.SkinModel);
+        cmd.Parameters.AddWithValue("$skinSource", (object?)account.SkinSource ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$uuidOfficial", account.UuidFromOfficialProfile ? 1 : 0);
         cmd.Parameters.AddWithValue("$created", Db.Iso(account.CreatedAt));
         cmd.Parameters.AddWithValue("$used", (object?)Db.Iso(account.LastUsedAt) ?? DBNull.Value);
         cmd.Parameters.AddWithValue("$verified", account.IsVerified ? 1 : 0);
@@ -108,6 +112,8 @@ public sealed class AccountRepository(SqliteDatabase database) : IAccountReposit
         XboxUserId = reader.NullableString(4),
         LocalSkinPath = reader.NullableString(5),
         SkinModel = (SkinModel)reader.GetInt32(6),
+        SkinSource = reader.NullableString(10),
+        UuidFromOfficialProfile = reader.GetInt32(11) != 0,
         CreatedAt = reader.Date(7),
         LastUsedAt = reader.NullableDate(8),
         IsVerified = reader.GetInt32(9) == 1

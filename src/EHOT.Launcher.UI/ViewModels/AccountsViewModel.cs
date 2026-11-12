@@ -71,6 +71,44 @@ public sealed partial class AccountsViewModel : ViewModelBase
     [ObservableProperty]
     private string _skinPath = string.Empty;
 
+    /// <summary>Что известно про введённый ник: официальный аккаунт или свободный (оффлайн) ник.</summary>
+    [ObservableProperty]
+    private string _usernameStatus = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasUsernameStatus;
+
+    /// <summary>true — ник занят официальным аккаунтом, скин и UUID будут скопированы у него.</summary>
+    [ObservableProperty]
+    private bool _nickIsOfficial;
+
+    /// <summary>Путь к скину выбранного профиля — для превью.</summary>
+    [ObservableProperty]
+    private string? _selectedSkinPath;
+
+    [ObservableProperty]
+    private string _selectedSkinHint = "Скин не задан: на сервере будет стандартный персонаж.";
+
+    partial void OnNewUsernameChanged(string value)
+    {
+        // Любое изменение ника сбрасывает прошлый вердикт: данные не должны «прилипать».
+        UsernameStatus = string.Empty;
+        HasUsernameStatus = false;
+        NickIsOfficial = false;
+    }
+
+    partial void OnSelectedAccountChanged(AccountInfo? value)
+    {
+        SelectedSkinPath = value?.LocalSkinPath;
+        SelectedSkinHint = value switch
+        {
+            null => "Выберите профиль, чтобы увидеть его скин.",
+            { SkinSource: "mojang" } => "Скин скопирован у официального игрока с этим ником — его видят все, у кого есть такой скин.",
+            { SkinSource: "local" } => "Свой скин: его видите только вы (на серверах с online-mode чужие игроки его не получат).",
+            _ => "Скин не задан: на сервере будет стандартный персонаж."
+        };
+    }
+
     public override async Task OnNavigatedToAsync(CancellationToken ct = default)
     {
         await ReloadAsync(ct).ConfigureAwait(true);
@@ -98,12 +136,58 @@ public sealed partial class AccountsViewModel : ViewModelBase
             return;
         }
 
+        var outcome = result.Value!;
+        await _state.RefreshAccountsAsync().ConfigureAwait(true);
+        await _state.SetAccountAsync(outcome.Account).ConfigureAwait(true);
+        await ReloadAsync().ConfigureAwait(true);
+        SelectedAccount = Accounts.FirstOrDefault(a => a.Id == outcome.Account.Id) ?? SelectedAccount;
+
+        _toasts.Show(
+            outcome.CopiedOfficialSkin ? "Скин скопирован у официального игрока" : "Профиль создан",
+            outcome.Note,
+            outcome.CopiedOfficialSkin ? ToastKind.Success : ToastKind.Info);
+
+        LookupResult = outcome.Note;
+        NewUsername = string.Empty;
+    }
+
+    /// <summary>Автоматически переносит скин официального игрока на уже созданный профиль.</summary>
+    [RelayCommand]
+    private async Task CopyOfficialSkinAsync(AccountInfo? account)
+    {
+        account ??= SelectedAccount;
+        if (account is null)
+        {
+            _toasts.Warning("Профиль", "Выберите профиль.");
+            return;
+        }
+
+        var remote = await _lookup.FetchSkinAsync(account.Username).ConfigureAwait(true);
+        if (!remote.IsSuccess)
+        {
+            _toasts.Error("Скин не получен", remote.Message ?? "Сервис Mojang недоступен.");
+            return;
+        }
+
+        if (remote.Value is null)
+        {
+            _toasts.Warning("Ника нет в официальном сервисе",
+                "Такого игрока нет — можно загрузить свой скин: его увидит только этот профиль.");
+            return;
+        }
+
+        var result = await _local.SaveSkinFromBytesAsync(account.Id, remote.Value.Png,
+            remote.Value.IsSlim, source: "mojang").ConfigureAwait(true);
+        if (!result.IsSuccess)
+        {
+            _toasts.Error("Скин не сохранён", result.Message ?? "Ошибка.");
+            return;
+        }
+
         await _state.RefreshAccountsAsync().ConfigureAwait(true);
         await ReloadAsync().ConfigureAwait(true);
-
-        _toasts.Warning("Локальный профиль",
-            "Это оффлайн-профиль: вход на официальные серверы и загрузка скина на Mojang недоступны.");
-        NewUsername = string.Empty;
+        SelectedAccount = Accounts.FirstOrDefault(a => a.Id == account.Id) ?? SelectedAccount;
+        _toasts.Success("Скин скопирован", $"Ник {remote.Value.Username}: скин официального игрока применён.");
     }
 
     [RelayCommand]
@@ -118,12 +202,27 @@ public sealed partial class AccountsViewModel : ViewModelBase
         if (!lookup.IsSuccess)
         {
             LookupResult = lookup.Message ?? "Проверка недоступна.";
+            UsernameStatus = string.Empty;
+            HasUsernameStatus = false;
+            NickIsOfficial = false;
             return;
         }
 
-        LookupResult = lookup.Value is null
-            ? "Ник свободен в официальном сервисе Mojang: можно создать локальный профиль или войти своим аккаунтом Microsoft."
-            : $"Ник занят официальным аккаунтом (UUID {lookup.Value.Uuid}). Войти под чужим ником невозможно — используйте свой Microsoft-аккаунт.";
+        HasUsernameStatus = true;
+        if (lookup.Value is null)
+        {
+            NickIsOfficial = false;
+            UsernameStatus = "Ника нет в официальном сервисе — это свободный ник";
+            LookupResult = "При создании профиля UUID будет посчитан в оффлайн-режиме (как у ванильного сервера). " +
+                           "Скин можно загрузить свой: его будет видеть только этот профиль.";
+            return;
+        }
+
+        NickIsOfficial = true;
+        UsernameStatus = $"Официальный аккаунт · UUID {lookup.Value.Uuid}";
+        LookupResult = "Это ник существующего официального игрока: при создании профиля лаунчер возьмёт его " +
+                       "публичный UUID и копию скина, чтобы персонаж выглядел привычно. Вход на серверы с " +
+                       "online-mode по-прежнему требует лицензии — это правило сервера.";
     }
 
     [RelayCommand]

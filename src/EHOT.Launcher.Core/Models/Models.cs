@@ -17,9 +17,23 @@ public sealed record AccountInfo
     public required Guid Uuid { get; init; }
     public required AccountKind Kind { get; init; }
 
-    /// <summary>Для локального профиля — выбранный скин (путь к PNG) и его модель.</summary>
+    /// <summary>Локальная копия PNG-скина (своя загрузка или копия скина официального игрока).</summary>
     public string? LocalSkinPath { get; init; }
+
     public SkinModel SkinModel { get; init; } = SkinModel.Classic;
+
+    /// <summary>
+    /// Откуда взят скин: <c>mojang</c> — скопирован у официального игрока с таким ником,
+    /// <c>local</c> — загружен вручную (такой скин видит только владелец профиля).
+    /// </summary>
+    public string? SkinSource { get; init; }
+
+    /// <summary>
+    /// true, если ник принадлежит официальному аккаунту и UUID взят у него (а не сгенерирован оффлайн).
+    /// Серверы с <c>online-mode=true</c> при этом всё равно требуют настоящий вход через Microsoft —
+    /// подмена UUID не выдаёт себя за чужой аккаунт.
+    /// </summary>
+    public bool UuidFromOfficialProfile { get; init; }
 
     /// <summary>Xbox User Id (только для MS-аккаунтов).</summary>
     public string? XboxUserId { get; init; }

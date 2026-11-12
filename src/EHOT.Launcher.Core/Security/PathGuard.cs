@@ -163,6 +163,28 @@ public static class PathGuard
            && name.Length is >= 3 and <= 16
            && name.All(c => char.IsAsciiLetterOrDigit(c) || c == '_');
 
+    /// <summary>
+    /// Похож ли файл на валидный скин Minecraft: PNG 64×64 или 64×32 (в том числе legacy).
+    /// Проверяются только сигнатура и размеры из заголовка — этого достаточно, чтобы
+    /// не подсунуть в игру случайный файл вместо текстуры.
+    /// </summary>
+    public static bool LooksLikeMinecraftSkin(ReadOnlySpan<byte> png)
+    {
+        if (png.Length < 24)
+        {
+            return false;
+        }
+
+        if (png[0] != 0x89 || png[1] != 0x50 || png[2] != 0x4E || png[3] != 0x47)
+        {
+            return false;
+        }
+
+        var width = (png[16] << 24) | (png[17] << 16) | (png[18] << 8) | png[19];
+        var height = (png[20] << 24) | (png[21] << 16) | (png[22] << 8) | png[23];
+        return width == 64 && (height == 64 || height == 32);
+    }
+
     /// <summary>Детерминированный оффлайн-UUID (не выдаётся за официальный UUID аккаунта).</summary>
     public static Guid OfflineUuidFor(string username)
     {
