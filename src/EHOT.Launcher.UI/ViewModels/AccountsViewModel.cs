@@ -21,6 +21,7 @@ public sealed partial class AccountsViewModel : ViewModelBase
     private readonly IProfileLookupService _lookup;
     private readonly IAccountRepository _accounts;
     private readonly IToastService _toasts;
+    private readonly ISkinFilePicker _picker;
 
     public AccountsViewModel(
         IAppState state,
@@ -28,7 +29,8 @@ public sealed partial class AccountsViewModel : ViewModelBase
         IMicrosoftAuthService microsoft,
         IProfileLookupService lookup,
         IAccountRepository accounts,
-        IToastService toasts)
+        IToastService toasts,
+        ISkinFilePicker picker)
     {
         _state = state;
         _local = local;
@@ -36,6 +38,7 @@ public sealed partial class AccountsViewModel : ViewModelBase
         _lookup = lookup;
         _accounts = accounts;
         _toasts = toasts;
+        _picker = picker;
 
         MicrosoftConfigured = microsoft.IsConfigured;
         MicrosoftHint = microsoft.ConfigurationHint ?? string.Empty;
@@ -302,6 +305,31 @@ public sealed partial class AccountsViewModel : ViewModelBase
         {
             _toasts.Error("Не удалось удалить", result.Message ?? "Ошибка.");
         }
+    }
+
+    /// <summary>Открывает системный диалог: путь больше не нужно вбивать руками.</summary>
+    [RelayCommand]
+    private async Task PickSkinFileAsync()
+    {
+        string? path;
+        try
+        {
+            path = await _picker.PickSkinAsync().ConfigureAwait(true);
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Диалог не открылся", ex.Message);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            // Отмена — это нормальный исход, ругаться не нужно.
+            return;
+        }
+
+        SkinPath = path;
+        await ApplySkinAsync().ConfigureAwait(true);
     }
 
     [RelayCommand]

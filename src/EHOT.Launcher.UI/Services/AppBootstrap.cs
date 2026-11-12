@@ -131,6 +131,7 @@ public static class AppBootstrap
         services.AddSingleton<IUpdateService, GitHubUpdateService>();
         services.AddSingleton<UpdateViewModel>();
         services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<ISkinFilePicker, SkinFilePicker>();
         services.AddSingleton<DeepLinkRouter>(sp => new DeepLinkRouter(
             sp.GetRequiredService<ILoggerFactory>().CreateLogger("DeepLink"),
             sp.GetRequiredService<INavigationService>(),

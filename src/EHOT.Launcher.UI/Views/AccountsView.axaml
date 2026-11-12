@@ -193,8 +193,13 @@
               <TextBox Text="{Binding SkinPath, Mode=TwoWay}" PlaceholderText="Путь к файлу skin.png (64×64 или 64×32)" />
             </StackPanel>
 
-            <Button Grid.Column="2" Classes="ghost" Content="Применить свой скин" VerticalAlignment="Center"
-                    Command="{Binding ApplySkinCommand}" />
+            <StackPanel Grid.Column="2" Spacing="6" VerticalAlignment="Center">
+              <Button Classes="primary" Content="Загрузить скин…" HorizontalAlignment="Stretch"
+                      Command="{Binding PickSkinFileCommand}"
+                      ToolTip.Tip="Выбрать PNG 64×64 или 64×32 — скин будет виден только этому профилю" />
+              <Button Classes="ghost" Content="Применить путь" HorizontalAlignment="Stretch"
+                      Command="{Binding ApplySkinCommand}" />
+            </StackPanel>
           </Grid>
         </Border>
 
