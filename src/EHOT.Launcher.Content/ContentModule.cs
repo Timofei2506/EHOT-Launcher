@@ -24,6 +24,7 @@ public static class ContentModule
         services.AddSingleton<IModpackService, ModpackService>();
         services.AddSingleton<IInstalledContentRepository, InstalledContentRepository>();
         services.AddSingleton<IMinecraftNewsService, MinecraftNewsService>();
+        services.AddSingleton<Optimization.OptimizationAdvisor>();
         return services;
     }
 }

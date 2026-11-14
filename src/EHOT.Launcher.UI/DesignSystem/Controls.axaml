@@ -254,6 +254,60 @@
     <Setter Property="Theme" Value="{StaticResource EhotIconButton}" />
   </Style>
 
+  <!-- ══════════════ Кнопки окна (свернуть / во весь экран / закрыть) ══════════════
+       Один размер, один вес штриха, центрированный глиф. Ховер — мягкая подложка,
+       у закрытия — красная, как принято в Windows. -->
+  <Style Selector="Button.window">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Width" Value="42" />
+    <Setter Property="Height" Value="30" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="1,0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button.window /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+
+  <Style Selector="Button.window:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#1FFFFFFF" />
+  </Style>
+
+  <Style Selector="Button.window:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#33FFFFFF" />
+  </Style>
+
+  <Style Selector="Button.window Path">
+    <Setter Property="Width" Value="12" />
+    <Setter Property="Height" Value="12" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="Fill" Value="Transparent" />
+    <Setter Property="Stroke" Value="#B9C2D4" />
+    <Setter Property="StrokeThickness" Value="1.25" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="StrokeJoin" Value="Round" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button.window:pointerover Path">
+    <Setter Property="Stroke" Value="#FFFFFF" />
+  </Style>
+
+  <!-- Закрытие: красная подложка и белый крестик -->
+  <Style Selector="Button.window.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#D9383F" />
+  </Style>
+
+  <Style Selector="Button.window.close:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#B3262C" />
+  </Style>
+
   <!-- Кнопка «таблетка» для второстепенных действий в списках -->
   <Style Selector="Button.pill">
     <Setter Property="Theme" Value="{StaticResource EhotPillButton}" />

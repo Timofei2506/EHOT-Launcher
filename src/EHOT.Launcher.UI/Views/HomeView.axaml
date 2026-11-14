@@ -28,22 +28,21 @@
                          Foreground="{StaticResource TextSecondaryBrush}" />
             </StackPanel>
 
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Margin="0,4,0,0">
-              <!-- Голова со скина игрока; если скина нет — инициал ника -->
-              <Border Width="72" Height="72" CornerRadius="16" Background="#1E2740"
-                      BorderBrush="#2A3350" BorderThickness="1" VerticalAlignment="Center">
-                <Panel>
-                  <TextBlock Text="{Binding AccountInitials}" FontSize="30" FontWeight="Bold"
-                             Foreground="#C4B5FD" HorizontalAlignment="Center" VerticalAlignment="Center"
-                             IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNull}}" />
-                  <Border CornerRadius="16" ClipToBounds="True"
-                          IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <Image Source="{Binding SkinPath, Converter={x:Static conv2:SkinFaceConverter.Instance}}"
-                           Width="72" Height="72" Stretch="Uniform"
-                           RenderOptions.BitmapInterpolationMode="None" />
-                  </Border>
-                </Panel>
-              </Border>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="18" Margin="0,4,0,0">
+              <!-- Объёмное превью скина: вращается мышью. Если скина нет — инициал ника
+                   с подписью, что скин можно загрузить в «Аккаунтах». -->
+              <Panel Width="104" Height="132" VerticalAlignment="Center">
+                <Border CornerRadius="16" Background="#111828" BorderBrush="#2A3350" BorderThickness="1"
+                        IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNotNull}}">
+                  <controls:Skin3DView SkinPath="{Binding SkinPath}" Margin="2" />
+                </Border>
+                <Border Width="104" Height="132" CornerRadius="16" Background="#1E2740"
+                        BorderBrush="#2A3350" BorderThickness="1"
+                        IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNull}}">
+                  <TextBlock Text="{Binding AccountInitials}" FontSize="34" FontWeight="Bold"
+                             Foreground="#C4B5FD" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+              </Panel>
 
               <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
                 <TextBlock Text="{Binding AccountName}" FontSize="32" FontWeight="Bold" LetterSpacing="-0.6"

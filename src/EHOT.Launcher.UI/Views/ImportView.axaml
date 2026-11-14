@@ -1,0 +1,170 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             xmlns:opt="using:EHOT.Launcher.Game.Import"
+             x:Class="EHOT.Launcher.UI.Views.ImportView"
+             x:DataType="vm:ImportViewModel">
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <StackPanel Spacing="16" MaxWidth="900" HorizontalAlignment="Center">
+
+      <!-- ══════ Заголовок ══════ -->
+      <StackPanel Spacing="4">
+        <TextBlock Text="Импорт из другого лаунчера" Classes="h1" />
+        <TextBlock Text="Переносим только ваш пользовательский контент: миры, скриншоты, пакеты ресурсов.
+Версии, библиотеки, логин-данные и конфиги исходного лаунчера не трогаем — они относятся к нему."
+                   Classes="body" TextWrapping="Wrap"
+                   Foreground="{StaticResource TextSecondaryBrush}" />
+      </StackPanel>
+
+      <!-- ══════ Шаг 1: путь к .minecraft ══════ -->
+      <Border CornerRadius="16" Padding="18" Background="#141A26"
+              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+        <StackPanel Spacing="10">
+          <StackPanel Spacing="3">
+            <TextBlock Text="Путь к папке .minecraft другого лаунчера" Classes="eyebrow" />
+            <TextBlock Text="Укажите вручную — мы не читаем чужой каталог без вашего согласия."
+                       Classes="caption" Foreground="{StaticResource TextSecondaryBrush}" />
+          </StackPanel>
+
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <TextBox Text="{Binding SourcePath, Mode=TwoWay}"
+                     PlaceholderText="{x:Static vm:ImportViewModel.DefaultPathHint}" />
+            <Button Grid.Column="1" Classes="primary" Content="Сканировать"
+                    Command="{Binding ScanCommand}"
+                    IsEnabled="{Binding IsScanning, Converter={x:Static BoolConverters.Not}}" />
+          </Grid>
+
+          <ProgressBar Height="4" IsVisible="{Binding IsScanning}" IsIndeterminate="True"
+                       Foreground="{StaticResource AccentBrush}" />
+        </StackPanel>
+      </Border>
+
+      <!-- ══════ Результат сканирования ══════ -->
+      <Border CornerRadius="16" Padding="16" Background="#141A26"
+              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
+              IsVisible="{Binding ScanResult, Converter={x:Static ObjectConverters.IsNotNull}}">
+        <StackPanel Spacing="10">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Text="Что найдено в выбранной папке" Classes="h2" />
+            <Button Grid.Column="1" Classes="ghost" Content="Очистить"
+                    Command="{Binding ClearResultCommand}" />
+          </Grid>
+
+          <TextBlock Text="{Binding ScanResult.Summary}" Classes="body" TextWrapping="Wrap" />
+
+          <Grid ColumnDefinitions="*,*,*" ColumnSpacing="12" Margin="0,8,0,0">
+            <Border CornerRadius="10" Padding="10" Background="#171E2C" BorderBrush="#1E2739" BorderThickness="1">
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding ScanResult.Importable.Saves, }" Classes="caption"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock Text="миров" FontWeight="SemiBold" />
+              </StackPanel>
+            </Border>
+            <Border CornerRadius="10" Padding="10" Background="#171E2C" BorderBrush="#1E2739" BorderThickness="1">
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding ScanResult.Importable.Screenshots, }" Classes="caption"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock Text="скриншотов" FontWeight="SemiBold" />
+              </StackPanel>
+            </Border>
+            <Border CornerRadius="10" Padding="10" Background="#171E2C" BorderBrush="#1E2739" BorderThickness="1">
+              <StackPanel Spacing="4">
+                <TextBlock Text="{Binding ScanResult.Importable.ResourcePacks, }" Classes="caption"
+                           Foreground="{StaticResource TextSecondaryBrush}" />
+                <TextBlock Text="пакетов ресурсов" FontWeight="SemiBold" />
+              </StackPanel>
+            </Border>
+          </Grid>
+
+          <!-- Версия, которую нашли в профиле исходного лаунчера -->
+          <StackPanel Orientation="Horizontal" Spacing="8"
+                      IsVisible="{Binding ScanResult.DetectedVersion, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <Path Data="{StaticResource IconInfo}" Classes="icon" Width="13" Height="13" VerticalAlignment="Center" />
+            <TextBlock Text="Версия из профиля исходного лаунчера: " Classes="caption" Foreground="{StaticResource TextSecondaryBrush}" />
+            <TextBlock Text="{Binding ScanResult.DetectedVersion}" Classes="caption" FontWeight="SemiBold" />
+            <TextBlock Text="— предложена как версия нового инстанса, её можно изменить."
+                       Classes="caption" Foreground="{StaticResource TextSecondaryBrush}" />
+          </StackPanel>
+
+          <!-- Честный список того, чего не переносим -->
+          <ItemsControl ItemsSource="{Binding ScanResult.Skipped}" Margin="0,8,0,0">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="opt:SkippedItem">
+                <Border CornerRadius="8" Padding="8,6" Margin="0,0,0,6" Background="#171E2C"
+                        BorderBrush="#1E2739" BorderThickness="1">
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Path Data="{StaticResource IconInfo}" Classes="icon" Width="12" Height="12" VerticalAlignment="Top" />
+                    <TextBlock Grid.Column="1" Text="{Binding Reason}" Classes="caption" TextWrapping="Wrap"
+                               Foreground="{StaticResource TextSecondaryBrush}" />
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+      </Border>
+
+      <!-- ══════ Шаг 2: что импортировать и имя инстанса ══════ -->
+      <Border CornerRadius="16" Padding="18" Background="#141A26"
+              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
+              IsVisible="{Binding ScanResult, Converter={x:Static ObjectConverters.IsNotNull}}">
+        <StackPanel Spacing="12">
+          <TextBlock Text="Инстанс" Classes="eyebrow" />
+
+          <StackPanel Spacing="5">
+            <TextBlock Text="Название инстанса" Classes="caption" FontSize="11" />
+            <TextBox Text="{Binding InstanceName, Mode=TwoWay}"
+                     PlaceholderText="Например: Миры из другого лаунчера" />
+          </StackPanel>
+
+          <StackPanel Spacing="5">
+            <TextBlock Text="Версия Minecraft" Classes="caption" FontSize="11" />
+            <TextBox Text="{Binding MinecraftVersion, Mode=TwoWay}" PlaceholderText="1.20.1" />
+          </StackPanel>
+
+          <StackPanel Spacing="8">
+            <TextBlock Text="Что переносим" Classes="caption" FontSize="11" />
+            <CheckBox Content="Миры (saves)" IsChecked="{Binding Selection.Saves, Mode=TwoWay}" />
+            <CheckBox Content="Скриншоты (screenshots)" IsChecked="{Binding Selection.Screenshots, Mode=TwoWay}" />
+            <CheckBox Content="Пакеты ресурсов (resourcepacks)" IsChecked="{Binding Selection.ResourcePacks, Mode=TwoWay}" />
+            <CheckBox Content="Моды (mods) — не рекомендуется автоматически"
+                      IsChecked="{Binding Selection.Mods, Mode=TwoWay}"
+                      Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" />
+            <TextBlock Text="Моды исходного лаунчера могут требовать другого лоадера (Fabric/Forge/NeoForge).
+Переносите их вручную только если уверены, что версия и лоадер совпадают."
+                       Classes="caption" TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+
+      <!-- ══════ Импорт ══════ -->
+      <Button Classes="primary" Content="Импортировать в наш лаунчер"
+              Command="{Binding ImportCommand}"
+              IsEnabled="{Binding IsImporting, Converter={x:Static BoolConverters.Not}}"
+              HorizontalAlignment="Left" Margin="0,8,0,0" />
+
+      <!-- Результат -->
+      <Border CornerRadius="16" Padding="16" Background="#141A26"
+              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
+              IsVisible="{Binding ImportResult, Converter={x:Static ObjectConverters.IsNotNull}}">
+        <StackPanel Spacing="8">
+          <TextBlock Text="{Binding ImportResult.Summary}" Classes="body" TextWrapping="Wrap" />
+          <ItemsControl ItemsSource="{Binding ImportResult.Copied}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="opt:CopiedItem">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                  <TextBlock Text="{Binding Count}" Classes="caption" Foreground="{StaticResource TextSecondaryBrush}" />
+                  <TextBlock Text="{Binding Kind}" Classes="caption" Foreground="{StaticResource TextSecondaryBrush}" />
+                </StackPanel>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+          <TextBlock Text="Инстанс появится в разделе «Играть». Версию и лоадер можно скорректировать в настройках профиля."
+                     Classes="caption" TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}" />
+        </StackPanel>
+      </Border>
+
+    </StackPanel>
+  </ScrollViewer>
+</UserControl>

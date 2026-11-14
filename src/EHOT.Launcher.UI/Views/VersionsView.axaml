@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             xmlns:install="using:EHOT.Launcher.Game.Install"
              x:Class="EHOT.Launcher.UI.Views.VersionsView"
              x:DataType="vm:VersionsViewModel">
 
@@ -25,6 +26,122 @@
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
       <StackPanel Spacing="16">
 
+        <!-- ══════ Прерванная установка: продолжаем, а не начинаем заново ══════ -->
+        <Border CornerRadius="16" Padding="16,14" Background="#1B2333"
+                BorderBrush="#2A3A5E" BorderThickness="1" IsVisible="{Binding HasPendingInstall}">
+          <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+            <Border Width="34" Height="34" CornerRadius="10" Background="#1E2A4A" VerticalAlignment="Center">
+              <Path Data="{StaticResource IconDownload}" Classes="icon" Width="15" Height="15"
+                    Stroke="{StaticResource AccentBlueBrush}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+              <TextBlock Text="Установка не завершилась" FontSize="13" FontWeight="SemiBold"
+                         Foreground="{StaticResource TextBrush}" />
+              <TextBlock Text="{Binding PendingInstallText}" Classes="caption" TextWrapping="Wrap" />
+            </StackPanel>
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+              <Button Classes="primary" Content="Продолжить" Command="{Binding ResumePendingCommand}" />
+              <Button Classes="ghost" Content="Начать заново" Command="{Binding DismissPendingCommand}" />
+            </StackPanel>
+          </Grid>
+        </Border>
+
+        <!-- ══════ Установлено на этом компьютере ══════
+             Главное, что нужно в этом разделе: что уже скачано и кнопка «Играть».
+             Профиль для запуска создаётся автоматически. -->
+        <Border CornerRadius="18" Padding="20,18" Background="#141A26"
+                BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+              <StackPanel Orientation="Horizontal" Spacing="9">
+                <TextBlock Text="Установлено" Classes="h2" VerticalAlignment="Center" />
+                <Border Classes="chip" Padding="8,2" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding InstalledVersions.Count}" FontSize="10"
+                             Foreground="{StaticResource TextSecondaryBrush}" />
+                </Border>
+              </StackPanel>
+              <Button Grid.Column="1" Classes="pill" Content="Открыть папку версий"
+                      Command="{Binding OpenVersionsFolderCommand}" VerticalAlignment="Center" />
+            </Grid>
+
+            <TextBlock Classes="caption" TextWrapping="Wrap"
+                       Text="Скачанные версии Minecraft и загрузчики. Профиль создаётся сам при первом запуске — придумывать название не нужно." />
+
+            <TextBlock Text="Пока ничего не скачано. Выберите версию ниже и нажмите «Установить»."
+                       Classes="caption" IsVisible="{Binding !HasInstalledVersions}" />
+
+            <ItemsControl ItemsSource="{Binding InstalledVersions}" IsVisible="{Binding HasInstalledVersions}">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:VersionsViewModel+InstalledVersion">
+                  <Border CornerRadius="14" Padding="14,12" Margin="0,0,10,10" Background="#171E2C"
+                          BorderBrush="#1E2739" BorderThickness="1" MinWidth="210">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                      <Border Width="38" Height="38" CornerRadius="10" Background="#1B2333" VerticalAlignment="Center">
+                        <Path Data="{StaticResource IconLayers}" Classes="icon" Width="16" Height="16"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+                      <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding Id}" FontWeight="SemiBold" FontSize="13"
+                                   Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                        <TextBlock Text="{Binding LoaderLabel}" Classes="caption" FontSize="10.5" />
+                      </StackPanel>
+                      <Button Grid.Column="2" Classes="primary" Content="Играть" VerticalAlignment="Center"
+                              Command="{Binding $parent[ItemsControl].((vm:VersionsViewModel)DataContext).LaunchInstalledCommand}"
+                              CommandParameter="{Binding}" />
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <!-- ══════ OptiFine ══════
+             Отдельная карточка: OptiFine — не лоадер в общем списке, а патч поверх client.jar,
+             поэтому у него свой список сборок и своя кнопка. -->
+        <Border CornerRadius="18" Padding="20,18" Background="#141A26"
+                BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <StackPanel Spacing="12">
+            <Grid ColumnDefinitions="*,Auto">
+              <StackPanel Spacing="3">
+                <TextBlock Text="OptiFine" Classes="h2" />
+                <TextBlock Classes="caption" TextWrapping="Wrap"
+                           Text="Шейдеры, динамическое освещение и тонкая настройка графики. Ставится патчем в отдельную версию — ванильная версия остаётся нетронутой." />
+              </StackPanel>
+              <Button Grid.Column="1" Classes="ghost" Content="Обновить список" VerticalAlignment="Top"
+                      Command="{Binding RefreshOptiFineCommand}"
+                      IsEnabled="{Binding IsOptiFineBusy, Converter={x:Static BoolConverters.Not}}" />
+            </Grid>
+
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12"
+                  IsVisible="{Binding HasOptiFineVersions}">
+              <ComboBox ItemsSource="{Binding OptiFineVersions}" SelectedItem="{Binding SelectedOptiFine}"
+                        HorizontalAlignment="Stretch" MaxDropDownHeight="320">
+                <ComboBox.ItemTemplate>
+                  <DataTemplate x:DataType="install:OptiFineVersion">
+                    <StackPanel Spacing="1">
+                      <TextBlock Text="{Binding Label}" FontSize="12.5" />
+                      <TextBlock Text="{Binding MinecraftVersion, StringFormat='Minecraft {0}'}"
+                                 Classes="caption" FontSize="10.5" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ComboBox.ItemTemplate>
+              </ComboBox>
+              <Button Grid.Column="1" Classes="primary" Content="Установить OptiFine"
+                      Command="{Binding InstallOptiFineCommand}"
+                      IsEnabled="{Binding IsOptiFineBusy, Converter={x:Static BoolConverters.Not}}" />
+            </Grid>
+
+            <TextBlock Text="{Binding OptiFineStatus}" Classes="caption" TextWrapping="Wrap" />
+          </StackPanel>
+        </Border>
+
         <!-- ══════ Панель установки ══════ -->
         <Border CornerRadius="18" Padding="20,18" Background="#141A26"
                 BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
@@ -33,7 +150,7 @@
             <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
               <StackPanel Spacing="3">
                 <TextBlock Text="УСТАНОВКА" Classes="eyebrow" />
-                <TextBlock Text="Выберите загрузчик, версию лоадера и стабильный релиз Minecraft"
+                <TextBlock Text="Версия ставится сразу в общую папку игры — профиль не нужен"
                            Classes="body" />
               </StackPanel>
             </Grid>

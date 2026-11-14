@@ -104,7 +104,8 @@ public sealed class JavaRuntimeManager(
             DestinationPath = archivePath,
             DisplayName = $"Java {major} ({package.Name})",
             ExpectedSize = package.Size,
-            ExpectedSha512 = package.Checksum,
+            // Adoptium публикует SHA-256 (64 символа), а не SHA-512.
+            ExpectedSha256 = package.Checksum,
             Group = "java",
             SkipIfVerified = true
         }, ct).ConfigureAwait(false);

@@ -31,6 +31,9 @@ public interface ILocalProfileService
     Task<OperationResult> SaveSkinFromBytesAsync(string accountId, byte[] png, bool slim, string source,
         CancellationToken ct = default);
 
+    /// <summary>Проставляет профилю официальный UUID (ник существует в Mojang), не трогая скин.</summary>
+    Task<OperationResult> ApplyOfficialUuidAsync(string accountId, Guid officialUuid, CancellationToken ct = default);
+
     Task<OperationResult> DeleteAsync(string accountId, CancellationToken ct = default);
 }
 
@@ -64,33 +67,55 @@ public sealed class LocalProfileService(
         var copiedOfficialSkin = false;
         var note = string.Empty;
 
-        var remote = await lookup.FetchSkinAsync(name, ct).ConfigureAwait(false);
+        // Шаг 1. Существует ли официальный игрок с таким ником. Это отдельный запрос:
+        // UUID должен применяться даже если текстура скина не скачается.
+        var official = await lookup.ResolveOfficialAsync(name, ct).ConfigureAwait(false);
+        var officialExists = official.IsSuccess && official.Value is not null;
+
+        if (officialExists && Guid.TryParse(official.Value!.Uuid, out var officialUuid))
+        {
+            uuid = officialUuid;
+            uuidFromOfficial = true;
+        }
+
+        // Шаг 2. Скин официального игрока — необязательное дополнение к UUID.
+        var remote = officialExists
+            ? await lookup.FetchSkinAsync(official.Value!.Username, ct).ConfigureAwait(false)
+            : OperationResult<RemoteSkin?>.Ok(null);
+
         if (remote.IsSuccess && remote.Value is not null)
         {
             var skin = remote.Value;
-
-            if (Guid.TryParse(skin.Uuid, out var officialUuid))
-            {
-                uuid = officialUuid;
-                uuidFromOfficial = true;
-            }
-
             model = skin.IsSlim ? SkinModel.Slim : SkinModel.Classic;
             skinPath = await SaveSkinFileAsync(name, Guid.NewGuid().ToString("N")[..12], skin.Png, ct).ConfigureAwait(false);
-            skinSource = "mojang";
-            copiedOfficialSkin = true;
+            if (skinPath is not null)
+            {
+                skinSource = "mojang";
+                copiedOfficialSkin = true;
+            }
 
-            note = $"Ник занят официальным аккаунтом: взят его публичный UUID и копия скина " +
-                   $"({(model == SkinModel.Slim ? "slim" : "classic")}). Вход на серверы с online-mode " +
-                   "всё равно требует лицензии — это ограничение сервера, а не лаунчера.";
+            note = copiedOfficialSkin
+                ? $"Ник принадлежит официальному аккаунту: взят его публичный UUID и копия скина " +
+                  $"({(model == SkinModel.Slim ? "slim" : "classic")}). Вход на серверы с online-mode " +
+                  "всё равно требует лицензии — это ограничение сервера, а не лаунчера."
+                : "Ник принадлежит официальному аккаунту: взят его публичный UUID. Скин скопировать не удалось — " +
+                  "можно загрузить свой файл, его будет видеть только этот профиль.";
+        }
+        else if (officialExists)
+        {
+            note = $"Ник принадлежит официальному аккаунту: взят его публичный UUID. " +
+                   $"Скин получить не удалось ({remote.Message ?? "источник недоступен"}). " +
+                   "Можно загрузить свой файл, его будет видеть только этот профиль.";
+        }
+        else if (!official.IsSuccess)
+        {
+            note = $"Проверить ник в официальном сервисе не удалось ({official.Message}). UUID посчитан оффлайн. " +
+                   "Можно загрузить свой скин — его будет видеть только этот профиль.";
         }
         else
         {
-            note = remote.IsSuccess
-                ? "Такого ника в официальном сервисе нет: UUID посчитан в оффлайн-режиме (как у ванильного сервера). " +
-                  "Загрузите свой скин — его будет видеть только этот профиль."
-                : $"Скин официального игрока получить не удалось ({remote.Message}). UUID посчитан оффлайн. " +
-                  "Можно загрузить свой скин — его будет видеть только этот профиль.";
+            note = "Такого ника в официальном сервисе нет: UUID посчитан в оффлайн-режиме (как у ванильного сервера). " +
+                   "Загрузите свой скин — его будет видеть только этот профиль.";
         }
 
         var account = new AccountInfo
@@ -213,6 +238,29 @@ public sealed class LocalProfileService(
             LastUsedAt = DateTimeOffset.UtcNow
         }, ct).ConfigureAwait(false);
 
+        return OperationResult.Ok();
+    }
+
+    public async Task<OperationResult> ApplyOfficialUuidAsync(string accountId, Guid officialUuid, CancellationToken ct = default)
+    {
+        var account = await accounts.GetAsync(accountId, ct).ConfigureAwait(false);
+        if (account is null)
+        {
+            return OperationResult.Fail(ErrorCode.NotFound, "Профиль не найден.");
+        }
+
+        if (account.UuidFromOfficialProfile && account.Uuid == officialUuid)
+        {
+            return OperationResult.Ok();
+        }
+
+        await accounts.SaveAsync(account with
+        {
+            Uuid = officialUuid,
+            UuidFromOfficialProfile = true
+        }, ct).ConfigureAwait(false);
+
+        log.Info("Auth", $"Профилю {account.Username} назначен официальный UUID");
         return OperationResult.Ok();
     }
 

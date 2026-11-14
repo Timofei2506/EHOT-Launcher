@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.Input;
 using EHOT.Launcher.Content.Install;
 using EHOT.Launcher.Content.Models;
 using EHOT.Launcher.Content.Modpacks;
+using EHOT.Launcher.Content.Optimization;
 using EHOT.Launcher.Content.Resolution;
 using EHOT.Launcher.Core.Models;
 using EHOT.Launcher.Core.Results;
@@ -29,6 +30,7 @@ public partial class ContentBrowseViewModel : ViewModelBase, INavigationAware
     private readonly IProfileRepository _profiles;
     private readonly IInstalledContentRepository _installed;
     private readonly IToastService _toasts;
+    private readonly OptimizationAdvisor _advisor;
     private int _offset;
 
     public ContentBrowseViewModel(
@@ -41,6 +43,7 @@ public partial class ContentBrowseViewModel : ViewModelBase, INavigationAware
         IProfileRepository profiles,
         IInstalledContentRepository installed,
         IToastService toasts,
+        OptimizationAdvisor advisor,
         ContentType type,
         string title,
         string subtitle)
@@ -54,6 +57,7 @@ public partial class ContentBrowseViewModel : ViewModelBase, INavigationAware
         _profiles = profiles;
         _installed = installed;
         _toasts = toasts;
+        _advisor = advisor;
 
         Type = type;
         Title = title;
@@ -72,6 +76,24 @@ public partial class ContentBrowseViewModel : ViewModelBase, INavigationAware
     public ObservableCollection<string> SortOptions { get; } = ["По релевантности", "По загрузкам", "По подпискам", "Новые", "Обновлённые"];
 
     public ObservableCollection<ContentVersion> Versions { get; } = [];
+
+    // --- Подбор модов оптимизации под конкретный компьютер -----------------
+    /// <summary>Карточка подбора видна только в разделе модов и только когда есть профиль.</summary>
+    public bool ShowOptimization => Type == ContentType.Mod;
+
+    public ObservableCollection<OptimizationRecommendation> Recommendations { get; } = [];
+
+    [ObservableProperty]
+    private string _optimizationSummary = string.Empty;
+
+    [ObservableProperty]
+    private bool _hasOptimizationPlan;
+
+    [ObservableProperty]
+    private bool _isOptimizationBusy;
+
+    [ObservableProperty]
+    private string _optimizationStatus = string.Empty;
 
     public ObservableCollection<InstalledContent> InstalledItems { get; } = [];
 
@@ -132,6 +154,11 @@ public partial class ContentBrowseViewModel : ViewModelBase, INavigationAware
         }
 
         await SearchAsync(reset: true, ct).ConfigureAwait(true);
+
+        if (ShowOptimization)
+        {
+            await BuildOptimizationPlanAsync().ConfigureAwait(true);
+        }
     }
 
     [RelayCommand]
@@ -281,6 +308,105 @@ public partial class ContentBrowseViewModel : ViewModelBase, INavigationAware
         }
     }
 
+    /// <summary>
+    /// Подбирает моды оптимизации под железо и текущий профиль. Если профиля нет,
+    /// честно говорим об этом: без версии игры и загрузчика подбор невозможен.
+    /// </summary>
+    [RelayCommand]
+    private async Task BuildOptimizationPlanAsync()
+    {
+        var profile = _state.CurrentProfile;
+        Recommendations.Clear();
+        HasOptimizationPlan = false;
+
+        if (profile is null)
+        {
+            OptimizationStatus = "Создайте игровой профиль в разделе «Играть» — подбор зависит от версии и загрузчика.";
+            return;
+        }
+
+        if (profile.Loader == LoaderKind.Vanilla)
+        {
+            OptimizationStatus = "Профиль на ванильном Minecraft: модам нужен Fabric или Forge/NeoForge.";
+            return;
+        }
+
+        IsOptimizationBusy = true;
+        OptimizationStatus = "Смотрим железо и каталог…";
+        try
+        {
+            var plan = await _advisor.BuildPlanAsync(profile.MinecraftVersion, profile.Loader).ConfigureAwait(true);
+            if (!plan.IsSuccess || plan.Value is null)
+            {
+                OptimizationStatus = plan.Message ?? "Подбор не удался.";
+                return;
+            }
+
+            foreach (var item in plan.Value.Recommendations)
+            {
+                Recommendations.Add(item);
+            }
+
+            OptimizationSummary = plan.Value.Summary;
+            HasOptimizationPlan = Recommendations.Count > 0;
+            OptimizationStatus = HasOptimizationPlan
+                ? $"Подобрано {Recommendations.Count} мод(ов) под {profile.MinecraftVersion} · {profile.Loader}."
+                : "Подходящих модов не нашлось.";
+        }
+        finally
+        {
+            IsOptimizationBusy = false;
+        }
+    }
+
+    /// <summary>Ставит весь подобранный набор в текущий профиль.</summary>
+    [RelayCommand]
+    private async Task InstallOptimizationAsync()
+    {
+        var profile = _state.CurrentProfile;
+        if (profile is null || Recommendations.Count == 0)
+        {
+            return;
+        }
+
+        IsInstalling = true;
+        try
+        {
+            var installed = 0;
+            foreach (var item in Recommendations.Where(r => r.Version is not null))
+            {
+                InstallStage = $"Установка {item.Title}";
+                var progress = new Progress<ContentInstallProgress>(p =>
+                {
+                    InstallProgress = p.Fraction;
+                    InstallStage = p.Stage;
+                });
+
+                var result = await _installer
+                    .InstallAsync(item.Version!, ContentType.Mod, profile.InstanceDirectory, profile.Id, false, progress)
+                    .ConfigureAwait(true);
+                if (result.IsSuccess)
+                {
+                    installed++;
+                }
+                else
+                {
+                    _toasts.Warning(item.Title, result.Message ?? "Не установился.");
+                }
+            }
+
+            _toasts.Success("Оптимизация", installed == 0
+                ? "Ни один мод не установился — смотрите лог."
+                : $"Установлено {installed} мод(ов) в профиль «{profile.Name}».");
+            await LoadInstalledAsync(profile).ConfigureAwait(true);
+        }
+        finally
+        {
+            IsInstalling = false;
+            InstallStage = string.Empty;
+        }
+    }
+
     [RelayCommand]
     private async Task RemoveAsync(InstalledContent item)
     {
@@ -380,8 +506,9 @@ public sealed class ModsViewModel : ContentBrowseViewModel
     public ModsViewModel(
         IContentProviderRegistry providers, IDependencyResolver resolver, IContentInstallService installer,
         IModpackService modpacks, IGameInstaller gameInstaller, IAppState state, IProfileRepository profiles,
-        IInstalledContentRepository installed, IToastService toasts)
-        : base(providers, resolver, installer, modpacks, gameInstaller, state, profiles, installed, toasts,
+        IInstalledContentRepository installed, IToastService toasts,
+        OptimizationAdvisor advisor)
+        : base(providers, resolver, installer, modpacks, gameInstaller, state, profiles, installed, toasts, advisor,
             ContentType.Mod, "Моды", "Моды с Modrinth: фильтры по версии, загрузчику, совместимости")
     {
     }
@@ -392,8 +519,9 @@ public sealed class ModpacksViewModel : ContentBrowseViewModel
     public ModpacksViewModel(
         IContentProviderRegistry providers, IDependencyResolver resolver, IContentInstallService installer,
         IModpackService modpacks, IGameInstaller gameInstaller, IAppState state, IProfileRepository profiles,
-        IInstalledContentRepository installed, IToastService toasts)
-        : base(providers, resolver, installer, modpacks, gameInstaller, state, profiles, installed, toasts,
+        IInstalledContentRepository installed, IToastService toasts,
+        OptimizationAdvisor advisor)
+        : base(providers, resolver, installer, modpacks, gameInstaller, state, profiles, installed, toasts, advisor,
             ContentType.Modpack, "Сборки", "Готовые сборки: установка в изолированный профиль")
     {
     }
@@ -404,8 +532,9 @@ public sealed class ResourcePacksViewModel : ContentBrowseViewModel
     public ResourcePacksViewModel(
         IContentProviderRegistry providers, IDependencyResolver resolver, IContentInstallService installer,
         IModpackService modpacks, IGameInstaller gameInstaller, IAppState state, IProfileRepository profiles,
-        IInstalledContentRepository installed, IToastService toasts)
-        : base(providers, resolver, installer, modpacks, gameInstaller, state, profiles, installed, toasts,
+        IInstalledContentRepository installed, IToastService toasts,
+        OptimizationAdvisor advisor)
+        : base(providers, resolver, installer, modpacks, gameInstaller, state, profiles, installed, toasts, advisor,
             ContentType.ResourcePack, "Текстуры", "Ресурс-паки: установка в resourcepacks выбранного профиля")
     {
     }
@@ -416,8 +545,9 @@ public sealed class ShadersViewModel : ContentBrowseViewModel
     public ShadersViewModel(
         IContentProviderRegistry providers, IDependencyResolver resolver, IContentInstallService installer,
         IModpackService modpacks, IGameInstaller gameInstaller, IAppState state, IProfileRepository profiles,
-        IInstalledContentRepository installed, IToastService toasts)
-        : base(providers, resolver, installer, modpacks, gameInstaller, state, profiles, installed, toasts,
+        IInstalledContentRepository installed, IToastService toasts,
+        OptimizationAdvisor advisor)
+        : base(providers, resolver, installer, modpacks, gameInstaller, state, profiles, installed, toasts, advisor,
             ContentType.Shader, "Шейдеры", "Шейдеры: требуют Iris/OptiFine в профиле")
     {
     }
@@ -428,8 +558,9 @@ public sealed class WorldsViewModel : ContentBrowseViewModel
     public WorldsViewModel(
         IContentProviderRegistry providers, IDependencyResolver resolver, IContentInstallService installer,
         IModpackService modpacks, IGameInstaller gameInstaller, IAppState state, IProfileRepository profiles,
-        IInstalledContentRepository installed, IToastService toasts)
-        : base(providers, resolver, installer, modpacks, gameInstaller, state, profiles, installed, toasts,
+        IInstalledContentRepository installed, IToastService toasts,
+        OptimizationAdvisor advisor)
+        : base(providers, resolver, installer, modpacks, gameInstaller, state, profiles, installed, toasts, advisor,
             ContentType.World, "Карты", "Карты и датапаки: распаковка в папку saves профиля")
     {
     }

@@ -165,6 +165,13 @@ public sealed partial class AccountsViewModel : ViewModelBase
             return;
         }
 
+        // UUID официального игрока — отдельно от скина: он нужен даже если текстура не скачается.
+        var official = await _lookup.ResolveOfficialAsync(account.Username).ConfigureAwait(true);
+        if (official.IsSuccess && official.Value is not null && Guid.TryParse(official.Value.Uuid, out var officialUuid))
+        {
+            await _local.ApplyOfficialUuidAsync(account.Id, officialUuid).ConfigureAwait(true);
+        }
+
         var remote = await _lookup.FetchSkinAsync(account.Username).ConfigureAwait(true);
         if (!remote.IsSuccess)
         {

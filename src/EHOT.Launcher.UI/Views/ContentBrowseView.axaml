@@ -5,10 +5,11 @@
              xmlns:storage="using:EHOT.Launcher.Core.Models"
              xmlns:imgs="using:EHOT.Launcher.UI.Converters"
              xmlns:controls="using:EHOT.Launcher.UI.Controls"
+             xmlns:opt="using:EHOT.Launcher.Content.Optimization"
              x:Class="EHOT.Launcher.UI.Views.ContentBrowseView"
              x:DataType="vm:ContentBrowseViewModel">
 
-  <Grid RowDefinitions="Auto,Auto,*" RowSpacing="16">
+  <Grid RowDefinitions="Auto,Auto,Auto,*" RowSpacing="16">
 
     <!-- ══════ Заголовок раздела + инструменты ══════ -->
     <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
@@ -36,8 +37,58 @@
               Command="{Binding SearchCommand}" />
     </Grid>
 
+    <!-- ══════ Подбор модов оптимизации под этот компьютер ══════
+         Показываем только в разделе модов: рекомендации зависят от железа,
+         версии игры и загрузчика текущего профиля. -->
+    <Border Grid.Row="2" CornerRadius="16" Padding="18,16" Background="#141A26"
+            BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
+            IsVisible="{Binding ShowOptimization}">
+      <StackPanel Spacing="10">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="3">
+            <TextBlock Text="Подобрать под этот компьютер" Classes="h2" />
+            <TextBlock Text="{Binding OptimizationSummary}" Classes="caption" TextWrapping="Wrap"
+                       IsVisible="{Binding HasOptimizationPlan}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Top">
+            <Button Classes="ghost" Content="Подобрать заново"
+                    Command="{Binding BuildOptimizationPlanCommand}"
+                    IsEnabled="{Binding IsOptimizationBusy, Converter={x:Static BoolConverters.Not}}" />
+            <Button Classes="primary" Content="Установить всё"
+                    Command="{Binding InstallOptimizationCommand}"
+                    IsVisible="{Binding HasOptimizationPlan}"
+                    IsEnabled="{Binding IsInstalling, Converter={x:Static BoolConverters.Not}}" />
+          </StackPanel>
+        </Grid>
+
+        <TextBlock Text="{Binding OptimizationStatus}" Classes="caption" TextWrapping="Wrap"
+                   IsVisible="{Binding !HasOptimizationPlan}" />
+
+        <ItemsControl ItemsSource="{Binding Recommendations}" IsVisible="{Binding HasOptimizationPlan}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel Orientation="Horizontal" />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="opt:OptimizationRecommendation">
+              <Border CornerRadius="12" Padding="12,10" Margin="0,0,10,10" Background="#171E2C"
+                      BorderBrush="#1E2739" BorderThickness="1" Width="268">
+                <StackPanel Spacing="4">
+                  <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12.5"
+                             Foreground="{StaticResource TextBrush}" />
+                  <TextBlock Text="{Binding Reason}" Classes="caption" FontSize="10.5" TextWrapping="Wrap" />
+                  <TextBlock Text="{Binding VersionLabel}" Classes="caption" FontSize="10" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Border>
+
     <!-- ══════ Результаты + детали ══════ -->
-    <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="16">
+    <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="16">
 
       <Grid Grid.Column="0" RowDefinitions="Auto,Auto,*" RowSpacing="10">
 

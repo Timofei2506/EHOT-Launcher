@@ -43,6 +43,9 @@ public sealed record HttpSettings
         "meta.quiltmc.org",
         "maven.quiltmc.org",
         "api.adoptium.net",
+        // OptiFine: зеркало BMCLAPI отдаёт файлы напрямую, optifine.net — через страницу adloadx.
+        "bmclapi2.bangbang93.com",
+        "optifine.net",
         "github.com",
         "objects.githubusercontent.com",
         "launchercontent.mojang.com",

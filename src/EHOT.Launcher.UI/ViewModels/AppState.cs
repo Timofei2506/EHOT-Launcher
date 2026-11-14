@@ -23,6 +23,9 @@ public interface IAppState
 
     bool IsInitialized { get; }
 
+    /// <summary>Общий каталог игры (.minecraft): версии, библиотеки, ассеты.</summary>
+    string MinecraftRoot { get; }
+
     event Action? Changed;
 
     Task InitializeAsync(CancellationToken ct = default);
