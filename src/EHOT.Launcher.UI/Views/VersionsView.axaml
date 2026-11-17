@@ -27,7 +27,7 @@
       <StackPanel Spacing="16">
 
         <!-- ══════ Прерванная установка: продолжаем, а не начинаем заново ══════ -->
-        <Border CornerRadius="16" Padding="16,14" Background="#1B2333"
+        <Border CornerRadius="16" Padding="16,14" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
                 BorderBrush="#2A3A5E" BorderThickness="1" IsVisible="{Binding HasPendingInstall}">
           <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
             <Border Width="34" Height="34" CornerRadius="10" Background="#1E2A4A" VerticalAlignment="Center">
@@ -50,7 +50,7 @@
         <!-- ══════ Установлено на этом компьютере ══════
              Главное, что нужно в этом разделе: что уже скачано и кнопка «Играть».
              Профиль для запуска создаётся автоматически. -->
-        <Border CornerRadius="18" Padding="20,18" Background="#141A26"
+        <Border CornerRadius="18" Padding="20,18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                 BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
           <StackPanel Spacing="12">
             <Grid ColumnDefinitions="*,Auto">
@@ -79,10 +79,10 @@
               </ItemsControl.ItemsPanel>
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:VersionsViewModel+InstalledVersion">
-                  <Border CornerRadius="14" Padding="14,12" Margin="0,0,10,10" Background="#171E2C"
+                  <Border CornerRadius="14" Padding="14,12" Margin="0,0,10,10" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
                           BorderBrush="#1E2739" BorderThickness="1" MinWidth="210">
                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                      <Border Width="38" Height="38" CornerRadius="10" Background="#1B2333" VerticalAlignment="Center">
+                      <Border Width="38" Height="38" CornerRadius="10" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" VerticalAlignment="Center">
                         <Path Data="{StaticResource IconLayers}" Classes="icon" Width="16" Height="16"
                               HorizontalAlignment="Center" VerticalAlignment="Center" />
                       </Border>
@@ -105,7 +105,7 @@
         <!-- ══════ OptiFine ══════
              Отдельная карточка: OptiFine — не лоадер в общем списке, а патч поверх client.jar,
              поэтому у него свой список сборок и своя кнопка. -->
-        <Border CornerRadius="18" Padding="20,18" Background="#141A26"
+        <Border CornerRadius="18" Padding="20,18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                 BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
           <StackPanel Spacing="12">
             <Grid ColumnDefinitions="*,Auto">
@@ -143,7 +143,7 @@
         </Border>
 
         <!-- ══════ Панель установки ══════ -->
-        <Border CornerRadius="18" Padding="20,18" Background="#141A26"
+        <Border CornerRadius="18" Padding="20,18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                 BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
           <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="14">
 
@@ -187,7 +187,7 @@
         </Border>
 
         <!-- ══════ Список релизов ══════ -->
-        <Border CornerRadius="18" Padding="20,18" Background="#141A26"
+        <Border CornerRadius="18" Padding="20,18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                 BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
           <Grid RowDefinitions="Auto,*">
 
@@ -205,11 +205,11 @@
             <ItemsControl Grid.Row="1" ItemsSource="{Binding Releases}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:VersionRowViewModel">
-                  <Border CornerRadius="12" Padding="14,10" Margin="0,0,0,6" Background="#171E2C"
+                  <Border CornerRadius="12" Padding="14,10" Margin="0,0,0,6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
                           BorderBrush="#1E2739" BorderThickness="1">
                     <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="14">
 
-                      <Border Width="34" Height="34" CornerRadius="10" Background="#1B2333" VerticalAlignment="Center">
+                      <Border Width="34" Height="34" CornerRadius="10" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" VerticalAlignment="Center">
                         <TextBlock Text="E" FontFamily="Inter" FontWeight="Bold" FontSize="13"
                                    Foreground="#A5B4FC" HorizontalAlignment="Center" VerticalAlignment="Center" />
                       </Border>
@@ -243,7 +243,7 @@
         <!-- ══════ Снапшоты + как проходит установка ══════ -->
         <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
 
-          <Border CornerRadius="18" Padding="20,18" Background="#141A26"
+          <Border CornerRadius="18" Padding="20,18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
               <TextBlock Text="СНАПШОТЫ" Classes="eyebrow" />
@@ -254,13 +254,13 @@
             </StackPanel>
           </Border>
 
-          <Border Grid.Column="1" CornerRadius="18" Padding="20,18" Background="#141A26"
+          <Border Grid.Column="1" CornerRadius="18" Padding="20,18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
               <TextBlock Text="КАК ПРОХОДИТ УСТАНОВКА" Classes="eyebrow" />
               <StackPanel Spacing="9">
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
-                  <Border Width="18" Height="18" CornerRadius="6" Background="#1E2740" VerticalAlignment="Top">
+                  <Border Width="18" Height="18" CornerRadius="6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" VerticalAlignment="Top">
                     <TextBlock Text="1" FontSize="10" FontWeight="Bold" Foreground="#A5B4FC"
                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                   </Border>
@@ -268,14 +268,14 @@
                              Classes="caption" TextWrapping="Wrap" />
                 </Grid>
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
-                  <Border Width="18" Height="18" CornerRadius="6" Background="#1E2740" VerticalAlignment="Top">
+                  <Border Width="18" Height="18" CornerRadius="6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" VerticalAlignment="Top">
                     <TextBlock Text="2" FontSize="10" FontWeight="Bold" Foreground="#A5B4FC"
                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                   </Border>
                   <TextBlock Grid.Column="1" Text="проверка SHA-1 каждого файла" Classes="caption" TextWrapping="Wrap" />
                 </Grid>
                 <Grid ColumnDefinitions="Auto,*" ColumnSpacing="9">
-                  <Border Width="18" Height="18" CornerRadius="6" Background="#1E2740" VerticalAlignment="Top">
+                  <Border Width="18" Height="18" CornerRadius="6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" VerticalAlignment="Top">
                     <TextBlock Text="3" FontSize="10" FontWeight="Bold" Foreground="#A5B4FC"
                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                   </Border>

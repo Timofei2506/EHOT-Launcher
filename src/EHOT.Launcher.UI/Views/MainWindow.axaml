@@ -25,7 +25,7 @@
   <Grid RowDefinitions="Auto,*">
 
     <!-- ══════════════ Titlebar ══════════════ -->
-    <Grid Grid.Row="0" Height="48" Background="#0E1119" ColumnDefinitions="Auto,*,Auto">
+    <Grid Grid.Row="0" Height="48" Background="{StaticResource GlassTitleBarBrush}" ColumnDefinitions="Auto,*,Auto" Panel.ZIndex="10">
       <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,0,0,0" VerticalAlignment="Center">
         <Border Width="24" Height="24" CornerRadius="8" Background="{StaticResource AccentGradient}">
           <TextBlock Text="E" FontSize="13" FontWeight="Bold" Foreground="White"
@@ -33,7 +33,7 @@
         </Border>
         <TextBlock Text="EHOT Launcher" FontSize="12.5" FontWeight="SemiBold" LetterSpacing="0.2"
                    Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" />
-        <Border Classes="chip" Padding="8,2" VerticalAlignment="Center" Background="#1A8B5CF6">
+        <Border Classes="chip" Padding="8,2" VerticalAlignment="Center" Background="{StaticResource AccentGradient}">
           <TextBlock Text="BETA" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentBlueBrush}" />
         </Border>
       </StackPanel>
@@ -61,7 +61,7 @@
     <Grid Grid.Row="1" ColumnDefinitions="236,*,300">
 
       <!-- Sidebar -->
-      <Border Grid.Column="0" Background="{StaticResource SidebarGradient}" BorderBrush="#141824" BorderThickness="0,0,1,0">
+      <Border Grid.Column="0" Background="{StaticResource GlassSidebarBrush}" BorderBrush="{StaticResource GlassBorderSoftBrush}" BorderThickness="0,0,1,0">
         <Grid RowDefinitions="Auto,*,Auto">
 
           <StackPanel Grid.Row="0" Margin="16,18,16,10" Spacing="12">
@@ -141,7 +141,7 @@
           </ScrollViewer>
 
           <!-- Аккаунт внизу сайдбара -->
-          <Border Grid.Row="2" Margin="12" Padding="12" CornerRadius="14" Background="#141926"
+          <Border Grid.Row="2" Margin="12" Padding="12" CornerRadius="14" Background="{StaticResource GlassCardBrush}"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <Button Command="{Binding OpenProfileCommand}" Background="Transparent" BorderThickness="0"
                     Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
@@ -186,7 +186,7 @@
         <Grid Grid.Row="1" RowDefinitions="Auto,*">
           <!-- ══════ Обновление лаунчера: показывается только когда есть что обновлять ══════ -->
           <Border Grid.Row="0" IsVisible="{Binding Updates.IsVisible}" Margin="26,0,26,10"
-                  CornerRadius="12" Padding="14,11" Background="#141B2B" BorderBrush="#2A3350" BorderThickness="1">
+                  CornerRadius="12" Padding="14,11" Background="{StaticResource GlassCardBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1">
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
               <Border Width="26" Height="26" CornerRadius="8" Background="{StaticResource AccentGradient}"
                       VerticalAlignment="Center">
@@ -222,13 +222,13 @@
       </Grid>
 
       <!-- Правая колонка: контекст -->
-      <Border Grid.Column="2" Background="#0E1119" BorderBrush="#141824" BorderThickness="1,0,0,0">
+      <Border Grid.Column="2" Background="{StaticResource GlassSurfaceBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1,0,0,0">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel Margin="18,20" Spacing="14">
 
             <TextBlock Text="ТЕКУЩИЙ ПРОФИЛЬ" Classes="eyebrow" />
 
-            <Border Classes="card" Padding="16">
+            <Border Classes="card glass-card" Padding="16">
               <StackPanel Spacing="10">
                 <TextBlock Text="{Binding ProfileName}" Classes="h3" TextTrimming="CharacterEllipsis" />
                 <TextBlock Text="{Binding ProfileVersion}" Classes="caption" />
@@ -274,7 +274,7 @@
 
             <StackPanel Spacing="6" IsVisible="{Binding IsAccountSelected}">
               <TextBlock Text="КАК Я ЗАХОЖУ В ИГРУ" Classes="eyebrow" />
-              <Border CornerRadius="12" Padding="12" Background="#101724">
+              <Border CornerRadius="12" Padding="12" Background="{StaticResource GlassCardBrush}">
                 <StackPanel Spacing="8">
                   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                     <Border Width="34" Height="34" CornerRadius="9" Background="#1E2740" ClipToBounds="True"
@@ -327,8 +327,8 @@
     </ItemsControl>
 
     <!-- ══════════════ Глобальный поиск (overlay) ══════════════ -->
-    <Border Grid.Row="1" IsVisible="{Binding IsSearchOpen}" Background="#B3000000">
-      <Border Classes="card" Width="560" VerticalAlignment="Top" Margin="0,120,0,0" Padding="18">
+    <Border Grid.Row="1" IsVisible="{Binding IsSearchOpen}" Background="#99000000">
+      <Border Classes="card glass-card" Width="560" VerticalAlignment="Top" Margin="0,120,0,0" Padding="18">
         <StackPanel Spacing="12">
           <TextBlock Text="Глобальный поиск" Classes="h3" />
           <TextBox Classes="ehot" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Название мода, сборки, шейдера…"

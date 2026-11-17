@@ -23,7 +23,7 @@
         <!-- ══════ Левая колонка ══════ -->
         <StackPanel Spacing="16">
 
-          <Border CornerRadius="16" Padding="18" Background="#141A26"
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
               <TextBlock Text="ФАЙЛЫ" Classes="eyebrow" />
@@ -38,14 +38,14 @@
                 <TextBox Text="{Binding DownloadsDirectory, Mode=TwoWay}" />
               </StackPanel>
 
-              <Border CornerRadius="10" Padding="11" Background="#101724">
+              <Border CornerRadius="10" Padding="11" Background="{StaticResource GlassCardBrush}" Classes="glass-card">
                 <TextBlock Text="{Binding AppDataPath, StringFormat='Данные лаунчера: {0}'}"
                            Classes="caption" FontSize="10.5" TextWrapping="Wrap" />
               </Border>
             </StackPanel>
           </Border>
 
-          <Border CornerRadius="16" Padding="18" Background="#141A26"
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="14">
               <TextBlock Text="ПРОИЗВОДИТЕЛЬНОСТЬ" Classes="eyebrow" />
@@ -74,14 +74,14 @@
             </StackPanel>
           </Border>
 
-          <Border CornerRadius="16" Padding="18" Background="#141A26"
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
               <TextBlock Text="JAVA" Classes="eyebrow" />
               <ItemsControl ItemsSource="{Binding JavaRuntimes}">
                 <ItemsControl.ItemTemplate>
                   <DataTemplate>
-                    <Border CornerRadius="9" Padding="10,7" Margin="0,0,0,6" Background="#171E2C">
+                    <Border CornerRadius="9" Padding="10,7" Margin="0,0,0,6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card">
                       <TextBlock Text="{Binding DisplayName}" FontSize="11.5"
                                  Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
                     </Border>
@@ -97,7 +97,7 @@
         <!-- ══════ Правая колонка ══════ -->
         <StackPanel Grid.Column="1" Spacing="16">
 
-          <Border CornerRadius="16" Padding="18" Background="#141A26"
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
               <TextBlock Text="СЕТЬ И GAME NETWORK" Classes="eyebrow" />
@@ -111,20 +111,20 @@
               <CheckBox IsChecked="{Binding PreferDirect, Mode=TwoWay}"><TextBlock Text="Предпочитать прямое соединение" TextWrapping="Wrap" /></CheckBox>
               <CheckBox IsChecked="{Binding AllowRelay, Mode=TwoWay}"><TextBlock Text="Разрешить relay как резерв" TextWrapping="Wrap" /></CheckBox>
 
-              <Border CornerRadius="10" Padding="11" Background="#101724">
+              <Border CornerRadius="10" Padding="11" Background="{StaticResource GlassCardBrush}" Classes="glass-card">
                 <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
                            Text="Без настроенного сервера комнаты недоступны — лаунчер сообщит об этом, а не создаст фиктивную комнату." />
               </Border>
             </StackPanel>
           </Border>
 
-          <Border CornerRadius="16" Padding="18" Background="#141A26"
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
               <TextBlock Text="ПОВЕДЕНИЕ" Classes="eyebrow" />
               <CheckBox IsChecked="{Binding AutoUpdateContent, Mode=TwoWay}"><TextBlock Text="Автоматически обновлять контент" TextWrapping="Wrap" /></CheckBox>
               <CheckBox IsChecked="{Binding CheckLauncherUpdates, Mode=TwoWay}"><TextBlock Text="Проверять обновления лаунчера при запуске" TextWrapping="Wrap" /></CheckBox>
-              <Border CornerRadius="10" Padding="11" Background="#101724">
+              <Border CornerRadius="10" Padding="11" Background="{StaticResource GlassCardBrush}" Classes="glass-card">
                 <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
                            Text="Обновление никогда не ставится без вашего нажатия: лаунчер только показывает, что вышла новая версия." />
               </Border>
@@ -132,7 +132,7 @@
             </StackPanel>
           </Border>
 
-          <Border CornerRadius="16" Padding="18" Background="#141A26"
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="10">
               <TextBlock Text="ДИАГНОСТИКА" Classes="eyebrow" />
@@ -144,7 +144,7 @@
             </StackPanel>
           </Border>
 
-          <Border CornerRadius="16" Padding="18" Background="#141A26"
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <StackPanel Spacing="8">
               <TextBlock Text="ВОЗМОЖНОСТИ СИСТЕМЫ" Classes="eyebrow" />

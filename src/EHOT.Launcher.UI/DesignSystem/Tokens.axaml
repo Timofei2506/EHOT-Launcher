@@ -41,6 +41,21 @@
   <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource ColorDanger}" />
   <SolidColorBrush x:Key="TransparentBrush" Color="Transparent" />
 
+  <!-- Стеклянные эффекты (acrylic/glassmorphism) -->
+  <SolidColorBrush x:Key="GlassBrush" Color="#140B0D13" />
+  <SolidColorBrush x:Key="GlassSurfaceBrush" Color="#180B0D13" />
+  <SolidColorBrush x:Key="GlassCardBrush" Color="#1A0B0D13" />
+  <SolidColorBrush x:Key="GlassSidebarBrush" Color="#160B0D13" />
+  <SolidColorBrush x:Key="GlassTitleBarBrush" Color="#140B0D13" />
+
+  <!-- Стеклянная обводка -->
+  <SolidColorBrush x:Key="GlassBorderBrush" Color="#3A4155" />
+  <SolidColorBrush x:Key="GlassBorderSoftBrush" Color="#262B38" />
+
+  <!-- Свечение для акцентов -->
+  <SolidColorBrush x:Key="AccentGlowBrush" Color="#8B5CF6" />
+
+
   <!-- Градиенты -->
   <LinearGradientBrush x:Key="AccentGradient" StartPoint="0%,0%" EndPoint="100%,100%">
     <GradientStop Color="#8B5CF6" Offset="0" />
