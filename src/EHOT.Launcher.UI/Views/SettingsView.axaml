@@ -23,8 +23,13 @@
         <!-- ══════ Левая колонка ══════ -->
         <StackPanel Spacing="16">
 
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
             <StackPanel Spacing="10">
               <TextBlock Text="ФАЙЛЫ" Classes="eyebrow" />
 
@@ -45,8 +50,13 @@
             </StackPanel>
           </Border>
 
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
             <StackPanel Spacing="14">
               <TextBlock Text="ПРОИЗВОДИТЕЛЬНОСТЬ" Classes="eyebrow" />
 
@@ -74,8 +84,13 @@
             </StackPanel>
           </Border>
 
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
             <StackPanel Spacing="10">
               <TextBlock Text="JAVA" Classes="eyebrow" />
               <ItemsControl ItemsSource="{Binding JavaRuntimes}">
@@ -97,8 +112,13 @@
         <!-- ══════ Правая колонка ══════ -->
         <StackPanel Grid.Column="1" Spacing="16">
 
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
             <StackPanel Spacing="10">
               <TextBlock Text="СЕТЬ И GAME NETWORK" Classes="eyebrow" />
 
@@ -118,8 +138,13 @@
             </StackPanel>
           </Border>
 
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
             <StackPanel Spacing="10">
               <TextBlock Text="ПОВЕДЕНИЕ" Classes="eyebrow" />
               <CheckBox IsChecked="{Binding AutoUpdateContent, Mode=TwoWay}"><TextBlock Text="Автоматически обновлять контент" TextWrapping="Wrap" /></CheckBox>
@@ -132,8 +157,13 @@
             </StackPanel>
           </Border>
 
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
             <StackPanel Spacing="10">
               <TextBlock Text="ДИАГНОСТИКА" Classes="eyebrow" />
               <TextBlock Text="{Binding DiagnosticsSummary}" Classes="caption" TextWrapping="Wrap" />
@@ -144,8 +174,13 @@
             </StackPanel>
           </Border>
 
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
             <StackPanel Spacing="8">
               <TextBlock Text="ВОЗМОЖНОСТИ СИСТЕМЫ" Classes="eyebrow" />
               <ItemsControl ItemsSource="{Binding Capabilities}">

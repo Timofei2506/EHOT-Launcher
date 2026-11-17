@@ -217,7 +217,14 @@
             </Grid>
           </Border>
 
-          <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Margin="26,0,26,18" />
+          <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Margin="26,0,26,18">
+            <ContentControl.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.22" />
+                <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.22" Easing="CubicEaseOut" />
+              </Transitions>
+            </ContentControl.Transitions>
+          </ContentControl>
         </Grid>
       </Grid>
 
@@ -328,6 +335,11 @@
 
     <!-- ══════════════ Глобальный поиск (overlay) ══════════════ -->
     <Border Grid.Row="1" IsVisible="{Binding IsSearchOpen}" Background="#99000000">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
+        </Transitions>
+      </Border.Transitions>
       <Border Classes="card glass-card" Width="560" VerticalAlignment="Top" Margin="0,120,0,0" Padding="18">
         <StackPanel Spacing="12">
           <TextBlock Text="Глобальный поиск" Classes="h3" />

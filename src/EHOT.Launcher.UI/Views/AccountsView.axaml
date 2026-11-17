@@ -21,8 +21,13 @@
         <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
 
           <!-- Microsoft -->
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
             <StackPanel Spacing="12">
               <StackPanel Orientation="Horizontal" Spacing="10">
                 <Border Width="32" Height="32" CornerRadius="10" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card">
@@ -109,8 +114,13 @@
         </Grid>
 
         <!-- ══════ Сохранённые профили ══════ -->
-        <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+        <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                <Border.Transitions>
+                  <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                    <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                  </Transitions>
+                </Border.Transitions>
           <StackPanel Spacing="10">
             <Grid ColumnDefinitions="*,Auto">
               <TextBlock Text="Сохранённые профили" Classes="h3" />
@@ -172,8 +182,13 @@
         </Border>
 
         <!-- ══════ Скин ══════ -->
-        <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+        <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                <Border.Transitions>
+                  <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                    <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                  </Transitions>
+                </Border.Transitions>
           <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
             <Border Width="64" Height="64" CornerRadius="14" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" ClipToBounds="True"
                     BorderBrush="#26314A" BorderThickness="1" VerticalAlignment="Center">

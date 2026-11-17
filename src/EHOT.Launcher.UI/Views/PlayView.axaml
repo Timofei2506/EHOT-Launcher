@@ -33,8 +33,13 @@
     <Grid Grid.Row="1" ColumnDefinitions="336,*" ColumnSpacing="16">
 
       <!-- ══════ Список профилей ══════ -->
-      <Border CornerRadius="16" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+      <Border CornerRadius="16" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+              <Border.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                  <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                </Transitions>
+              </Border.Transitions>
         <Grid RowDefinitions="Auto,Auto,*,Auto" RowSpacing="12">
 
           <TextBlock Grid.Row="0" Text="Скачанные версии" Classes="h3" />
@@ -49,8 +54,13 @@
             <ItemsControl ItemsSource="{Binding InstalledVersions}" IsVisible="{Binding HasInstalledVersions}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="vm:VersionsViewModel+InstalledVersion">
-                  <Border CornerRadius="10" Padding="10,8" Margin="0,0,0,6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
-                          BorderBrush="#1E2739" BorderThickness="1">
+                  <Border CornerRadius="10" Padding="10,8" Margin="0,0,0,6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" BorderBrush="#1E2739" BorderThickness="1" >
+                          <Border.Transitions>
+                            <Transitions>
+                              <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                              <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                            </Transitions>
+                          </Border.Transitions>
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
                       <StackPanel Spacing="1" VerticalAlignment="Center">
                         <TextBlock Text="{Binding Id}" FontSize="12.5" FontWeight="SemiBold"
@@ -73,8 +83,13 @@
             <Button Classes="ghost" Command="{Binding ToggleCreateFormCommand}"
                     Content="Создать профиль вручную" HorizontalAlignment="Stretch" FontSize="11.5" />
 
-            <Border CornerRadius="12" Padding="12" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
-                    BorderBrush="#1E2739" BorderThickness="1" IsVisible="{Binding IsCreateFormVisible}">
+            <Border CornerRadius="12" Padding="12" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" BorderBrush="#1E2739" BorderThickness="1"  IsVisible="{Binding IsCreateFormVisible}">
+                    <Border.Transitions>
+                      <Transitions>
+                        <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                        <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                      </Transitions>
+                    </Border.Transitions>
               <StackPanel Spacing="8">
                 <TextBlock Text="Новый профиль" Classes="caption" FontSize="10.5" />
                 <TextBox Text="{Binding NewProfileName, Mode=TwoWay}" PlaceholderText="Название" />
@@ -100,8 +115,13 @@
             <ItemsControl ItemsSource="{Binding Profiles}">
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="models:GameProfile">
-                  <Border CornerRadius="12" Padding="12" Margin="0,0,0,8" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
-                          BorderBrush="#1E2739" BorderThickness="1">
+                  <Border CornerRadius="12" Padding="12" Margin="0,0,0,8" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" BorderBrush="#1E2739" BorderThickness="1" >
+                          <Border.Transitions>
+                            <Transitions>
+                              <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                              <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                            </Transitions>
+                          </Border.Transitions>
                     <StackPanel Spacing="8">
                       <StackPanel Spacing="2">
                         <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="13"
@@ -136,8 +156,13 @@
       <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="16">
 
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
             <StackPanel Spacing="14">
 
               <Grid ColumnDefinitions="*,Auto">
@@ -218,8 +243,13 @@
           </Border>
 
           <!-- Аккаунт -->
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
             <StackPanel Spacing="8">
               <TextBlock Text="Аккаунт для запуска" Classes="h3" />
               <StackPanel Orientation="Horizontal" Spacing="10">

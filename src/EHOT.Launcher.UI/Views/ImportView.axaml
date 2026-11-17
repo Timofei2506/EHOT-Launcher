@@ -18,8 +18,13 @@
       </StackPanel>
 
       <!-- ══════ Шаг 1: путь к .minecraft ══════ -->
-      <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+      <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
+              <Border.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                  <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                </Transitions>
+              </Border.Transitions>
         <StackPanel Spacing="10">
           <StackPanel Spacing="3">
             <TextBlock Text="Путь к папке .minecraft другого лаунчера" Classes="eyebrow" />
@@ -41,9 +46,14 @@
       </Border>
 
       <!-- ══════ Результат сканирования ══════ -->
-      <Border CornerRadius="16" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
-              IsVisible="{Binding ScanResult, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <Border CornerRadius="16" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
+               IsVisible="{Binding ScanResult, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <Border.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                  <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                </Transitions>
+              </Border.Transitions>
         <StackPanel Spacing="10">
           <Grid ColumnDefinitions="*,Auto">
             <TextBlock Text="Что найдено в выбранной папке" Classes="h2" />
@@ -106,9 +116,14 @@
       </Border>
 
       <!-- ══════ Шаг 2: что импортировать и имя инстанса ══════ -->
-      <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
-              IsVisible="{Binding ScanResult, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
+               IsVisible="{Binding ScanResult, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <Border.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                  <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                </Transitions>
+              </Border.Transitions>
         <StackPanel Spacing="12">
           <TextBlock Text="Инстанс" Classes="eyebrow" />
 
@@ -145,9 +160,14 @@
               HorizontalAlignment="Left" Margin="0,8,0,0" />
 
       <!-- Результат -->
-      <Border CornerRadius="16" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
-              IsVisible="{Binding ImportResult, Converter={x:Static ObjectConverters.IsNotNull}}">
+      <Border CornerRadius="16" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
+               IsVisible="{Binding ImportResult, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <Border.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                  <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                </Transitions>
+              </Border.Transitions>
         <StackPanel Spacing="8">
           <TextBlock Text="{Binding ImportResult.Summary}" Classes="body" TextWrapping="Wrap" />
           <ItemsControl ItemsSource="{Binding ImportResult.Copied}">
