@@ -157,7 +157,8 @@ public sealed record MavenCoordinate(string Group, string Artifact, string Versi
         var parts = name.Split(':');
         return parts.Length switch
         {
-            >= 4 => new MavenCoordinate(parts[0], parts[1], parts[3], parts.Length > 4 ? parts[4] : null),
+            // group:artifact:version[:classifier] — версия всегда третья, классификатор четвёртый.
+            >= 4 => new MavenCoordinate(parts[0], parts[1], parts[2], parts[3]),
             3 => new MavenCoordinate(parts[0], parts[1], parts[2]),
             _ => throw new FormatException($"Некорректные Maven-координаты: '{name}'")
         };

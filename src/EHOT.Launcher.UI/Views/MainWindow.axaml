@@ -41,23 +41,18 @@
       <!-- Перетаскивание окна -->
       <Border Grid.Column="1" Background="Transparent" PointerPressed="OnTitleBarPressed" />
 
-      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Spacing="2">
-        <Button Classes="icon" Width="34" Height="30" Click="OnMinimizeClick" ToolTip.Tip="Свернуть">
-          <Path Data="{StaticResource IconMinimize}" Classes="icon" Width="13" Height="13" />
+      <!-- Кнопки окна: единая сетка 46×32, тонкий глиф по центру, мягкий ховер.
+           Раньше три кнопки были разного размера с разной толщиной штриха и «прыгали» под курсором. -->
+      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch" Margin="0,0,8,0"
+                  Spacing="0" Classes="window-buttons">
+        <Button Classes="window" Click="OnMinimizeClick" ToolTip.Tip="Свернуть">
+          <Path Data="{StaticResource IconWinMinimize}" x:Name="MinGlyph" />
         </Button>
-        <Button Classes="icon" Width="34" Height="30" Click="OnMaximizeClick" ToolTip.Tip="Развернуть">
-          <Path Data="{StaticResource IconMaximize}" Classes="icon" Width="11" Height="11" />
+        <Button Classes="window" Click="OnMaximizeClick" ToolTip.Tip="Развернуть во весь экран">
+          <Path Data="{StaticResource IconWinMaximize}" x:Name="MaxGlyph" />
         </Button>
-        <Button Classes="icon" Width="34" Height="30" Click="OnCloseClick" ToolTip.Tip="Закрыть">
-          <Path Data="{StaticResource IconClose}" Classes="icon" Width="12" Height="12" />
-          <Button.Styles>
-            <Style Selector="Button:pointerover /template/ Border#Root">
-              <Setter Property="Background" Value="#C4484E" />
-            </Style>
-            <Style Selector="Button:pointerover Path">
-              <Setter Property="Stroke" Value="#FFFFFF" />
-            </Style>
-          </Button.Styles>
+        <Button Classes="window close" Click="OnCloseClick" ToolTip.Tip="Закрыть">
+          <Path Data="{StaticResource IconWinClose}" />
         </Button>
       </StackPanel>
     </Grid>
@@ -84,31 +79,65 @@
           </StackPanel>
 
           <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="10,4,10,0">
-            <ItemsControl ItemsSource="{Binding NavigationItems}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:NavigationItemViewModel">
-                  <Button Classes="ghost" Command="{Binding SelectCommand}"
-                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                          Padding="0" Background="Transparent" BorderThickness="0">
-                    <Border CornerRadius="10" Padding="11,8" Margin="0,1"
-                            Background="{Binding IsSelected, Converter={StaticResource SelectedBackground}}">
-                      <Grid ColumnDefinitions="Auto,*,Auto">
-                        <Path Data="{Binding IconKey, Converter={StaticResource IconKey}}" Classes="icon"
-                              Width="16" Height="16"
-                              Stroke="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}"
-                              VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="11,0,0,0" FontSize="12.5"
-                                   Foreground="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}"
-                                   VerticalAlignment="Center" />
-                        <Border Grid.Column="2" Width="6" Height="6" CornerRadius="3"
-                                Background="{StaticResource AccentBlueBrush}" VerticalAlignment="Center"
-                                IsVisible="{Binding IsSelected}" />
-                      </Grid>
-                    </Border>
-                  </Button>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <StackPanel>
+              <!-- Пункты рельса: группы «Игра», «Каталог», «Вместе», «Система» -->
+              <ItemsControl ItemsSource="{Binding NavigationItems}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:NavigationItemViewModel">
+                    <StackPanel>
+                      <!-- Заголовок группы повторяется у каждого пункта, но виден только у первого
+                           (так не нужен отдельный тип списка и сохраняется порядок) -->
+                      <TextBlock Text="{Binding Group}" Classes="eyebrow" Margin="11,12,0,5" FontSize="9.5"
+                                 IsVisible="{Binding IsGroupStart}" />
+
+                      <Button Classes="ghost" Command="{Binding SelectCommand}"
+                              HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                              Padding="0" Background="Transparent" BorderThickness="0">
+                        <Border CornerRadius="10" Padding="11,8" Margin="0,1"
+                                Background="{Binding IsSelected, Converter={StaticResource SelectedBackground}}">
+                          <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                            <Path Data="{Binding IconKey, Converter={StaticResource IconKey}}" Classes="icon"
+                                  Width="16" Height="16"
+                                  Stroke="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}"
+                                  VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" Margin="11,0,0,0" Spacing="1" VerticalAlignment="Center">
+                              <TextBlock Text="{Binding Title}" FontSize="12.5"
+                                         Foreground="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}" />
+                              <!-- Что открыто внутри каталога: «Моды», «Сборки» и т.д. -->
+                              <TextBlock Text="{Binding SubTitle}" FontSize="9.5" Margin="0,1,0,0"
+                                         Foreground="{StaticResource AccentBlueBrush}"
+                                         IsVisible="{Binding HasSubItems}" />
+                            </StackPanel>
+                            <!-- Шеврон раскрытия подпунктов -->
+                            <Path Grid.Column="2" Data="{StaticResource IconChevronDown}" Classes="icon"
+                                  Width="10" Height="10" VerticalAlignment="Center" Margin="6,0"
+                                  IsVisible="{Binding HasSubItems}" />
+                            <Border Grid.Column="3" Width="6" Height="6" CornerRadius="3"
+                                    Background="{StaticResource AccentBlueBrush}" VerticalAlignment="Center"
+                                    IsVisible="{Binding IsSelected}" />
+                          </Grid>
+                        </Border>
+                      </Button>
+
+                      <!-- Подпункты каталога -->
+                      <ItemsControl ItemsSource="{Binding SubItems}" IsVisible="{Binding IsExpanded}" Margin="26,2,0,4">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="services:NavigationEntry">
+                            <Button Classes="ghost" Padding="0" Background="Transparent" BorderThickness="0"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                    Command="{Binding $parent[ItemsControl].((vm:NavigationItemViewModel)DataContext).OpenSubItemCommand}"
+                                    CommandParameter="{Binding}">
+                              <TextBlock Text="{Binding Title}" FontSize="12" Margin="11,6"
+                                         Foreground="{StaticResource TextSecondaryBrush}" />
+                            </Button>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
           </ScrollViewer>
 
           <!-- Аккаунт внизу сайдбара -->

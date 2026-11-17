@@ -25,6 +25,9 @@ public sealed record DownloadRequest
     public string? ExpectedSha1 { get; init; }
     public string? ExpectedSha512 { get; init; }
 
+    /// <summary>SHA-256: такую контрольную сумму отдаёт, например, Adoptium для JRE.</summary>
+    public string? ExpectedSha256 { get; init; }
+
     /// <summary>Группа (например, "minecraft-1.21.4"), для отмены пачкой.</summary>
     public string? Group { get; init; }
 
@@ -170,6 +173,9 @@ public interface IDownloadManager
 
     DownloadSnapshot? Get(string id);
 
+    /// <summary>Остановить всё перед выходом, сохранив недокачанные файлы для продолжения.</summary>
+    void ShutdownForExit();
+
     event Action<DownloadSnapshot>? Updated;
 
     event Action<DownloadSnapshot>? Finished;
@@ -303,6 +309,30 @@ public sealed class DownloadManager(
         TryDelete(PartPath(item.Request));
     }
 
+    /// <summary>
+    /// Останавливает всё перед закрытием лаунчера, <b>не удаляя</b> недокачанные файлы (.part):
+    /// при следующем запуске загрузка продолжится с того же места, а не с нуля.
+    /// </summary>
+    public void ShutdownForExit()
+    {
+        foreach (var item in _tasks.Values)
+        {
+            try
+            {
+                item.PauseRequested = false;
+                item.Cts?.Cancel();
+                item.State = DownloadState.Cancelled;
+                Publish(item);
+            }
+            catch (Exception)
+            {
+                // Закрытие не должно падать из-за отдельной загрузки.
+            }
+        }
+
+        log.Info("Download", "Лаунчер закрывается: недокачанные файлы сохранены для продолжения");
+    }
+
     public void CancelGroup(string group)
     {
         foreach (var item in _tasks.Values.Where(t => string.Equals(t.Request.Group, group, StringComparison.Ordinal)))
@@ -410,18 +440,37 @@ public sealed class DownloadManager(
             ct.ThrowIfCancellationRequested();
             try
             {
-                using var hasher = request.ExpectedSha512 is not null
-                    ? IncrementalHash.CreateHash(HashAlgorithmName.SHA512)
-                    : request.ExpectedSha1 is not null
-                        ? IncrementalHash.CreateHash(HashAlgorithmName.SHA1)
-                        : null;
+                var algorithm = HashAlgorithmFor(request);
+                using var hasher = algorithm is null ? null : IncrementalHash.CreateHash(algorithm.Value);
 
-                // Если докачиваем, хэш уже посчитанной части восстановить нельзя —
-                // поэтому докачка используется только когда хэш не задан, иначе качаем с нуля.
-                var resumeOffset = hasher is null && existingLength > 0 ? existingLength : 0;
+                // Докачка работает и с известным хэшем: хэш существующей части считается
+                // по файлу на диске, поэтому проверка целостности остаётся полноценной.
+                // Это и есть «сохранение прогресса»: после закрытия лаунчера файл не теряется.
+                var resumeOffset = existingLength > 0 ? existingLength : 0;
                 if (resumeOffset == 0 && File.Exists(partPath))
                 {
                     File.Delete(partPath);
+                }
+
+                if (resumeOffset > 0 && hasher is not null)
+                {
+                    if (request.ExpectedSize is > 0 && resumeOffset >= request.ExpectedSize)
+                    {
+                        // Файл уже скачан полностью — просто проверяем хэш ниже.
+                        resumeOffset = 0;
+                        existingLength = 0;
+                    }
+                    else
+                    {
+                        await using var existing = new FileStream(partPath, FileMode.Open, FileAccess.Read,
+                            FileShare.Read, BufferSize, useAsync: true);
+                        var hashBuffer = new byte[BufferSize];
+                        int hashRead;
+                        while ((hashRead = await existing.ReadAsync(hashBuffer, ct).ConfigureAwait(false)) > 0)
+                        {
+                            hasher.AppendData(hashBuffer, 0, hashRead);
+                        }
+                    }
                 }
 
                 using var response = await http.OpenReadAsync(request.Url, resumeOffset > 0 ? resumeOffset : null, ct).ConfigureAwait(false);
@@ -458,7 +507,7 @@ public sealed class DownloadManager(
                 if (hasher is not null)
                 {
                     var actual = Convert.ToHexString(hasher.GetHashAndReset()).ToLowerInvariant();
-                    var expected = request.ExpectedSha512 ?? request.ExpectedSha1!;
+                    var expected = ExpectedHash(request);
                     if (!string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase))
                     {
                         TryDelete(partPath);
@@ -494,7 +543,8 @@ public sealed class DownloadManager(
 
     private static async Task<bool> VerifyFileIfPossibleAsync(string path, DownloadRequest request, CancellationToken ct)
     {
-        if (request.ExpectedSha1 is null && request.ExpectedSha512 is null)
+        var algorithm = HashAlgorithmFor(request);
+        if (algorithm is null)
         {
             return false;
         }
@@ -506,14 +556,28 @@ public sealed class DownloadManager(
         }
 
         await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 128 * 1024, useAsync: true);
-        var hash = request.ExpectedSha512 is not null
-            ? await SHA512.HashDataAsync(stream, ct).ConfigureAwait(false)
-            : await SHA1.HashDataAsync(stream, ct).ConfigureAwait(false);
+        var name = algorithm.Value;
+        var hash = name == HashAlgorithmName.SHA256
+            ? await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false)
+            : name == HashAlgorithmName.SHA512
+                ? await SHA512.HashDataAsync(stream, ct).ConfigureAwait(false)
+                : await SHA1.HashDataAsync(stream, ct).ConfigureAwait(false);
 
         var actual = Convert.ToHexString(hash).ToLowerInvariant();
-        var expected = request.ExpectedSha512 ?? request.ExpectedSha1!;
-        return string.Equals(actual, expected, StringComparison.OrdinalIgnoreCase);
+        return string.Equals(actual, ExpectedHash(request), StringComparison.OrdinalIgnoreCase);
     }
+
+    /// <summary>Алгоритм проверки выбирается по тому, какая сумма известна.</summary>
+    private static HashAlgorithmName? HashAlgorithmFor(DownloadRequest request) => request switch
+    {
+        { ExpectedSha512: not null } => HashAlgorithmName.SHA512,
+        { ExpectedSha256: not null } => HashAlgorithmName.SHA256,
+        { ExpectedSha1: not null } => HashAlgorithmName.SHA1,
+        _ => null
+    };
+
+    private static string ExpectedHash(DownloadRequest request)
+        => request.ExpectedSha512 ?? request.ExpectedSha256 ?? request.ExpectedSha1!;
 
     private static string PartPath(DownloadRequest request) => request.DestinationPath + PartSuffix;
 
