@@ -127,7 +127,6 @@
                       <Transitions>
                         <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
                         <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
-                        <DoubleTransition Property="BoxShadow" Duration="0:0:0.2" />
                       </Transitions>
                     </Border.Transitions>
                     <StackPanel Spacing="10">
