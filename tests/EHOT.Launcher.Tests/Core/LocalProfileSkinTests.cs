@@ -90,6 +90,24 @@ public sealed class LocalProfileSkinTests
         Assert.Equal(EHOT.Launcher.Core.Security.PathGuard.OfflineUuidFor("FreeNick"), result.Value.Account.Uuid);
     }
 
+    [Fact]
+    public async Task CreateAsync_KeepsOfficialUuid_EvenWhenSkinFails()
+    {
+        var accounts = new MemoryAccounts();
+        // Ник существует (UUID есть), но текстура скина недоступна — типичный сбой CDN.
+        var lookup = new StubLookup(new RemoteSkin("notch", "069a79f4-44e9-4726-a5be-fca90e38aaf5",
+            "https://textures.minecraft.net/texture/x", [], IsSlim: false));
+        var service = new LocalProfileService(accounts, lookup, new TempAppPaths(), new NullLog());
+
+        var result = await service.CreateAsync(new LocalProfileRequest("notch"), TestContext.Current.CancellationToken);
+
+        Assert.True(result.IsSuccess);
+        Assert.True(result.Value!.Account.UuidFromOfficialProfile);
+        Assert.Equal(Guid.Parse("069a79f4-44e9-4726-a5be-fca90e38aaf5"), result.Value.Account.Uuid);
+        Assert.False(result.Value.CopiedOfficialSkin);
+        Assert.Null(result.Value.Account.LocalSkinPath);
+    }
+
     private static int ReadSkinSize(string path)
     {
         using var stream = File.OpenRead(path);
@@ -140,6 +158,9 @@ public sealed class LocalProfileSkinTests
 
     private sealed class StubLookup(RemoteSkin? skin) : IProfileLookupService
     {
+        public Task<OperationResult<OfficialProfile?>> ResolveOfficialAsync(string username, CancellationToken ct = default)
+            => LookupAsync(username, ct);
+
         public Task<OperationResult<OfficialProfile?>> LookupAsync(string username, CancellationToken ct = default)
             => Task.FromResult(OperationResult<OfficialProfile?>.Ok(skin is null
                 ? null
@@ -151,6 +172,9 @@ public sealed class LocalProfileSkinTests
 
     private sealed class NoLookup : IProfileLookupService
     {
+        public Task<OperationResult<OfficialProfile?>> ResolveOfficialAsync(string username, CancellationToken ct = default)
+            => LookupAsync(username, ct);
+
         public Task<OperationResult<OfficialProfile?>> LookupAsync(string username, CancellationToken ct = default)
             => Task.FromResult(OperationResult<OfficialProfile?>.Ok(null));
 

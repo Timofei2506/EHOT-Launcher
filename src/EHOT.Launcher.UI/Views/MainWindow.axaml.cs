@@ -28,6 +28,16 @@ public partial class MainWindow : Window
 
     private void OnCloseClick(object? sender, RoutedEventArgs e) => Close();
 
+    /// <summary>
+    /// Перед закрытием останавливаем активные загрузки, сохранив .part-файлы:
+    /// при следующем запуске установка продолжится с того же места.
+    /// </summary>
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        (DataContext as MainWindowViewModel)?.PrepareForExit();
+        base.OnClosing(e);
+    }
+
     private async void OnKeyDown(object? sender, KeyEventArgs e)
     {
         // Ctrl/Cmd + K — глобальный поиск (как в современных приложениях).

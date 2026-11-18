@@ -48,6 +48,7 @@ public static class AppBootstrap
 
         // --- Инфраструктура ---------------------------------------------
         services.AddSingleton<IProcessRunner, ProcessRunner>();
+        services.AddSingleton<EHOT.Launcher.Platform.Shared.IGraphicsDetector, EHOT.Launcher.Platform.Shared.GraphicsDetector>();
         services.AddSingleton<ICapabilityRegistry>(sp =>
         {
             var registry = new CapabilityRegistry();

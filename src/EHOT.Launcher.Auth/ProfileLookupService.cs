@@ -22,6 +22,12 @@ public interface IProfileLookupService
 
     /// <summary>Скин официального игрока с таким ником, если он существует.</summary>
     Task<OperationResult<RemoteSkin?>> FetchSkinAsync(string username, CancellationToken ct = default);
+
+    /// <summary>
+    /// Только проверка ника и его UUID, без скачивания текстуры. Нужна, когда скин не важен:
+    /// официальный UUID должен применяться даже если скин не удалось получить.
+    /// </summary>
+    Task<OperationResult<OfficialProfile?>> ResolveOfficialAsync(string username, CancellationToken ct = default);
 }
 
 public sealed class ProfileLookupService(IHttpService http, ILogService log) : IProfileLookupService
@@ -68,6 +74,9 @@ public sealed class ProfileLookupService(IHttpService http, ILogService log) : I
             return OperationResult<OfficialProfile?>.FromException(ex, ErrorCode.Network);
         }
     }
+
+    public Task<OperationResult<OfficialProfile?>> ResolveOfficialAsync(string username, CancellationToken ct = default)
+        => LookupAsync(username, ct);
 
     public async Task<OperationResult<RemoteSkin?>> FetchSkinAsync(string username, CancellationToken ct = default)
     {

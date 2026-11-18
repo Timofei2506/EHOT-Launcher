@@ -17,6 +17,12 @@
 
       <!-- ═══ Hero: профиль + ИГРАТЬ ═══ -->
       <Border Classes="hero">
+        <Border.Transitions>
+          <Transitions>
+            <DoubleTransition Property="Opacity" Duration="0:0:0.4" />
+            <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.4" Easing="CubicEaseOut" />
+          </Transitions>
+        </Border.Transitions>
         <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
 
           <!-- Левая часть: скин игрока, ник и профиль -->
@@ -28,22 +34,21 @@
                          Foreground="{StaticResource TextSecondaryBrush}" />
             </StackPanel>
 
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16" Margin="0,4,0,0">
-              <!-- Голова со скина игрока; если скина нет — инициал ника -->
-              <Border Width="72" Height="72" CornerRadius="16" Background="#1E2740"
-                      BorderBrush="#2A3350" BorderThickness="1" VerticalAlignment="Center">
-                <Panel>
-                  <TextBlock Text="{Binding AccountInitials}" FontSize="30" FontWeight="Bold"
-                             Foreground="#C4B5FD" HorizontalAlignment="Center" VerticalAlignment="Center"
-                             IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNull}}" />
-                  <Border CornerRadius="16" ClipToBounds="True"
-                          IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNotNull}}">
-                    <Image Source="{Binding SkinPath, Converter={x:Static conv2:SkinFaceConverter.Instance}}"
-                           Width="72" Height="72" Stretch="Uniform"
-                           RenderOptions.BitmapInterpolationMode="None" />
-                  </Border>
-                </Panel>
-              </Border>
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="18" Margin="0,4,0,0">
+              <!-- Объёмное превью скина: вращается мышью. Если скина нет — инициал ника
+                   с подписью, что скин можно загрузить в «Аккаунтах». -->
+              <Panel Width="104" Height="132" VerticalAlignment="Center">
+                <Border CornerRadius="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="#2A3350" BorderThickness="1"
+                        IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNotNull}}">
+                  <controls:Skin3DView SkinPath="{Binding SkinPath}" Margin="2" />
+                </Border>
+                <Border Width="104" Height="132" CornerRadius="16" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
+                        BorderBrush="#2A3350" BorderThickness="1"
+                        IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNull}}">
+                  <TextBlock Text="{Binding AccountInitials}" FontSize="34" FontWeight="Bold"
+                             Foreground="#C4B5FD" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                </Border>
+              </Panel>
 
               <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
                 <TextBlock Text="{Binding AccountName}" FontSize="32" FontWeight="Bold" LetterSpacing="-0.6"
@@ -106,6 +111,12 @@
       <!-- ═══ Быстрые действия ═══ -->
       <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
         <Border Classes="card" Padding="16" Cursor="Hand">
+          <Border.Transitions>
+            <Transitions>
+              <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+              <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+            </Transitions>
+          </Border.Transitions>
           <Button Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Stretch"
                   Command="{Binding OpenContentCommand}" CommandParameter="mods">
             <StackPanel Spacing="8">
@@ -169,7 +180,7 @@
         <TextBlock Grid.Column="1" Text="официальный источник Mojang" Classes="caption" VerticalAlignment="Center" />
       </Grid>
 
-      <Border CornerRadius="14" Padding="16" Background="#141A26"
+      <Border CornerRadius="14" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
               BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
               IsVisible="{Binding News.Count, Converter={x:Static vm:TextConverters.IsZero}}">
         <TextBlock Text="Новости не загрузились: источник Mojang не ответил при запуске." Classes="caption"
@@ -184,10 +195,16 @@
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:NewsCardViewModel">
-            <Border CornerRadius="14" Margin="0,0,12,0" Padding="16" Background="#141A26"
+            <Border CornerRadius="14" Margin="0,0,12,0" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                     BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <Border.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                  <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                </Transitions>
+              </Border.Transitions>
               <StackPanel Spacing="8">
-                <Border Height="92" CornerRadius="12" Background="#1A2233">
+                <Border Height="92" CornerRadius="12" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card">
                   <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
                     <TextBlock Text="{Binding Type}" Classes="eyebrow" HorizontalAlignment="Center" />
                     <TextBlock Text="{Binding Version}" FontWeight="SemiBold" FontSize="15"
@@ -208,7 +225,7 @@
         <TextBlock Grid.Column="1" Text="по загрузкам Modrinth" Classes="caption" VerticalAlignment="Center" />
       </Grid>
 
-      <Border CornerRadius="14" Padding="16" Background="#141A26"
+      <Border CornerRadius="14" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
               BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
               IsVisible="{Binding PopularMods.Count, Converter={x:Static vm:TextConverters.IsZero}}">
         <TextBlock Text="Каталог Modrinth не ответил — популярные моды появятся после загрузки." Classes="caption"
@@ -223,11 +240,17 @@
         </ItemsControl.ItemsPanel>
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="vm:ContentCardViewModel">
-            <Border CornerRadius="14" Margin="0,0,10,10" Padding="14" Background="#141A26"
+            <Border CornerRadius="14" Margin="0,0,10,10" Padding="14" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                     BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <Border.Transitions>
+                <Transitions>
+                  <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                  <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                </Transitions>
+              </Border.Transitions>
               <StackPanel Spacing="6">
                 <Grid ColumnDefinitions="Auto,*">
-                  <Border Width="38" Height="38" CornerRadius="10" Background="#1E2740" ClipToBounds="True"
+                  <Border Width="38" Height="38" CornerRadius="10" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" ClipToBounds="True"
                           BorderBrush="#26314A" BorderThickness="1">
                     <Panel>
                       <TextBlock Text="{Binding Title, Converter={x:Static vm:TextConverters.FirstLetter}}"
@@ -259,7 +282,7 @@
       <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
         <StackPanel Spacing="10">
           <TextBlock Text="Популярные сборки" Classes="h2" />
-          <Border CornerRadius="14" Padding="14" Background="#141A26"
+          <Border CornerRadius="14" Padding="14" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
                   IsVisible="{Binding PopularModpacks.Count, Converter={x:Static vm:TextConverters.IsZero}}">
             <TextBlock Text="Сборки не загрузились: каталог недоступен." Classes="caption" TextWrapping="Wrap" />
@@ -267,8 +290,14 @@
           <ItemsControl ItemsSource="{Binding PopularModpacks}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="vm:ContentCardViewModel">
-                <Border CornerRadius="12" Margin="0,0,0,8" Padding="12" Background="#141A26"
+                <Border CornerRadius="12" Margin="0,0,0,8" Padding="12" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                         BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
                   <Grid ColumnDefinitions="Auto,*,Auto">
                     <Border Width="30" Height="30" CornerRadius="8" Background="#1A38BDF8">
                       <Path Data="{StaticResource IconBox}" Classes="icon blue" Width="15" Height="15"
@@ -294,8 +323,14 @@
           <ItemsControl ItemsSource="{Binding RecentLaunches}">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="models:LaunchRecord">
-                <Border CornerRadius="12" Margin="0,0,0,8" Padding="12" Background="#141A26"
+                <Border CornerRadius="12" Margin="0,0,0,8" Padding="12" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                         BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+                  <Border.Transitions>
+                    <Transitions>
+                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                    </Transitions>
+                  </Border.Transitions>
                   <Grid ColumnDefinitions="*,Auto">
                     <StackPanel>
                       <TextBlock Text="{Binding ProfileName}" FontSize="12.5" FontWeight="SemiBold"
@@ -312,7 +347,7 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
 
-          <Border CornerRadius="14" Padding="14" Background="#141A26"
+          <Border CornerRadius="14" Padding="14" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
                   IsVisible="{Binding RecentLaunches.Count, Converter={x:Static vm:TextConverters.IsZero}}">
             <TextBlock Text="Пока нет истории запусков — самое время начать." Classes="caption" TextWrapping="Wrap" />
