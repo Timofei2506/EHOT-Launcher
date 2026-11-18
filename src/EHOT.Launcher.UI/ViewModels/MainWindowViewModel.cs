@@ -19,6 +19,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly ILogService _log;
     private readonly IPlatformInfo _platform;
     private readonly ICapabilityRegistry _capabilities;
+    private readonly Core.Downloads.IDownloadManager _downloads;
 
     public MainWindowViewModel(
         INavigationService navigation,
@@ -27,7 +28,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         ILogService log,
         IPlatformInfo platform,
         ICapabilityRegistry capabilities,
-        UpdateViewModel updates)
+        UpdateViewModel updates,
+        Core.Downloads.IDownloadManager downloads)
     {
         _navigation = navigation;
         _state = state;
@@ -35,10 +37,33 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _log = log;
         _platform = platform;
         _capabilities = capabilities;
+        _downloads = downloads;
         Updates = updates;
 
+        // Рельс: 9 пунктов в 4 группах вместо 13 подряд. Каталог — один пункт с вкладками.
+        var entries = _navigation.Entries.Where(e => !e.IsSubItem).Append(NavigationService.CatalogEntry);
         NavigationItems = new ObservableCollection<NavigationItemViewModel>(
-            _navigation.Entries.Select(e => new NavigationItemViewModel(e, () => _ = NavigateAsync(e.Key))));
+            entries.Select(e =>
+            {
+                var item = new NavigationItemViewModel(
+                    e,
+                    () => _ = NavigateAsync(e.Key),
+                    e.Key == "mods" ? CatalogEntries : []);
+                // Подпункт открывается через то же окно навигации, что и обычный пункт.
+                item.OpenRequested = key => _ = NavigateAsync(key);
+                return item;
+            }));
+
+        // Заголовок группы рисуется один раз — у первого пункта этой группы.
+        foreach (var group in NavigationItems.GroupBy(i => i.Group))
+        {
+            var first = true;
+            foreach (var item in group)
+            {
+                item.IsGroupStart = first && group.Key is not null;
+                first = false;
+            }
+        }
 
         NavigationItems[0].IsSelected = true;
         _navigation.Navigated += vm => CurrentPage = vm;
@@ -192,16 +217,34 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         }
     }
 
+    /// <summary>Подпункты каталога: моды, сборки, текстуры, шейдеры, карты.</summary>
+    public IReadOnlyList<NavigationEntry> CatalogEntries { get; } = NavigationService.CatalogEntries;
+
     [RelayCommand]
     private async Task NavigateAsync(string key)
     {
+        // Подпункт каталога подсвечивает пункт «Каталог» и запоминает вкладку.
+        var isCatalog = CatalogEntries.Any(e => string.Equals(e.Key, key, StringComparison.OrdinalIgnoreCase));
         foreach (var item in NavigationItems)
         {
-            item.IsSelected = string.Equals(item.Key, key, StringComparison.OrdinalIgnoreCase);
+            item.IsSelected = isCatalog
+                ? item.Key == "mods"
+                : string.Equals(item.Key, key, StringComparison.OrdinalIgnoreCase);
+
+            if (isCatalog && item.Key == "mods")
+            {
+                item.SubTitle = CatalogEntries.First(e => e.Key == key).Title;
+            }
         }
 
         await _navigation.NavigateAsync(key).ConfigureAwait(true);
     }
+
+    /// <summary>
+    /// Вызывается при закрытии окна: останавливает загрузки, не удаляя недокачанные файлы,
+    /// чтобы следующий запуск продолжил установку, а не начал её заново.
+    /// </summary>
+    public void PrepareForExit() => _downloads.ShutdownForExit();
 
     [RelayCommand]
     private void ToggleSearch() => IsSearchOpen = !IsSearchOpen;
@@ -235,23 +278,77 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     }
 }
 
-public sealed partial class NavigationItemViewModel(NavigationEntry entry, Action onSelected) : ObservableObject
+public sealed partial class NavigationItemViewModel : ObservableObject
 {
-    public string Key => entry.Key;
+    private readonly Action _onSelected;
 
-    public string Title => entry.Title;
+    public NavigationItemViewModel(NavigationEntry entry, Action onSelected, IReadOnlyList<NavigationEntry> subItems)
+    {
+        Entry = entry;
+        _onSelected = onSelected;
+        SubItems = subItems;
+        _subTitle = entry.Title;
+        IsGroupStart = entry.Group is not null;
+    }
 
-    public string IconKey => entry.IconKey;
+    /// <summary>Первый пункт группы — у него рисуется заголовок группы.</summary>
+    public bool IsGroupStart { get; set; }
+
+    public NavigationEntry Entry { get; }
+
+    public string Key => Entry.Key;
+
+    public string Title => Entry.Title;
+
+    public string IconKey => Entry.IconKey;
+
+    /// <summary>Заголовок группы; показывается только у первого пункта группы.</summary>
+    public string? Group => Entry.Group;
+
+    /// <summary>Подпункты (только у «Каталога»): моды, сборки, текстуры, шейдеры, карты.</summary>
+    public IReadOnlyList<NavigationEntry> SubItems { get; }
+
+    public bool HasSubItems => SubItems.Count > 0;
+
+    /// <summary>Что открыто внутри пункта: «Каталог · Моды».</summary>
+    [ObservableProperty]
+    private string _subTitle;
 
     [ObservableProperty]
     private bool _isSelected;
+
+    /// <summary>Раскрыт ли список подпунктов (только для каталога).</summary>
+    [ObservableProperty]
+    private bool _isExpanded;
 
     [RelayCommand]
     private void Select()
     {
         IsSelected = true;
-        onSelected();
+        if (HasSubItems)
+        {
+            IsExpanded = !IsExpanded;
+        }
+
+        _onSelected();
     }
+
+    [RelayCommand]
+    private void OpenSubItem(NavigationEntry? sub)
+    {
+        if (sub is null)
+        {
+            return;
+        }
+
+        SubTitle = sub.Title;
+        IsExpanded = false;
+        _onSelected?.Invoke();
+        OpenRequested?.Invoke(sub.Key);
+    }
+
+    /// <summary>Навигация по подпункту: обрабатывается окном, чтобы не плодить зависимости.</summary>
+    public Action<string>? OpenRequested { get; set; }
 }
 
 /// <summary>Строка панели «Состояние систем»: возможность платформы и её честный статус.</summary>

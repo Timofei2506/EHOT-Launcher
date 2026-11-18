@@ -74,6 +74,19 @@ public sealed partial class PlayViewModel : ViewModelBase
 
     public ObservableCollection<JavaRuntime> JavaRuntimes { get; } = [];
 
+    /// <summary>
+    /// Только то, что реально скачано: раздел «Играть» не должен показывать весь каталог Mojang.
+    /// Полный список версий — в разделе «Версии».
+    /// </summary>
+    public ObservableCollection<VersionsViewModel.InstalledVersion> InstalledVersions { get; } = [];
+
+    [ObservableProperty]
+    private bool _hasInstalledVersions;
+
+    /// <summary>Создание профиля вручную — редкий сценарий, поэтому спрятано под кнопку.</summary>
+    [ObservableProperty]
+    private bool _isCreateFormVisible;
+
     public LoaderKind[] AvailableLoaders { get; } = [LoaderKind.Vanilla, LoaderKind.Fabric, LoaderKind.NeoForge, LoaderKind.Forge, LoaderKind.Quilt];
 
     [ObservableProperty]
@@ -156,6 +169,33 @@ public sealed partial class PlayViewModel : ViewModelBase
 
     private async Task LoadVersionsAsync(CancellationToken ct)
     {
+        // Скачанные версии — из папки игры, а не из манифеста Mojang.
+        var root = _state.MinecraftRoot;
+        InstalledVersions.Clear();
+        var versionsDir = Path.Combine(root, "versions");
+        if (Directory.Exists(versionsDir))
+        {
+            foreach (var dir in Directory.EnumerateDirectories(versionsDir))
+            {
+                var id = Path.GetFileName(dir);
+                if (!File.Exists(Path.Combine(dir, $"{id}.json")))
+                {
+                    continue;
+                }
+
+                var loader = id.Contains("neoforge", StringComparison.OrdinalIgnoreCase) ? "NeoForge"
+                    : id.Contains("forge", StringComparison.OrdinalIgnoreCase) ? "Forge"
+                    : id.Contains("quilt", StringComparison.OrdinalIgnoreCase) ? "Quilt"
+                    : id.Contains("fabric", StringComparison.OrdinalIgnoreCase) ? "Fabric"
+                    : "Vanilla";
+
+                InstalledVersions.Add(new VersionsViewModel.InstalledVersion(id, "release", id, loader));
+            }
+        }
+
+        HasInstalledVersions = InstalledVersions.Count > 0;
+
+        // Список для ручного создания профиля — последние релизы, а не 80 позиций.
         var versions = await _versions.GetManifestAsync(false, ct).ConfigureAwait(true);
         if (!versions.IsSuccess)
         {
@@ -164,12 +204,42 @@ public sealed partial class PlayViewModel : ViewModelBase
         }
 
         MinecraftVersions.Clear();
-        foreach (var v in versions.Value!.Versions.Where(v => v.Type is "release" or "snapshot").Take(80))
+        foreach (var v in versions.Value!.Versions.Where(v => v.Type == "release").Take(20))
         {
             MinecraftVersions.Add(v.Id);
         }
 
         NewProfileVersion ??= versions.Value.Latest?.Release ?? MinecraftVersions.FirstOrDefault();
+    }
+
+    [RelayCommand]
+    private void ToggleCreateForm() => IsCreateFormVisible = !IsCreateFormVisible;
+
+    /// <summary>Установка/управление версиями живёт в разделе «Версии».</summary>
+    [RelayCommand]
+    private Task OpenVersionsAsync() => _navigation.NavigateAsync("versions");
+
+    /// <summary>Запуск прямо из списка скачанных версий: профиль создаётся сам, если его нет.</summary>
+    [RelayCommand]
+    private async Task LaunchInstalledAsync(VersionsViewModel.InstalledVersion? version)
+    {
+        if (version is null)
+        {
+            return;
+        }
+
+        var existing = _state.Profiles.FirstOrDefault(p =>
+            string.Equals(p.MinecraftVersion, version.Id, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+        {
+            SelectedProfile = existing;
+            await LaunchAsync().ConfigureAwait(true);
+            return;
+        }
+
+        await _navigation.NavigateAsync("versions").ConfigureAwait(true);
+        _toasts.Show("Версия выбрана", $"{version.Id}: запуск доступен на странице «Версии».",
+            ToastKind.Info);
     }
 
     private async Task LoadJavaAsync(CancellationToken ct)

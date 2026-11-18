@@ -13,17 +13,17 @@
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="Padding" Value="16,9" />
-        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="CornerRadius" Value="12" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Cursor" Value="Hand" />
-          <Setter Property="Transitions">
+        <Setter Property="Transitions">
           <Transitions>
-            <BrushTransition Property="Background" Duration="0:0:0.15" />
-            <BrushTransition Property="BorderBrush" Duration="0:0:0.15" />
-            <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+            <BrushTransition Property="Background" Duration="0:0:0.18" />
+            <BrushTransition Property="BorderBrush" Duration="0:0:0.18" />
+            <DoubleTransition Property="Opacity" Duration="0:0:0.18" />
           </Transitions>
         </Setter>
         <Setter Property="Template">
@@ -45,9 +45,12 @@
 
         <Style Selector="^:pointerover /template/ Border#Root">
           <Setter Property="Background" Value="{StaticResource SurfaceHighBrush}" />
+          <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}" />
+          <Setter Property="BoxShadow" Value="0 12 32 -8 #4438BDF8" />
         </Style>
         <Style Selector="^:pressed /template/ Border#Root">
           <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
+          <Setter Property="BoxShadow" Value="0 4 12 0 #22000000" />
         </Style>
         <Style Selector="^:disabled">
           <Setter Property="Opacity" Value="0.45" />
@@ -60,13 +63,16 @@
         <Setter Property="BorderBrush" Value="#00000000" />
         <Setter Property="Foreground" Value="#FFFFFF" />
         <Style Selector="^ /template/ Border#Root">
-      <Setter Property="BoxShadow" Value="0 10 26 -10 #A68B5CF6" />
-    </Style>
+          <Setter Property="BoxShadow" Value="0 12 30 -10 #9938BDF8" />
+        </Style>
         <Style Selector="^:pointerover /template/ Border#Root">
           <Setter Property="Background" Value="{StaticResource AccentGradientHorizontal}" />
+          <Setter Property="BoxShadow" Value="0 18 40 -12 #B338BDF8" />
+          <Setter Property="BorderBrush" Value="rgba(255,255,255,0.35)" />
         </Style>
         <Style Selector="^:pressed /template/ Border#Root">
           <Setter Property="Opacity" Value="0.9" />
+          <Setter Property="BoxShadow" Value="0 6 16 -6 #4438BDF8" />
         </Style>
       </ControlTheme>
 
@@ -75,7 +81,12 @@
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
         <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
         <Style Selector="^:pointerover /template/ Border#Root">
-          <Setter Property="Background" Value="#14FFFFFF" />
+          <Setter Property="Background" Value="{StaticResource GlassSurfaceBrush}" />
+          <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}" />
+          <Setter Property="BoxShadow" Value="0 8 24 -6 #44000000" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#Root">
+          <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         </Style>
       </ControlTheme>
 
@@ -88,11 +99,15 @@
       <ControlTheme x:Key="EhotIconButton" TargetType="Button" BasedOn="{StaticResource EhotButton}">
         <Setter Property="Background" Value="#00000000" />
         <Setter Property="BorderBrush" Value="#00000000" />
-        <Setter Property="Padding" Value="8" />
-        <Setter Property="CornerRadius" Value="8" />
+        <Setter Property="Padding" Value="10" />
+        <Setter Property="CornerRadius" Value="10" />
         <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
         <Style Selector="^:pointerover /template/ Border#Root">
-          <Setter Property="Background" Value="#1AFFFFFF" />
+          <Setter Property="Background" Value="{StaticResource GlassSurfaceBrush}" />
+          <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}" />
+        </Style>
+        <Style Selector="^:pressed /template/ Border#Root">
+          <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         </Style>
       </ControlTheme>
 
@@ -228,6 +243,15 @@
       </ControlTheme>
 
   </Styles.Resources>
+  <!-- Карточка контента: подсветка при наведении -->
+  <Style Selector="Border.content-card:pointerover">
+    <Setter Property="BoxShadow" Value="0 20 48 -16 #66000000" />
+    <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}" />
+  </Style>
+  <Style Selector="Border.content-card:pressed">
+    <Setter Property="BoxShadow" Value="0 8 24 -8 #33000000" />
+  </Style>
+
 
 
   <!-- ══════════════ Кнопки: классовые варианты ══════════════
@@ -252,6 +276,60 @@
 
   <Style Selector="Button.icon">
     <Setter Property="Theme" Value="{StaticResource EhotIconButton}" />
+  </Style>
+
+  <!-- ══════════════ Кнопки окна (свернуть / во весь экран / закрыть) ══════════════
+       Один размер, один вес штриха, центрированный глиф. Ховер — мягкая подложка,
+       у закрытия — красная, как принято в Windows. -->
+  <Style Selector="Button.window">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="8" />
+    <Setter Property="Width" Value="42" />
+    <Setter Property="Height" Value="30" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Margin" Value="1,0" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button.window /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="CornerRadius" Value="8" />
+  </Style>
+
+  <Style Selector="Button.window:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#1FFFFFFF" />
+  </Style>
+
+  <Style Selector="Button.window:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#33FFFFFF" />
+  </Style>
+
+  <Style Selector="Button.window Path">
+    <Setter Property="Width" Value="12" />
+    <Setter Property="Height" Value="12" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="Fill" Value="Transparent" />
+    <Setter Property="Stroke" Value="#B9C2D4" />
+    <Setter Property="StrokeThickness" Value="1.25" />
+    <Setter Property="StrokeLineCap" Value="Round" />
+    <Setter Property="StrokeJoin" Value="Round" />
+    <Setter Property="HorizontalAlignment" Value="Center" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Button.window:pointerover Path">
+    <Setter Property="Stroke" Value="#FFFFFF" />
+  </Style>
+
+  <!-- Закрытие: красная подложка и белый крестик -->
+  <Style Selector="Button.window.close:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#D9383F" />
+  </Style>
+
+  <Style Selector="Button.window.close:pressed /template/ ContentPresenter#PART_ContentPresenter">
+    <Setter Property="Background" Value="#B3262C" />
   </Style>
 
   <!-- Кнопка «таблетка» для второстепенных действий в списках -->
@@ -286,10 +364,50 @@
   </Style>
 
   <Style Selector="Border.glass">
-    <Setter Property="Background" Value="#12151FCC" />
-    <Setter Property="BorderBrush" Value="#1FFFFFFF" />
+    <Setter Property="Background" Value="{StaticResource GlassBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource GlassBorderBrush}" />
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="CornerRadius" Value="18" />
+  </Style>
+
+  <Style Selector="Border.glass-card">
+    <Setter Property="Background" Value="{StaticResource GlassCardBrush}" />
+    <Setter Property="BorderBrush" Value="{StaticResource GlassBorderSoftBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="16" />
+    <Setter Property="BoxShadow" Value="0 20 40 0 #4D000000" />
+  </Style>
+
+  <Style Selector="Border.glass-card /template/ Border#Root">
+    <Setter Property="Background" Value="{StaticResource GlassCardBrush}" />
+  </Style>
+
+  <!-- Стеклянная кнопка (акцент) -->
+  <Style Selector="Button.glass.primary">
+    <Setter Property="Background" Value="{StaticResource AccentGradient}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Padding" Value="16,10" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style Selector="Button.glass.primary:pointerover /template/ Border#Root">
+    <Setter Property="Opacity" Value="0.92" />
+  </Style>
+  <Style Selector="Button.glass.primary:pressed /template/ Border#Root">
+    <Setter Property="Opacity" Value="0.85" />
+  </Style>
+
+  <!-- Стеклянная приведра (призрачная) кнопка -->
+  <Style Selector="Button.glass.ghost">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderBrush" Value="{StaticResource GlassBorderSoftBrush}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="CornerRadius" Value="12" />
+    <Setter Property="Padding" Value="16,10" />
+  </Style>
+  <Style Selector="Button.glass.ghost:pointerover /template/ Border#Root">
+    <Setter Property="Background" Value="{StaticResource GlassSurfaceBrush}" />
   </Style>
 
   <Style Selector="Border.hero">

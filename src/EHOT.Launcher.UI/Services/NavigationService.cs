@@ -4,7 +4,18 @@ using Microsoft.Extensions.Logging;
 
 namespace EHOT.Launcher.UI.Services;
 
-public sealed record NavigationEntry(string Key, string Title, string IconKey, Type ViewModelType, bool IsPrimary = true);
+/// <summary>
+/// Пункт меню. Group — заголовок группы в рельсе (null для пунктов без группы),
+/// IsSubItem — пункт второй строки (каталог контента), в рельсе показывается свёрнутым.
+/// </summary>
+public sealed record NavigationEntry(
+    string Key,
+    string Title,
+    string IconKey,
+    Type ViewModelType,
+    bool IsPrimary = true,
+    string? Group = null,
+    bool IsSubItem = false);
 
 /// <summary>
 /// Навигация по страницам. Экраны создаются лениво и кэшируются,
@@ -33,20 +44,35 @@ public sealed class NavigationService(IServiceProvider services, ILogger<Navigat
 
     public static IReadOnlyList<NavigationEntry> DefaultEntries { get; } =
     [
-        new("home", "Главная", "IconHome", typeof(HomeViewModel)),
-        new("play", "Играть", "IconPlay", typeof(PlayViewModel)),
-        new("versions", "Версии", "IconLayers", typeof(VersionsViewModel)),
-        new("mods", "Моды", "IconPuzzle", typeof(ModsViewModel)),
-        new("modpacks", "Сборки", "IconBox", typeof(ModpacksViewModel)),
-        new("resourcepacks", "Текстуры", "IconBrush", typeof(ResourcePacksViewModel)),
-        new("shaders", "Шейдеры", "IconSparkle", typeof(ShadersViewModel)),
-        new("worlds", "Карты", "IconMap", typeof(WorldsViewModel)),
-        new("network", "Game Network", "IconNetwork", typeof(GameNetworkViewModel)),
-        new("accounts", "Аккаунты", "IconUser", typeof(AccountsViewModel)),
-        new("downloads", "Загрузки", "IconDownload", typeof(DownloadsViewModel)),
-        new("settings", "Настройки", "IconSettings", typeof(SettingsViewModel)),
-        new("about", "О программе", "IconInfo", typeof(AboutViewModel))
+        // Игра: главное, что делает лаунчер.
+        new("home", "Главная", "IconHome", typeof(HomeViewModel), Group: "Игра"),
+        new("play", "Играть", "IconPlay", typeof(PlayViewModel), Group: "Игра"),
+        new("versions", "Версии", "IconLayers", typeof(VersionsViewModel), Group: "Игра"),
+
+        // Каталог контента: пять почти одинаковых страниц не должны занимать весь рельс,
+        // поэтому в меню один пункт «Каталог», а разделы открываются вкладками внутри.
+        new("mods", "Моды", "IconPuzzle", typeof(ModsViewModel), Group: "Каталог", IsSubItem: true),
+        new("modpacks", "Сборки", "IconBox", typeof(ModpacksViewModel), Group: "Каталог", IsSubItem: true),
+        new("resourcepacks", "Текстуры", "IconBrush", typeof(ResourcePacksViewModel), Group: "Каталог", IsSubItem: true),
+        new("shaders", "Шейдеры", "IconSparkle", typeof(ShadersViewModel), Group: "Каталог", IsSubItem: true),
+        new("worlds", "Карты", "IconMap", typeof(WorldsViewModel), Group: "Каталог", IsSubItem: true),
+
+        new("network", "Game Network", "IconNetwork", typeof(GameNetworkViewModel), Group: "Вместе"),
+        new("accounts", "Аккаунты", "IconUser", typeof(AccountsViewModel), Group: "Вместе"),
+
+        new("downloads", "Загрузки", "IconDownload", typeof(DownloadsViewModel), Group: "Система"),
+        new("settings", "Настройки", "IconSettings", typeof(SettingsViewModel), Group: "Система"),
+        new("about", "О программе", "IconInfo", typeof(AboutViewModel), Group: "Система"),
+
+        new("import", "Импорт", "IconImport", typeof(ImportViewModel), Group: "Система")
     ];
+
+    /// <summary>Пункт-контейнер каталога: в рельсе один, ведёт на первую вкладку.</summary>
+    public static NavigationEntry CatalogEntry { get; } = new("mods", "Каталог", "IconPuzzle", typeof(ModsViewModel));
+
+    /// <summary>Все подпункты каталога — для выпадающего списка и подсветки активного.</summary>
+    public static IReadOnlyList<NavigationEntry> CatalogEntries { get; } =
+        DefaultEntries.Where(e => e is { Group: "Каталог", IsSubItem: true }).ToArray();
 
     public IReadOnlyList<NavigationEntry> Entries => DefaultEntries;
 
