@@ -123,7 +123,9 @@ public sealed class LaunchArgumentBuilder(IPlatformInfo platform) : ILaunchArgum
                 continue;
             }
 
-            if (library.BaseUrl is not null && library.Name.Contains(':') && library.Natives is null)
+            // Локальные библиотеки без downloads (их так описывают OptiFine и часть лоадеров)
+            // тоже должны попасть в classpath — иначе версия ставится, но не запускается.
+            if (library.Name.Contains(':') && library.Natives is null)
             {
                 var coordinate = MavenCoordinate.Parse(library.Name);
                 var full = Path.Combine(librariesDirectory, coordinate.ToPath().Replace('/', Path.DirectorySeparatorChar));
@@ -138,10 +140,17 @@ public sealed class LaunchArgumentBuilder(IPlatformInfo platform) : ILaunchArgum
             }
         }
 
-        // Клиентский JAR базовой версии.
+        // Клиентский JAR: у модифицированной версии (OptiFine, лоадер) он свой, пропатченный,
+        // и только если его нет — берём ванильный из базовой версии.
+        var ownJar = Path.Combine(librariesDirectory, "..", "versions", version.Id, $"{version.Id}.jar");
+        var ownFull = Path.GetFullPath(ownJar);
         var clientJar = Path.Combine(librariesDirectory, "..", "versions", version.BaseVersionId, $"{version.BaseVersionId}.jar");
         var clientFull = Path.GetFullPath(clientJar);
-        if (File.Exists(clientFull))
+        if (File.Exists(ownFull))
+        {
+            paths.Add(ownFull);
+        }
+        else if (File.Exists(clientFull))
         {
             paths.Add(clientFull);
         }

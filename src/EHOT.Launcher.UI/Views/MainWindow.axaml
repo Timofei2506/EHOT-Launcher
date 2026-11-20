@@ -13,7 +13,8 @@
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1"
         WindowDecorations="BorderOnly"
-        TransparencyLevelHint="Mica, Blur, None">
+        TransparencyLevelHint="Mica, Blur, None"
+        Loaded="OnLoaded">
 
   <Window.Resources>
     <conv:IconKeyConverter x:Key="IconKey" />
@@ -22,10 +23,10 @@
     <conv:SelectedBackgroundConverter x:Key="SelectedBackground" />
   </Window.Resources>
 
-  <Grid RowDefinitions="Auto,*">
+  <Grid Name="RootGrid" RowDefinitions="Auto,*" Classes="window-load">
 
     <!-- ══════════════ Titlebar ══════════════ -->
-    <Grid Grid.Row="0" Height="48" Background="#0E1119" ColumnDefinitions="Auto,*,Auto">
+    <Grid Grid.Row="0" Height="48" Background="{StaticResource GlassTitleBarBrush}" ColumnDefinitions="Auto,*,Auto" Panel.ZIndex="10">
       <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,0,0,0" VerticalAlignment="Center">
         <Border Width="24" Height="24" CornerRadius="8" Background="{StaticResource AccentGradient}">
           <TextBlock Text="E" FontSize="13" FontWeight="Bold" Foreground="White"
@@ -33,7 +34,7 @@
         </Border>
         <TextBlock Text="EHOT Launcher" FontSize="12.5" FontWeight="SemiBold" LetterSpacing="0.2"
                    Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" />
-        <Border Classes="chip" Padding="8,2" VerticalAlignment="Center" Background="#1A8B5CF6">
+        <Border Classes="chip" Padding="8,2" VerticalAlignment="Center" Background="{StaticResource AccentGradient}">
           <TextBlock Text="BETA" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentBlueBrush}" />
         </Border>
       </StackPanel>
@@ -41,23 +42,18 @@
       <!-- Перетаскивание окна -->
       <Border Grid.Column="1" Background="Transparent" PointerPressed="OnTitleBarPressed" />
 
-      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,10,0" Spacing="2">
-        <Button Classes="icon" Width="34" Height="30" Click="OnMinimizeClick" ToolTip.Tip="Свернуть">
-          <Path Data="{StaticResource IconMinimize}" Classes="icon" Width="13" Height="13" />
+      <!-- Кнопки окна: единая сетка 46×32, тонкий глиф по центру, мягкий ховер.
+           Раньше три кнопки были разного размера с разной толщиной штриха и «прыгали» под курсором. -->
+      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch" Margin="0,0,8,0"
+                  Spacing="0" Classes="window-buttons">
+        <Button Classes="window" Click="OnMinimizeClick" ToolTip.Tip="Свернуть">
+          <Path Data="{StaticResource IconWinMinimize}" x:Name="MinGlyph" />
         </Button>
-        <Button Classes="icon" Width="34" Height="30" Click="OnMaximizeClick" ToolTip.Tip="Развернуть">
-          <Path Data="{StaticResource IconMaximize}" Classes="icon" Width="11" Height="11" />
+        <Button Classes="window" Click="OnMaximizeClick" ToolTip.Tip="Развернуть во весь экран">
+          <Path Data="{StaticResource IconWinMaximize}" x:Name="MaxGlyph" />
         </Button>
-        <Button Classes="icon" Width="34" Height="30" Click="OnCloseClick" ToolTip.Tip="Закрыть">
-          <Path Data="{StaticResource IconClose}" Classes="icon" Width="12" Height="12" />
-          <Button.Styles>
-            <Style Selector="Button:pointerover /template/ Border#Root">
-              <Setter Property="Background" Value="#C4484E" />
-            </Style>
-            <Style Selector="Button:pointerover Path">
-              <Setter Property="Stroke" Value="#FFFFFF" />
-            </Style>
-          </Button.Styles>
+        <Button Classes="window close" Click="OnCloseClick" ToolTip.Tip="Закрыть">
+          <Path Data="{StaticResource IconWinClose}" />
         </Button>
       </StackPanel>
     </Grid>
@@ -66,7 +62,7 @@
     <Grid Grid.Row="1" ColumnDefinitions="236,*,300">
 
       <!-- Sidebar -->
-      <Border Grid.Column="0" Background="{StaticResource SidebarGradient}" BorderBrush="#141824" BorderThickness="0,0,1,0">
+      <Border Grid.Column="0" Background="{StaticResource GlassSidebarBrush}" BorderBrush="{StaticResource GlassBorderSoftBrush}" BorderThickness="0,0,1,0">
         <Grid RowDefinitions="Auto,*,Auto">
 
           <StackPanel Grid.Row="0" Margin="16,18,16,10" Spacing="12">
@@ -84,35 +80,69 @@
           </StackPanel>
 
           <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="10,4,10,0">
-            <ItemsControl ItemsSource="{Binding NavigationItems}">
-              <ItemsControl.ItemTemplate>
-                <DataTemplate x:DataType="vm:NavigationItemViewModel">
-                  <Button Classes="ghost" Command="{Binding SelectCommand}"
-                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                          Padding="0" Background="Transparent" BorderThickness="0">
-                    <Border CornerRadius="10" Padding="11,8" Margin="0,1"
-                            Background="{Binding IsSelected, Converter={StaticResource SelectedBackground}}">
-                      <Grid ColumnDefinitions="Auto,*,Auto">
-                        <Path Data="{Binding IconKey, Converter={StaticResource IconKey}}" Classes="icon"
-                              Width="16" Height="16"
-                              Stroke="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}"
-                              VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="11,0,0,0" FontSize="12.5"
-                                   Foreground="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}"
-                                   VerticalAlignment="Center" />
-                        <Border Grid.Column="2" Width="6" Height="6" CornerRadius="3"
-                                Background="{StaticResource AccentBlueBrush}" VerticalAlignment="Center"
-                                IsVisible="{Binding IsSelected}" />
-                      </Grid>
-                    </Border>
-                  </Button>
-                </DataTemplate>
-              </ItemsControl.ItemTemplate>
-            </ItemsControl>
+            <StackPanel>
+              <!-- Пункты рельса: группы «Игра», «Каталог», «Вместе», «Система» -->
+              <ItemsControl ItemsSource="{Binding NavigationItems}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:NavigationItemViewModel">
+                    <StackPanel>
+                      <!-- Заголовок группы повторяется у каждого пункта, но виден только у первого
+                           (так не нужен отдельный тип списка и сохраняется порядок) -->
+                      <TextBlock Text="{Binding Group}" Classes="eyebrow" Margin="11,12,0,5" FontSize="9.5"
+                                 IsVisible="{Binding IsGroupStart}" />
+
+                      <Button Classes="ghost scale-hover" Command="{Binding SelectCommand}"
+                              HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                              Padding="0" Background="Transparent" BorderThickness="0">
+                        <Border CornerRadius="10" Padding="11,8" Margin="0,1"
+                                Background="{Binding IsSelected, Converter={StaticResource SelectedBackground}}">
+                          <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                            <Path Data="{Binding IconKey, Converter={StaticResource IconKey}}" Classes="icon"
+                                  Width="16" Height="16"
+                                  Stroke="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}"
+                                  VerticalAlignment="Center" />
+                            <StackPanel Grid.Column="1" Margin="11,0,0,0" Spacing="1" VerticalAlignment="Center">
+                              <TextBlock Text="{Binding Title}" FontSize="12.5"
+                                         Foreground="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}" />
+                              <!-- Что открыто внутри каталога: «Моды», «Сборки» и т.д. -->
+                              <TextBlock Text="{Binding SubTitle}" FontSize="9.5" Margin="0,1,0,0"
+                                         Foreground="{StaticResource AccentBlueBrush}"
+                                         IsVisible="{Binding HasSubItems}" />
+                            </StackPanel>
+                            <!-- Шеврон раскрытия подпунктов -->
+                            <Path Grid.Column="2" Data="{StaticResource IconChevronDown}" Classes="icon"
+                                  Width="10" Height="10" VerticalAlignment="Center" Margin="6,0"
+                                  IsVisible="{Binding HasSubItems}" />
+                            <Border Grid.Column="3" Width="6" Height="6" CornerRadius="3"
+                                    Background="{StaticResource AccentBlueBrush}" VerticalAlignment="Center"
+                                    IsVisible="{Binding IsSelected}" />
+                          </Grid>
+                        </Border>
+                      </Button>
+
+                      <!-- Подпункты каталога -->
+                      <ItemsControl ItemsSource="{Binding SubItems}" IsVisible="{Binding IsExpanded}" Margin="26,2,0,4">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate x:DataType="services:NavigationEntry">
+                            <Button Classes="ghost" Padding="0" Background="Transparent" BorderThickness="0"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                                    Command="{Binding $parent[ItemsControl].((vm:NavigationItemViewModel)DataContext).OpenSubItemCommand}"
+                                    CommandParameter="{Binding}">
+                              <TextBlock Text="{Binding Title}" FontSize="12" Margin="11,6"
+                                         Foreground="{StaticResource TextSecondaryBrush}" />
+                            </Button>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
           </ScrollViewer>
 
           <!-- Аккаунт внизу сайдбара -->
-          <Border Grid.Row="2" Margin="12" Padding="12" CornerRadius="14" Background="#141926"
+          <Border Grid.Row="2" Margin="12" Padding="12" CornerRadius="14" Background="{StaticResource GlassCardBrush}"
                   BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
             <Button Command="{Binding OpenProfileCommand}" Background="Transparent" BorderThickness="0"
                     Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
@@ -157,7 +187,7 @@
         <Grid Grid.Row="1" RowDefinitions="Auto,*">
           <!-- ══════ Обновление лаунчера: показывается только когда есть что обновлять ══════ -->
           <Border Grid.Row="0" IsVisible="{Binding Updates.IsVisible}" Margin="26,0,26,10"
-                  CornerRadius="12" Padding="14,11" Background="#141B2B" BorderBrush="#2A3350" BorderThickness="1">
+                  CornerRadius="12" Padding="14,11" Background="{StaticResource GlassCardBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1">
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
               <Border Width="26" Height="26" CornerRadius="8" Background="{StaticResource AccentGradient}"
                       VerticalAlignment="Center">
@@ -188,18 +218,25 @@
             </Grid>
           </Border>
 
-          <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Margin="26,0,26,18" />
+          <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Margin="26,0,26,18">
+            <ContentControl.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.22" />
+                <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.22" Easing="CubicEaseOut" />
+              </Transitions>
+            </ContentControl.Transitions>
+          </ContentControl>
         </Grid>
       </Grid>
 
       <!-- Правая колонка: контекст -->
-      <Border Grid.Column="2" Background="#0E1119" BorderBrush="#141824" BorderThickness="1,0,0,0">
+      <Border Grid.Column="2" Background="{StaticResource GlassSurfaceBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1,0,0,0">
         <ScrollViewer VerticalScrollBarVisibility="Auto">
           <StackPanel Margin="18,20" Spacing="14">
 
             <TextBlock Text="ТЕКУЩИЙ ПРОФИЛЬ" Classes="eyebrow" />
 
-            <Border Classes="card" Padding="16">
+            <Border Classes="card glass-card" Padding="16">
               <StackPanel Spacing="10">
                 <TextBlock Text="{Binding ProfileName}" Classes="h3" TextTrimming="CharacterEllipsis" />
                 <TextBlock Text="{Binding ProfileVersion}" Classes="caption" />
@@ -245,7 +282,7 @@
 
             <StackPanel Spacing="6" IsVisible="{Binding IsAccountSelected}">
               <TextBlock Text="КАК Я ЗАХОЖУ В ИГРУ" Classes="eyebrow" />
-              <Border CornerRadius="12" Padding="12" Background="#101724">
+              <Border CornerRadius="12" Padding="12" Background="{StaticResource GlassCardBrush}">
                 <StackPanel Spacing="8">
                   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
                     <Border Width="34" Height="34" CornerRadius="9" Background="#1E2740" ClipToBounds="True"
@@ -279,6 +316,12 @@
       <ItemsControl.ItemTemplate>
         <DataTemplate x:DataType="services:Toast">
           <Border Classes="card" Width="330" Margin="0,6,0,0" Padding="14">
+            <Border.Transitions>
+              <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="CubicEaseOut" />
+                <DoubleTransition Property="TranslateTransform.X" Duration="0:0:0.3" Easing="CubicEaseOut" />
+              </Transitions>
+            </Border.Transitions>
             <Grid ColumnDefinitions="4,*,Auto">
               <Border Background="{Binding Accent}" CornerRadius="2" Width="4" />
               <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="2">
@@ -298,8 +341,13 @@
     </ItemsControl>
 
     <!-- ══════════════ Глобальный поиск (overlay) ══════════════ -->
-    <Border Grid.Row="1" IsVisible="{Binding IsSearchOpen}" Background="#B3000000">
-      <Border Classes="card" Width="560" VerticalAlignment="Top" Margin="0,120,0,0" Padding="18">
+    <Border Grid.Row="1" IsVisible="{Binding IsSearchOpen}" Background="#99000000">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
+        </Transitions>
+      </Border.Transitions>
+      <Border Classes="card glass-card" Width="560" VerticalAlignment="Top" Margin="0,120,0,0" Padding="18">
         <StackPanel Spacing="12">
           <TextBlock Text="Глобальный поиск" Classes="h3" />
           <TextBox Classes="ehot" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Название мода, сборки, шейдера…"

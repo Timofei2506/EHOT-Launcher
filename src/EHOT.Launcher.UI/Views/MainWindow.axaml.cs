@@ -13,6 +13,16 @@ public partial class MainWindow : Window
         KeyDown += OnKeyDown;
     }
 
+    private void OnLoaded(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        // Плавное появление всего интерфейса при старте окна
+        if (this.Find<Grid>("RootGrid") is { } root)
+        {
+            root.Classes.Add("window-load");
+            root.Opacity = 1; // срабатывает transition из стиля .window-load
+        }
+    }
+
     private void OnTitleBarPressed(object? sender, PointerPressedEventArgs e)
     {
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
@@ -27,6 +37,16 @@ public partial class MainWindow : Window
         => WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
 
     private void OnCloseClick(object? sender, RoutedEventArgs e) => Close();
+
+    /// <summary>
+    /// Перед закрытием останавливаем активные загрузки, сохранив .part-файлы:
+    /// при следующем запуске установка продолжится с того же места.
+    /// </summary>
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        (DataContext as MainWindowViewModel)?.PrepareForExit();
+        base.OnClosing(e);
+    }
 
     private async void OnKeyDown(object? sender, KeyEventArgs e)
     {
