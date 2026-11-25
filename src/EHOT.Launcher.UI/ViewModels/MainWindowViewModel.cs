@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using EHOT.Launcher.Auth;
 using EHOT.Launcher.Core.Diagnostics;
 using EHOT.Launcher.Core.Models;
 using EHOT.Launcher.Core.Platform;
@@ -20,6 +21,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private readonly IPlatformInfo _platform;
     private readonly ICapabilityRegistry _capabilities;
     private readonly Core.Downloads.IDownloadManager _downloads;
+    private readonly ILocalProfileService _localProfiles;
+    private readonly IProfileLookupService _profileLookup;
 
     public MainWindowViewModel(
         INavigationService navigation,
@@ -29,7 +32,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         IPlatformInfo platform,
         ICapabilityRegistry capabilities,
         UpdateViewModel updates,
-        Core.Downloads.IDownloadManager downloads)
+        Core.Downloads.IDownloadManager downloads,
+        ILocalProfileService localProfiles,
+        IProfileLookupService profileLookup)
     {
         _navigation = navigation;
         _state = state;
@@ -38,6 +43,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         _platform = platform;
         _capabilities = capabilities;
         _downloads = downloads;
+        _localProfiles = localProfiles;
+        _profileLookup = profileLookup;
         Updates = updates;
 
         // Рельс: 9 пунктов в 4 группах вместо 13 подряд. Каталог — один пункт с вкладками.
@@ -136,6 +143,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             await _state.InitializeAsync().ConfigureAwait(true);
             ApplyState();
+            // Исправляем оффлайн UUID на официальный в фоне, не блокируя UI.
+            _ = FixOfflineUuidAsync();
             await _navigation.NavigateAsync("home").ConfigureAwait(true);
 
             // Проверка обновлений — после того как окно уже показано, чтобы старт был мгновенным.
@@ -275,6 +284,31 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void OpenNotifications()
     {
         _toasts.Show("Уведомления", "Новых системных уведомлений нет.", ToastKind.Info);
+    }
+
+    /// <summary>Пытается взять официальный UUID от Mojang для существующего оффлайн-аккаунта.</summary>
+    private async Task FixOfflineUuidAsync()
+    {
+        var account = _state.CurrentAccount;
+        if (account is null || account.UuidFromOfficialProfile || string.IsNullOrEmpty(account.Username))
+        {
+            return;
+        }
+
+        try
+        {
+            var official = await _profileLookup.ResolveOfficialAsync(account.Username).ConfigureAwait(false);
+            if (official.IsSuccess && official.Value is not null && Guid.TryParse(official.Value.Uuid, out var officialUuid))
+            {
+                await _localProfiles.ApplyOfficialUuidAsync(account.Id, officialUuid).ConfigureAwait(false);
+                _log.Info("Auth", $"Аккаунту {account.Username} присвоен официальный UUID {officialUuid}");
+                ApplyState();
+            }
+        }
+        catch (Exception ex)
+        {
+            _log.Warn("Auth", $"Не удалось исправить UUID для {account.Username}: {ex.Message}");
+        }
     }
 }
 

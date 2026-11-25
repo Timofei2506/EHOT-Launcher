@@ -27,7 +27,7 @@ public sealed class Skin3DView : Control
         AvaloniaProperty.Register<Skin3DView, double>(nameof(Pitch), 6d);
 
     /// <summary>Сколько пикселей текстуры в одном пункте модели (масштаб фигуры).</summary>
-    private const double PixelsPerPoint = 34.0;
+    private const double PixelsPerPoint = 44.0;
 
     private uint[]? _pixels;
     private int _texWidth;
@@ -322,10 +322,11 @@ public sealed class Skin3DView : Control
         return _pixels[(y * _texWidth) + x];
     }
 
-    /// <summary>Освещение по граням, как в игре: верх светлее, низ темнее.</summary>
+    /// <summary>Освещение по граням с базовым фоновым светом (ambient), чтобы грани в тени не были чёрными.</summary>
     private static uint ApplyLight(uint argb, double light)
     {
-        byte Scale(byte channel) => (byte)Math.Clamp(channel * light, 0, 255);
+        const double Ambient = 0.35;
+        byte Scale(byte channel) => (byte)Math.Clamp(channel * Math.Max(Ambient, light), 0, 255);
         var a = (byte)((argb >> 24) & 0xFF);
         return ((uint)a << 24)
                | ((uint)Scale((byte)((argb >> 16) & 0xFF)) << 16)
@@ -409,13 +410,11 @@ public sealed class Skin3DView : Control
             return
             [
                 new(front, w, h, 1.00, [4, 5, 1, 0]),
-                // Задняя грань видна с другой стороны, поэтому её текстурная ось U
-                // должна идти в противоположную сторону — иначе рисунок зеркалится.
-                new(back, w, h, 0.78, [6, 7, 3, 2]),
-                new(right, d, h, 0.90, [5, 6, 2, 1]),
-                new(left, d, h, 0.90, [7, 4, 0, 3]),
-                new(top, w, d, 1.14, [4, 5, 6, 7]),
-                new(bottom, w, d, 0.62, [3, 2, 1, 0])
+                new(back, w, h, 0.85, [6, 7, 3, 2]),
+                new(right, d, h, 0.92, [5, 6, 2, 1]),
+                new(left, d, h, 0.92, [7, 4, 0, 3]),
+                new(top, w, d, 1.05, [4, 5, 6, 7]),
+                new(bottom, w, d, 0.75, [3, 2, 1, 0])
             ];
         }
 
