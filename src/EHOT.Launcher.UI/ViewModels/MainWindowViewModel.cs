@@ -183,14 +183,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             ? "?"
             : account!.Username[..1].ToUpperInvariant();
 
-        // Карточка «как я захожу в игру»: ник, откуда UUID, есть ли скин.
+        // Карточка «как я захожу в juego»: ник, откуда UUID, есть ли скин.
         AccountUuid = account?.Uuid.ToString("D") ?? "—";
         OnPropertyChanged(nameof(IsAccountSelected));
         AccountUuidSource = account switch
         {
             null => "—",
-            { UuidFromOfficialProfile: true } => "UUID официального игрока",
-            _ => "UUID оффлайн (online-mode сервер не пустит)"
+            { UuidFromOfficialProfile: true } => $"UUID игрока {account.Username} (официальный аккаунт Mojang)",
+            _ => $"UUID игрока {account.Username} (расчёт оффлайн, как на локальном сервере)"
         };
         AccountSkinPath = account?.LocalSkinPath;
         AccountSkinLabel = account switch

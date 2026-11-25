@@ -39,9 +39,9 @@ public sealed class SkinBitmapConverter : IValueConverter
 }
 
 /// <summary>
-/// Скин 64×64 — это развёртка, а не портрет: для головы нужен кадр 8×8 из области лица.
-/// Конвертер делает из скина маленькую голову (8×8 пикселей, увеличенную без сглаживания),
-/// поэтому в списках аккаунтов и на главной видно настоящее лицо игрока, а не сплющенный PNG.
+/// Скин 64×64 — это развёртка, а не портрет: для головы нужен кадр из области лица.
+/// Конвертер делает из скина голову (24×24 пикселя, увеличенную без сглаживания),
+/// поэтому в списках аккаунтов и на главной видно настоящее лицо игрока крупно и чётко.
 /// </summary>
 public sealed class SkinFaceConverter : IValueConverter
 {
@@ -68,14 +68,14 @@ public sealed class SkinFaceConverter : IValueConverter
         => throw new NotSupportedException();
 }
 
-/// <summary>Вырезает голову персонажа из PNG-скина (лицо 8×8 + слой шляпы).</summary>
+/// <summary>Вырезает голову персонажа из PNG-скина (лицо 24×24 + слой шляпы).</summary>
 public static class SkinFaceRenderer
 {
     private const int FaceX = 8;
     private const int FaceY = 8;
     private const int HatX = 40;
     private const int HatY = 8;
-    private const int Size = 8;
+    private const int Size = 24;
 
     public static Bitmap? RenderFace(string path)
     {

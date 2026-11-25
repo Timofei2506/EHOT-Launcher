@@ -284,11 +284,11 @@
               <TextBlock Text="КАК Я ЗАХОЖУ В ИГРУ" Classes="eyebrow" />
               <Border CornerRadius="12" Padding="12" Background="{StaticResource GlassCardBrush}">
                 <StackPanel Spacing="8">
-                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10">
-                    <Border Width="34" Height="34" CornerRadius="9" Background="#1E2740" ClipToBounds="True"
+                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <Border Width="48" Height="48" CornerRadius="12" Background="#1E2740" ClipToBounds="True"
                             BorderBrush="#26314A" BorderThickness="1">
                       <Image Source="{Binding AccountSkinPath, Converter={x:Static conv2:SkinFaceConverter.Instance}}"
-                             Width="34" Height="34" Stretch="Uniform" />
+                             Width="48" Height="48" Stretch="Uniform" />
                     </Border>
                     <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
                       <TextBlock Text="{Binding AccountName}" FontSize="12.5" FontWeight="SemiBold"

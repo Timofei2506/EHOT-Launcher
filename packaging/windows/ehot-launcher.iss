@@ -9,7 +9,7 @@
 #define AppPublisher   "EHOT"
 #define AppExeName     "EHOT.Launcher.exe"
 #ifndef AppVersion
-  #define AppVersion   "0.2.1"
+  #define AppVersion   "0.2.2"
 #endif
 #ifndef SourceDir
   #define SourceDir    AddBackslash(SourcePath) + "..\..\artifacts\win-x64"
