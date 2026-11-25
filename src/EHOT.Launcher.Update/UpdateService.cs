@@ -117,6 +117,9 @@ public sealed class GitHubUpdateService(
                 .Where(r => r is not null)
                 .Select(r => r!)
                 .Where(r => r.Version > current)
+                // В релизе должен быть хотя бы один файл для текущей платформы,
+                // иначе обновление нельзя предложить — пользователь получит ошибку при скачивании.
+                .Where(r => SelectAsset(r.Assets) is not null)
                 .OrderByDescending(r => r.Version)
                 .FirstOrDefault();
 
