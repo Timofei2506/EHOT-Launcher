@@ -143,8 +143,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         {
             await _state.InitializeAsync().ConfigureAwait(true);
             ApplyState();
-            // Исправляем оффлайн UUID на официальный в фоне, не блокируя UI.
-            _ = FixOfflineUuidAsync();
             await _navigation.NavigateAsync("home").ConfigureAwait(true);
 
             // Проверка обновлений — после того как окно уже показано, чтобы старт был мгновенным.
