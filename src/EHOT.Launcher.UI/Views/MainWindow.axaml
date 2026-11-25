@@ -14,7 +14,7 @@
         ExtendClientAreaTitleBarHeightHint="-1"
         WindowDecorations="BorderOnly"
         TransparencyLevelHint="Mica, Blur, None"
-        Icon="Assets/ehot.ico"
+        Icon="avares://EHOT.Launcher/Assets/ehot.ico"
         Loaded="OnLoaded">
 
   <Window.Resources>
