@@ -1,27 +1,27 @@
 {
   "version": "0.2.2",
-  "publishedAt": "2026-11-25T02:45:54Z",
+  "publishedAt": "2026-11-25T08:43:40Z",
   "notes": "Оптимизация и импорт: OptiFine, моды производительности, импорт из чужих лаунчеров.\n\n**OptiFine** (проблема 5)\n- Список версий OptiFine для каждой версии Minecraft через bmclapi2 с зеркалом optifine.net.\n- Установка патчем: патчит оригинальный клиент-jar через `java -cp optifine.jar optifine.Patcher`, библиотеки OptiFine и launchwrapper-of подменяют загрузчик.\n- Запуск OptiFine-версии через `net.minecraft.launchwrapper.Launch` с `--tweakClass optifine.OptiFineTweaker`.\n\n**Моды оптимизации** (проблема 6)\n- Детекция железа: `GraphicsDetector` читает видеокарту (Windows реестр / WMI, macOS `system_profiler`, Linux `lspci`) и классифицирует в Low/Medium/High (Apple Silicon → High).\n- Подбор модов под профиль: sodium, embeddium, iris, indium, entityculling, lithium, ferrite-core, krypton, modernfix — только проверенные, только для Fabric/Forge/NeoForge.\n- Карта в разделе «Моды»: честный текст при отсутствии профиля или ванильном профиле («модам нужен лоадер»), кнопка «Установить всё» ставит весь набор в текущий профиль.\n\n**Импорт из чужих лаунчеров** (проблема 10)\n- Новый раздел «Импорт» в меню «Система»: пользователь сам указывает путь к чужому `.minecraft`, лаунчер ничего не читает автоматически.\n- Переносятся только пользовательские данные: миры (saves), скриншоты, пакеты ресурсов. Моды — по желанию с предупреждением про лоадер.\n- Версии, библиотеки, логины и конфиги исходного лаунчера не трогаются — честно указано в списке пропускаемого.\n- Создаётся новый инстанс, который появляется в «Играть».\n\n**Остальное из десятки**\n- Ускорение запуска: «Играть» показывает только реально скачанные версии.\n- Сохранение прогресса загрузки при закрытии.\n- Единый размер кнопок окон, структура левого меню, установка без профиля, 3D-превью скина, аккаунты/скины UX.\n\n**Проверки**\n- `dotnet build EHOT.Launcher.slnx -warnaserror` — чисто.\n- `dotnet test` — 101/101.\n\nУстановщики: Windows x64, macOS Apple Silicon, macOS Intel.",
   "files": [
     {
       "kind": "win",
       "name": "EHOT-Launcher-0.2.2-win-x64-setup.exe",
-      "size": 41845356,
-      "sha256": "5608521fcf1417e06403e401faa070c202f3764a9b7817bc269984da418f315c",
+      "size": 41845734,
+      "sha256": "7cc75174d01372b13a080094552c118dad307396c94c3236d59106cc2ff977ad",
       "platform": "Windows x64"
     },
     {
       "kind": "mac-arm",
       "name": "EHOT-Launcher-0.2.2-osx-arm64.dmg",
-      "size": 61487117,
-      "sha256": "0a532d18f74dd901f80bf91da26316492d9bf4b2b260fa7d814a9adf09542881",
+      "size": 60824177,
+      "sha256": "49769e8da03c6963efebb7792d8e58e3307b7763dd4d1bfa6a36577ca1ed4851",
       "platform": "macOS Apple Silicon"
     },
     {
       "kind": "mac-x64",
       "name": "EHOT-Launcher-0.2.2-osx-x64.dmg",
-      "size": 62843113,
-      "sha256": "2a140822f1af1b270abe07e6a303669c7bf81fe59db5e784064224d9f17e750e",
+      "size": 63185978,
+      "sha256": "310b89adf6afef8ee1cdfaec6fb75cb23264714d4ac2d07f936b4f11c080ad0c",
       "platform": "macOS Intel"
     }
   ],
