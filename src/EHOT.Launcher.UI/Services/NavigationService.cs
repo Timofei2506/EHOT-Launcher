@@ -5,8 +5,8 @@ using Microsoft.Extensions.Logging;
 namespace EHOT.Launcher.UI.Services;
 
 /// <summary>
-/// Пункт меню. Group — заголовок группы в рельсе (null для пунктов без группы),
-/// IsSubItem — пункт второй строки (каталог контента), в рельсе показывается свёрнутым.
+/// Пункт навигации. IsPrimary=false — скрытый раздел: его можно открыть командой,
+/// но он не занимает место в боковой панели.
 /// </summary>
 public sealed record NavigationEntry(
     string Key,
@@ -17,10 +17,7 @@ public sealed record NavigationEntry(
     string? Group = null,
     bool IsSubItem = false);
 
-/// <summary>
-/// Навигация по страницам. Экраны создаются лениво и кэшируются,
-/// тяжёлые данные загружаются в OnNavigatedToAsync (никогда в конструкторе).
-/// </summary>
+/// <summary>Навигация по страницам. Экраны создаются лениво и кэшируются.</summary>
 public interface INavigationService
 {
     ViewModelBase? Current { get; }
@@ -40,41 +37,26 @@ public interface INavigationService
 public sealed class NavigationService(IServiceProvider services, ILogger<NavigationService> logger) : INavigationService
 {
     private readonly Dictionary<string, ViewModelBase> _cache = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<Type, string> _typeToKey = new();
 
+    /// <summary>Рельс концепта: только реальные разделы, без дублирования и «beta»-пунктов.</summary>
     public static IReadOnlyList<NavigationEntry> DefaultEntries { get; } =
     [
-        // Игра: главное, что делает лаунчер.
-        new("home", "Главная", "IconHome", typeof(HomeViewModel), Group: "Игра"),
-        new("play", "Играть", "IconPlay", typeof(PlayViewModel), Group: "Игра"),
-        new("versions", "Версии", "IconLayers", typeof(VersionsViewModel), Group: "Игра"),
+        new("home", "Играть", "IconPlay", typeof(HomeViewModel)),
+        new("catalog", "Моды и ресурспаки", "IconPuzzle", typeof(CatalogViewModel)),
+        new("gallery", "Галерея", "IconGallery", typeof(GalleryViewModel)),
+        new("news", "Новости", "IconNews", typeof(NewsViewModel)),
+        new("servers", "Серверы", "IconServer", typeof(ServersViewModel)),
+        new("builds", "Сборки", "IconBox", typeof(BuildsViewModel)),
+        new("settings", "Настройки", "IconSettings", typeof(SettingsViewModel)),
 
-        // Каталог контента: пять почти одинаковых страниц не должны занимать весь рельс,
-        // поэтому в меню один пункт «Каталог», а разделы открываются вкладками внутри.
-        new("mods", "Моды", "IconPuzzle", typeof(ModsViewModel), Group: "Каталог", IsSubItem: true),
-        new("modpacks", "Сборки", "IconBox", typeof(ModpacksViewModel), Group: "Каталог", IsSubItem: true),
-        new("resourcepacks", "Текстуры", "IconBrush", typeof(ResourcePacksViewModel), Group: "Каталог", IsSubItem: true),
-        new("shaders", "Шейдеры", "IconSparkle", typeof(ShadersViewModel), Group: "Каталог", IsSubItem: true),
-        new("worlds", "Карты", "IconMap", typeof(WorldsViewModel), Group: "Каталог", IsSubItem: true),
-
-        new("network", "Game Network", "IconNetwork", typeof(GameNetworkViewModel), Group: "Вместе"),
-        new("accounts", "Аккаунты", "IconUser", typeof(AccountsViewModel), Group: "Вместе"),
-
-        new("downloads", "Загрузки", "IconDownload", typeof(DownloadsViewModel), Group: "Система"),
-        new("settings", "Настройки", "IconSettings", typeof(SettingsViewModel), Group: "Система"),
-        new("about", "О программе", "IconInfo", typeof(AboutViewModel), Group: "Система"),
-
-        new("import", "Импорт", "IconImport", typeof(ImportViewModel), Group: "Система")
+        // Скрытые, но рабочие разделы: открываются из настроек/аккаунта/обновления.
+        new("accounts", "Аккаунт", "IconUser", typeof(AccountsViewModel), IsPrimary: false),
+        new("downloads", "Загрузки", "IconDownload", typeof(DownloadsViewModel), IsPrimary: false),
+        new("network", "Game Network", "IconNetwork", typeof(GameNetworkViewModel), IsPrimary: false),
+        new("import", "Импорт", "IconImport", typeof(ImportViewModel), IsPrimary: false)
     ];
 
-    /// <summary>Пункт-контейнер каталога: в рельсе один, ведёт на первую вкладку.</summary>
-    public static NavigationEntry CatalogEntry { get; } = new("mods", "Каталог", "IconPuzzle", typeof(ModsViewModel));
-
-    /// <summary>Все подпункты каталога — для выпадающего списка и подсветки активного.</summary>
-    public static IReadOnlyList<NavigationEntry> CatalogEntries { get; } =
-        DefaultEntries.Where(e => e is { Group: "Каталог", IsSubItem: true }).ToArray();
-
-    public IReadOnlyList<NavigationEntry> Entries => DefaultEntries;
+    public IReadOnlyList<NavigationEntry> Entries { get; } = DefaultEntries.Where(e => e.IsPrimary).ToArray();
 
     public ViewModelBase? Current { get; private set; }
 
@@ -93,7 +75,7 @@ public sealed class NavigationService(IServiceProvider services, ILogger<Navigat
 
     public Task NavigateAsync(string key, object? parameter = null, CancellationToken ct = default)
     {
-        var entry = DefaultEntries.FirstOrDefault(e => e.Key == key);
+        var entry = DefaultEntries.FirstOrDefault(e => string.Equals(e.Key, key, StringComparison.OrdinalIgnoreCase));
         if (entry is null)
         {
             logger.LogWarning("Неизвестный раздел навигации: {Key}", key);

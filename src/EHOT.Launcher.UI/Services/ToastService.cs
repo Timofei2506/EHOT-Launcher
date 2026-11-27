@@ -35,10 +35,10 @@ public sealed partial class Toast : ObservableObject
 
     public string Accent => Kind switch
     {
-        ToastKind.Success => "#34D399",
-        ToastKind.Warning => "#FBBF24",
-        ToastKind.Error => "#F87171",
-        _ => "#38BDF8"
+        ToastKind.Success => "#3DD68C",
+        ToastKind.Warning => "#FFC24B",
+        ToastKind.Error => "#F25555",
+        _ => "#FF9A45"
     };
 }
 

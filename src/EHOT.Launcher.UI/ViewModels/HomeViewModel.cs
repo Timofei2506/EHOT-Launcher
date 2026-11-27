@@ -4,85 +4,97 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EHOT.Launcher.Auth;
 using EHOT.Launcher.Content;
-using EHOT.Launcher.Content.Models;
 using EHOT.Launcher.Core.Diagnostics;
-using EHOT.Launcher.Core.Downloads;
 using EHOT.Launcher.Core.Models;
-using EHOT.Launcher.Core.Platform;
 using EHOT.Launcher.Core.Results;
 using EHOT.Launcher.Game.Install;
 using EHOT.Launcher.Game.Launch;
+using EHOT.Launcher.Game.Minecraft;
 using EHOT.Launcher.Game.Profiles;
-using EHOT.Launcher.Network;
 using EHOT.Launcher.Storage;
 using EHOT.Launcher.UI.Services;
 
 namespace EHOT.Launcher.UI.ViewModels;
 
-/// <summary>Главный экран: игровой профиль, кнопка ИГРАТЬ, новости, тренды, недавнее, Game Network.</summary>
+/// <summary>Главный экран: выбор версии/загрузчика, запуск и 3D-превью персонажа.</summary>
 public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
 {
     private readonly IAppState _state;
     private readonly IGameLauncher _launcher;
     private readonly IAccountSessionProvider _sessions;
     private readonly IMinecraftNewsService _news;
-    private readonly IContentProviderRegistry _content;
     private readonly ILaunchHistoryRepository _history;
     private readonly IToastService _toasts;
     private readonly INavigationService _navigation;
-    private readonly ICapabilityRegistry _capabilities;
-    private readonly IRoomSession _room;
     private readonly ILogService _log;
-    private readonly IClipboardService _clipboard;
+    private readonly IMinecraftVersionService _versions;
+    private readonly IGameInstaller _installer;
+    private readonly ILoaderInstaller _loaders;
+    private readonly IProfileManager _profiles;
+    private readonly OptiFineInstaller _optifine;
+    private IReadOnlyList<VersionSummary> _allVersions = [];
+    private string? _latestRelease;
 
     public HomeViewModel(
         IAppState state,
         IGameLauncher launcher,
         IAccountSessionProvider sessions,
         IMinecraftNewsService news,
-        IContentProviderRegistry content,
         ILaunchHistoryRepository history,
         IToastService toasts,
         INavigationService navigation,
-        ICapabilityRegistry capabilities,
-        IRoomSession room,
         ILogService log,
-        IClipboardService clipboard)
+        IMinecraftVersionService versions,
+        IGameInstaller installer,
+        ILoaderInstaller loaders,
+        IProfileManager profiles,
+        OptiFineInstaller optifine)
     {
         _state = state;
         _launcher = launcher;
         _sessions = sessions;
         _news = news;
-        _content = content;
         _history = history;
         _toasts = toasts;
         _navigation = navigation;
-        _capabilities = capabilities;
-        _room = room;
         _log = log;
-        _clipboard = clipboard;
+        _versions = versions;
+        _installer = installer;
+        _loaders = loaders;
+        _profiles = profiles;
+        _optifine = optifine;
 
         _launcher.SessionEnded += OnSessionEnded;
-        _room.SnapshotChanged += snapshot => Dispatcher.UIThread.Post(() => ApplyRoom(snapshot));
         _state.Changed += () => Dispatcher.UIThread.Post(Refresh);
 
-        ApplyRoom(_room.Snapshot);
         Refresh();
     }
 
-    public ObservableCollection<NewsCardViewModel> News { get; } = [];
-
-    public ObservableCollection<ContentCardViewModel> PopularMods { get; } = [];
-
-    public ObservableCollection<ContentCardViewModel> PopularModpacks { get; } = [];
-
-    public ObservableCollection<LaunchRecord> RecentLaunches { get; } = [];
+    public ObservableCollection<NewsItem> News { get; } = [];
+    public ObservableCollection<VersionChoice> Versions { get; } = [];
+    public ObservableCollection<LoaderOption> LoaderOptions { get; } = [];
+    public ObservableCollection<string> Channels { get; } = ["Релизы", "Снапшоты"];
 
     [ObservableProperty]
-    private string _greeting = "Добро пожаловать";
+    private string _greeting = "Добро пожаловать!";
 
     [ObservableProperty]
-    private string _profileName = "Профиль не выбран";
+    private string _selectedChannel = "Релизы";
+
+    [ObservableProperty]
+    private VersionChoice? _selectedVersion;
+
+    [ObservableProperty]
+    private LoaderKind _selectedLoader = LoaderKind.Vanilla;
+
+    [ObservableProperty]
+    private bool _selectedOptiFine;
+
+    [ObservableProperty]
+    private string _hint = "Выберите версию и отправляйтесь в игру.";
+
+    [ObservableProperty]
+    private string _profileName = "Профиль по умолчанию";
 
     [ObservableProperty]
     private string _profileVersion = "—";
@@ -96,25 +108,17 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
     [ObservableProperty]
     private string _accountInitials = "?";
 
-    /// <summary>Путь к PNG-скина текущего аккаунта (null — скина нет, показываем инициал).</summary>
     [ObservableProperty]
     private string? _skinPath;
 
-    /// <summary>Честная подпись, откуда скин и UUID: официальные данные или оффлайн-режим.</summary>
     [ObservableProperty]
-    private string _accountUuidLabel = string.Empty;
-
-    [ObservableProperty]
-    private bool _isMicrosoftAccount;
-
-    [ObservableProperty]
-    private string _playButtonText = "ИГРАТЬ";
+    private string _playButtonText = "Играть";
 
     [ObservableProperty]
     private bool _isGameRunning;
 
     [ObservableProperty]
-    private string _installStatus = "Проверяем установку…";
+    private string _installStatus = "Проверяем игру…";
 
     [ObservableProperty]
     private double _installProgress;
@@ -126,72 +130,38 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
     private string _lastLaunchLabel = "Запусков ещё не было";
 
     [ObservableProperty]
-    private string _networkStatus = "Game Network: не подключено";
+    private string _whatsNewTitle = "Minecraft";
 
     [ObservableProperty]
-    private string _networkDetail = "Создайте комнату, чтобы играть с друзьями";
+    private string _whatsNewSummary = "Новости появятся после загрузки с официального источника Mojang.";
 
     [ObservableProperty]
-    private string _networkAddress = "—";
-
-    [ObservableProperty]
-    private bool _isNetworkConnected;
-
-    [ObservableProperty]
-    private string _capabilityWarning = string.Empty;
-
-    [ObservableProperty]
-    private bool _hasCapabilityWarning;
-
-    public string MinecraftRoot => (_state as AppState)?.MinecraftRoot ?? "—";
-
-    /// <summary>Каталог игры существует только после первой загрузки версии — не обещаем раньше времени.</summary>
-    public bool CanOpenGameFolder => Directory.Exists(MinecraftRoot);
-
-    public string MinecraftFolderDetail => CanOpenGameFolder
-        ? "Открыть папку .minecraft"
-        : "Появится после установки игры";
+    private bool _canPickOptiFine;
 
     private void Refresh()
     {
         var account = _state.CurrentAccount;
         var profile = _state.CurrentProfile;
 
-        Greeting = DateTime.Now.Hour switch
-        {
-            < 5 => "Доброй ночи",
-            < 12 => "Доброе утро",
-            < 18 => "Добрый день",
-            _ => "Добрый вечер"
-        };
-
+        Greeting = "Добро пожаловать!";
         AccountName = account?.Username ?? "Без аккаунта";
         AccountKindLabel = account?.Kind == AccountKind.Microsoft ? "Microsoft · лицензия" : "Локальный профиль";
-        IsMicrosoftAccount = account?.Kind == AccountKind.Microsoft;
         AccountInitials = string.IsNullOrEmpty(account?.Username) ? "?" : account.Username[..1].ToUpperInvariant();
         SkinPath = account?.LocalSkinPath;
-        AccountUuidLabel = account switch
-        {
-            null => "аккаунт не выбран",
-            { UuidFromOfficialProfile: true } => "UUID официального профиля",
-            _ => "оффлайн-UUID"
-        };
 
-        ProfileName = profile?.Name ?? "Профиль не выбран";
-        ProfileVersion = profile?.DisplayVersion ?? "Сначала создайте профиль";
+        ProfileName = profile?.Name ?? "Автопрофиль";
+        ProfileVersion = profile?.DisplayVersion ?? SelectedVersion?.Id ?? "—";
         IsGameRunning = profile is not null && _launcher.IsRunning(profile.Id);
-        PlayButtonText = IsGameRunning ? "ИДЁТ ИГРА" : "ИГРАТЬ";
-
-        var tunnel = _capabilities.Get(CapabilityIds.GameNetworkTunnel);
-        HasCapabilityWarning = tunnel.State != CapabilityState.Available;
-        CapabilityWarning = tunnel.Detail ?? string.Empty;
-
-        OnPropertyChanged(nameof(MinecraftRoot));
-        OnPropertyChanged(nameof(CanOpenGameFolder));
-        OnPropertyChanged(nameof(MinecraftFolderDetail));
+        PlayButtonText = IsGameRunning ? "Остановить игру" : "Играть";
     }
 
-    public override Task OnNavigatedToAsync(CancellationToken ct = default) => LoadHomeAsync(ct);
+    public override async Task OnNavigatedToAsync(CancellationToken ct = default) => await LoadHomeAsync(ct).ConfigureAwait(true);
+
+    public async Task OnNavigatedToAsync(object? parameter, CancellationToken ct = default)
+    {
+        _ = parameter;
+        await LoadHomeAsync(ct).ConfigureAwait(true);
+    }
 
     private async Task LoadHomeAsync(CancellationToken ct)
     {
@@ -199,20 +169,9 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
         try
         {
             Refresh();
-            _log.Info("UI", "Главная: обновление данных");
-            // Секции независимы: сбой одного источника не должен оставлять пустыми остальные.
-            await LoadNewsSectionAsync(ct).ConfigureAwait(true);
-            await LoadPopularSectionAsync(ct).ConfigureAwait(true);
-            try
-            {
-                await LoadRecentAsync(ct).ConfigureAwait(true);
-            }
-            catch (Exception ex)
-            {
-                _log.Warn("UI", "История запусков недоступна: " + ex.Message);
-            }
-
-            await RefreshInstallStatusAsync(ct).ConfigureAwait(true);
+            await LoadNewsAsync(ct).ConfigureAwait(true);
+            await LoadVersionsAsync(ct).ConfigureAwait(true);
+            await LoadRecentAsync(ct).ConfigureAwait(true);
         }
         finally
         {
@@ -220,155 +179,371 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
         }
     }
 
-    private async Task LoadNewsSectionAsync(CancellationToken ct)
+    private async Task LoadNewsAsync(CancellationToken ct)
     {
         try
         {
-            await LoadNewsAsync(ct).ConfigureAwait(true);
+            var items = await _news.GetLatestAsync(6, ct).ConfigureAwait(true);
+            News.Clear();
+            foreach (var item in items)
+            {
+                News.Add(item);
+            }
+
+            if (items.Count > 0)
+            {
+                WhatsNewTitle = items[0].Version.Length > 0 ? $"Minecraft {items[0].Version}" : items[0].Title;
+                WhatsNewSummary = items[0].Title;
+            }
         }
         catch (Exception ex)
         {
             _log.Warn("UI", "Новости не загрузились: " + ex.Message);
         }
-
-        _log.Info("UI", $"Главная: новостей {News.Count}");
     }
 
-    private async Task LoadPopularSectionAsync(CancellationToken ct)
+    private async Task LoadVersionsAsync(CancellationToken ct)
     {
+        var result = await _versions.GetManifestAsync(false, ct).ConfigureAwait(true);
+        if (!result.IsSuccess)
+        {
+            ErrorMessage = result.Message ?? "Не удалось загрузить список версий.";
+            InstallStatus = "Список версий недоступен — проверьте сеть.";
+            return;
+        }
+
+        _allVersions = result.Value!.Versions;
+        _latestRelease = result.Value.Latest?.Release;
+        ApplyVersionChannel();
+        await RefreshInstallStatusAsync().ConfigureAwait(true);
+        await RefreshLoaderAvailabilityAsync(ct).ConfigureAwait(true);
+    }
+
+    private void ApplyVersionChannel()
+    {
+        var wantSnapshots = string.Equals(SelectedChannel, "Снапшоты", StringComparison.OrdinalIgnoreCase);
+        var current = SelectedVersion?.Id;
+
+        Versions.Clear();
+        foreach (var version in _allVersions.Where(v => wantSnapshots ? v.Type == "snapshot" : v.Type == "release").Take(150))
+        {
+            Versions.Add(new VersionChoice(version));
+        }
+
+        SelectedVersion = Versions.FirstOrDefault(v => v.Id == current)
+            ?? Versions.FirstOrDefault(v => v.Id == _latestRelease)
+            ?? Versions.FirstOrDefault();
+    }
+
+    partial void OnSelectedChannelChanged(string value)
+    {
+        _ = value;
+        ApplyVersionChannel();
+        _ = RefreshInstallStatusAsync();
+        _ = RefreshLoaderAvailabilityAsync(CancellationToken.None);
+    }
+
+    partial void OnSelectedVersionChanged(VersionChoice? value)
+    {
+        _ = value;
+        _ = RefreshInstallStatusAsync();
+        _ = RefreshLoaderAvailabilityAsync(CancellationToken.None);
+    }
+
+    private async Task RefreshLoaderAvailabilityAsync(CancellationToken ct)
+    {
+        LoaderOptions.Clear();
+        var id = SelectedVersion?.Id;
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return;
+        }
+
+        LoaderOptions.Add(new LoaderOption("Vanilla", LoaderKind.Vanilla, true, "Официальная сборка без модов"));
+
+        foreach (var loader in new[] { LoaderKind.Fabric, LoaderKind.NeoForge, LoaderKind.Forge, LoaderKind.Quilt })
+        {
+            try
+            {
+                var options = await _loaders.GetLoaderVersionsAsync(loader, id, ct).ConfigureAwait(true);
+                var ok = options.IsSuccess && options.Value?.Count > 0;
+                LoaderOptions.Add(new LoaderOption(loader.ToString(), loader, ok,
+                    ok ? $"Доступно сборок: {options.Value!.Count}" : options.Message ?? "Для этой версии сборка недоступна"));
+            }
+            catch (Exception ex)
+            {
+                LoaderOptions.Add(new LoaderOption(loader.ToString(), loader, false, ex.Message));
+            }
+        }
+
         try
         {
-            await LoadPopularAsync(ct).ConfigureAwait(true);
+            var opti = await _optifine.GetVersionsAsync(ct).ConfigureAwait(true);
+            var available = opti.IsSuccess && opti.Value?.Any(v => v.MinecraftVersion == id) == true;
+            CanPickOptiFine = available;
+            LoaderOptions.Add(new LoaderOption("OptiFine", LoaderKind.Vanilla, available,
+                available ? "Патч поверх установленного Minecraft" : opti.Message ?? "Для этой версии OptiFine недоступен")
+            {
+                IsOptiFine = true
+            });
         }
         catch (Exception ex)
         {
-            _log.Warn("UI", "Популярные моды и сборки не загрузились: " + ex.Message);
-            PopularMods.Clear();
-            PopularModpacks.Clear();
-        }
-
-        _log.Info("UI", $"Главная: модов {PopularMods.Count}, сборок {PopularModpacks.Count}");
-    }
-
-    private async Task LoadNewsAsync(CancellationToken ct)
-    {
-        var items = await _news.GetLatestAsync(6, ct).ConfigureAwait(true);
-        News.Clear();
-        foreach (var item in items)
-        {
-            News.Add(new NewsCardViewModel(item));
+            CanPickOptiFine = false;
+            LoaderOptions.Add(new LoaderOption("OptiFine", LoaderKind.Vanilla, false, ex.Message) { IsOptiFine = true });
         }
     }
 
-    private async Task LoadPopularAsync(CancellationToken ct)
+    private async Task RefreshInstallStatusAsync()
     {
-        var provider = _content.Primary;
-        var version = _state.CurrentProfile?.MinecraftVersion;
-
-        var mods = await provider.SearchAsync(new ContentSearchQuery
+        var id = SelectedVersion?.Id;
+        if (string.IsNullOrWhiteSpace(id))
         {
-            Type = ContentType.Mod,
-            Sort = ContentSort.Downloads,
-            MinecraftVersion = version,
-            Limit = 8
-        }, ct).ConfigureAwait(true);
-
-        PopularMods.Clear();
-        foreach (var project in mods.Items)
-        {
-            PopularMods.Add(new ContentCardViewModel(project));
+            InstallStatus = "Версия не выбрана";
+            InstallProgress = 0;
+            return;
         }
 
-        var packs = await provider.SearchAsync(new ContentSearchQuery
+        var root = _state.MinecraftRoot;
+        bool installed;
+        try
         {
-            Type = ContentType.Modpack,
-            Sort = ContentSort.Downloads,
-            Limit = 6
-        }, ct).ConfigureAwait(true);
-
-        PopularModpacks.Clear();
-        foreach (var project in packs.Items)
-        {
-            PopularModpacks.Add(new ContentCardViewModel(project));
+            installed = await _installer.IsInstalledAsync(root, id).ConfigureAwait(true);
         }
+        catch
+        {
+            installed = File.Exists(Path.Combine(root, "versions", id, $"{id}.json"));
+        }
+
+        InstallStatus = installed
+            ? $"Minecraft {id} установлен"
+            : $"Minecraft {id} скачается перед запуском";
+        InstallProgress = installed ? 1 : 0;
     }
 
     private async Task LoadRecentAsync(CancellationToken ct)
     {
-        var recent = await _history.GetRecentAsync(5, ct).ConfigureAwait(true);
-        RecentLaunches.Clear();
-        foreach (var record in recent)
+        try
         {
-            RecentLaunches.Add(record);
+            var recent = await _history.GetRecentAsync(1, ct).ConfigureAwait(true);
+            var last = recent.Count > 0 ? recent[0] : null;
+            LastLaunchLabel = last is null
+                ? "Запусков ещё не было"
+                : $"Последний запуск: {last.ProfileName} · {last.StartedAt.ToLocalTime():dd.MM HH:mm}";
         }
-
-        var last = recent.Count > 0 ? recent[0] : null;
-        LastLaunchLabel = last is null
-            ? "Запусков ещё не было"
-            : $"Последний запуск: {last.ProfileName} · {last.StartedAt.ToLocalTime():dd.MM HH:mm} · {DescribeStatus(last.Status)}";
+        catch (Exception ex)
+        {
+            _log.Warn("UI", "История запусков недоступна: " + ex.Message);
+        }
     }
 
-    private static string DescribeStatus(LaunchStatus status) => status switch
+    [RelayCommand]
+    private void SelectLoader(LoaderOption? option)
     {
-        LaunchStatus.Started => "запущена",
-        LaunchStatus.Exited => "завершена",
-        LaunchStatus.Failed => "ошибка",
-        _ => "прервана"
-    };
-
-    private async Task RefreshInstallStatusAsync(CancellationToken ct)
-    {
-        var profile = _state.CurrentProfile;
-        if (profile is null)
+        if (option is null || !option.IsAvailable)
         {
-            InstallStatus = "Профиль не создан";
             return;
         }
 
-        var versionDir = Path.Combine(profile.InstanceDirectory, "versions", profile.MinecraftVersion);
-        var installed = File.Exists(Path.Combine(versionDir, $"{profile.MinecraftVersion}.json"))
-                        && (File.Exists(Path.Combine(versionDir, $"{profile.MinecraftVersion}.jar"))
-                            || Directory.Exists(Path.Combine(versionDir, "natives")));
-
-        InstallStatus = installed
-            ? $"Версия {profile.MinecraftVersion} установлена"
-            : $"Версия {profile.MinecraftVersion} не установлена";
-        InstallProgress = installed ? 1 : 0;
-        await Task.CompletedTask;
+        SelectedOptiFine = option.IsOptiFine;
+        SelectedLoader = option.Loader;
     }
 
-    private void ApplyRoom(RoomSnapshot snapshot)
-    {
-        IsNetworkConnected = snapshot.State is RoomState.Connected or RoomState.WaitingForPeers;
-        NetworkStatus = snapshot.State switch
-        {
-            RoomState.Offline => "Game Network: не подключено",
-            RoomState.Creating => "Game Network: подключение…",
-            RoomState.WaitingForPeers => $"Game Network: комната «{snapshot.Room?.Name}» (ожидание игроков)",
-            RoomState.Connected => $"Game Network: комната «{snapshot.Room?.Name}» · {snapshot.Peers.Count} участн.",
-            RoomState.Reconnecting => "Game Network: переподключение…",
-            RoomState.Error => "Game Network: ошибка",
-            _ => "Game Network: закрыто"
-        };
+    [RelayCommand]
+    private async Task OpenNewsAsync() => await _navigation.NavigateAsync("news").ConfigureAwait(true);
 
-        NetworkDetail = snapshot.Error
-            ?? (snapshot.Transport switch
+    [RelayCommand]
+    private async Task PlayAsync()
+    {
+        if (IsGameRunning)
+        {
+            var runningProfile = _state.CurrentProfile;
+            if (runningProfile is not null)
             {
-                TransportKind.Direct => "Прямое соединение · шифрование WireGuard",
-                TransportKind.NatTraversal => "Соединение через NAT traversal",
-                TransportKind.Relay => "Соединение через relay",
-                _ => "Создайте комнату, чтобы играть с друзьями"
+                await _launcher.StopAsync(runningProfile.Id).ConfigureAwait(true);
+                IsGameRunning = false;
+                PlayButtonText = "Играть";
+                _toasts.Success("Игра остановлена", "Minecraft закрыт.");
+            }
+
+            return;
+        }
+
+        var account = _state.CurrentAccount;
+        if (account is null)
+        {
+            _toasts.Warning("Нужен аккаунт", "Добавьте аккаунт: карточка профиля внизу слева.");
+            await _navigation.NavigateAsync("accounts").ConfigureAwait(true);
+            return;
+        }
+
+        var version = SelectedVersion;
+        if (version is null)
+        {
+            _toasts.Warning("Версия", "Выберите версию Minecraft.");
+            return;
+        }
+
+        IsBusy = true;
+        IsInstalling = true;
+        InstallStatus = "Готовлю игру…";
+        try
+        {
+            var root = _state.MinecraftRoot;
+            var progress = new Progress<InstallProgress>(p =>
+            {
+                InstallProgress = p.Fraction;
+                InstallStatus = p.Detail is null ? p.Stage : $"{p.Stage} · {p.Detail}";
             });
 
-        NetworkAddress = snapshot.MinecraftAddress ?? "—";
+            string launchVersionId;
+            var launchLoader = SelectedLoader;
+            string? loaderVersion = null;
+
+            if (SelectedOptiFine)
+            {
+                InstallStatus = "Проверяю Minecraft…";
+                if (!await _installer.IsInstalledAsync(root, version.Id).ConfigureAwait(true))
+                {
+                    var baseInstall = await _installer.InstallAsync(root, version.Id, new InstallOptions(), progress).ConfigureAwait(true);
+                    if (!baseInstall.IsSuccess)
+                    {
+                        _toasts.Error("Установка не удалась", baseInstall.Message ?? "Смотрите лог.");
+                        return;
+                    }
+                }
+
+                InstallStatus = "Устанавливаю OptiFine…";
+                var list = await _optifine.GetVersionsAsync().ConfigureAwait(true);
+                var opti = list.Value?.FirstOrDefault(v => v.MinecraftVersion == version.Id);
+                if (opti is null)
+                {
+                    _toasts.Error("OptiFine недоступен", list.Message ?? $"Для {version.Id} нет сборки OptiFine.");
+                    return;
+                }
+
+                var installedOpti = await _optifine.InstallAsync(root, opti, progress).ConfigureAwait(true);
+                if (!installedOpti.IsSuccess)
+                {
+                    _toasts.Error("OptiFine не установился", installedOpti.Message ?? "Смотрите лог.");
+                    return;
+                }
+
+                launchVersionId = installedOpti.Value!;
+                launchLoader = LoaderKind.Vanilla;
+                loaderVersion = opti.Label;
+            }
+            else if (SelectedLoader == LoaderKind.Vanilla)
+            {
+                InstallStatus = "Проверяю Minecraft…";
+                if (!await _installer.IsInstalledAsync(root, version.Id).ConfigureAwait(true))
+                {
+                    var installed = await _installer.InstallAsync(root, version.Id, new InstallOptions(), progress).ConfigureAwait(true);
+                    if (!installed.IsSuccess)
+                    {
+                        _toasts.Error("Установка не удалась", installed.Message ?? "Смотрите лог.");
+                        return;
+                    }
+                }
+
+                launchVersionId = version.Id;
+            }
+            else
+            {
+                InstallStatus = $"Устанавливаю {SelectedLoader}…";
+                var installed = await _loaders.InstallLoaderAsync(root, version.Id, SelectedLoader, null, progress).ConfigureAwait(true);
+                if (!installed.IsSuccess)
+                {
+                    _toasts.Error("Лоадер не установился", installed.Message ?? "Смотрите лог.");
+                    return;
+                }
+
+                launchVersionId = installed.Value!;
+            }
+
+            InstallProgress = 1;
+            InstallStatus = "Запускаю игру…";
+
+            var profile = await FindOrCreateProfileAsync(account, version.Id, launchVersionId, launchLoader, loaderVersion).ConfigureAwait(true);
+            if (profile is null)
+            {
+                return;
+            }
+
+            await _state.SetProfileAsync(profile).ConfigureAwait(true);
+            await _state.SetAccountAsync(account).ConfigureAwait(true);
+
+            var session = await _sessions.GetSessionAsync(account).ConfigureAwait(true);
+            if (!session.IsSuccess)
+            {
+                _toasts.Error("Аккаунт недоступен", session.Message ?? "Войдите заново.");
+                return;
+            }
+
+            if (session.Value!.IsOffline)
+            {
+                _toasts.Warning("Локальный профиль", "Официальные серверы недоступны: игра запустится оффлайн.");
+            }
+
+            var result = await _launcher.LaunchAsync(profile, account, session.Value.AccessToken).ConfigureAwait(true);
+            if (!result.IsSuccess)
+            {
+                _toasts.Error("Запуск не удался", result.Message ?? "Смотрите лог.");
+                return;
+            }
+
+            IsGameRunning = true;
+            PlayButtonText = "Остановить игру";
+            ProfileName = profile.Name;
+            ProfileVersion = profile.DisplayVersion;
+            _toasts.Success("Minecraft запущен", $"{profile.DisplayVersion} · {account.Username}");
+        }
+        finally
+        {
+            IsInstalling = false;
+            IsBusy = false;
+        }
+    }
+
+    private async Task<GameProfile?> FindOrCreateProfileAsync(AccountInfo account, string baseVersion, string launchVersionId, LoaderKind loader, string? loaderVersion)
+    {
+        var existing = _state.Profiles.FirstOrDefault(p => string.Equals(p.MinecraftVersion, launchVersionId, StringComparison.OrdinalIgnoreCase));
+        if (existing is not null)
+        {
+            return existing;
+        }
+
+        var name = loader == LoaderKind.Vanilla
+            ? SelectedOptiFine ? $"OptiFine {baseVersion}" : baseVersion
+            : $"{baseVersion} · {loader}";
+
+        var created = await _profiles.CreateAsync(new CreateProfileRequest
+        {
+            Name = name,
+            MinecraftVersion = launchVersionId,
+            Loader = loader,
+            LoaderVersion = loaderVersion,
+            AccountId = account.Id,
+            MemoryMb = 4096
+        }).ConfigureAwait(true);
+
+        if (!created.IsSuccess)
+        {
+            _toasts.Error("Профиль не создан", created.Message ?? "Ошибка.");
+            return null;
+        }
+
+        await _state.RefreshProfilesAsync().ConfigureAwait(true);
+        return created.Value;
     }
 
     private void OnSessionEnded(string profileId, LaunchOutcome outcome)
     {
+        _ = profileId;
         Dispatcher.UIThread.Post(() =>
         {
             IsGameRunning = false;
-            PlayButtonText = "ИГРАТЬ";
+            PlayButtonText = "Играть";
 
             if (outcome.Status == LaunchStatus.Failed)
             {
@@ -382,201 +557,28 @@ public sealed partial class HomeViewModel : ViewModelBase, INavigationAware
             _ = LoadRecentAsync(CancellationToken.None);
         });
     }
-
-    [RelayCommand]
-    private async Task PlayAsync()
-    {
-        if (IsGameRunning)
-        {
-            if (_state.CurrentProfile is { } running)
-            {
-                await _launcher.StopAsync(running.Id).ConfigureAwait(true);
-                _toasts.Success("Игра остановлена", "Minecraft закрыт.");
-                IsGameRunning = false;
-                PlayButtonText = "ИГРАТЬ";
-            }
-
-            return;
-        }
-
-        var profile = _state.CurrentProfile;
-        if (profile is null)
-        {
-            _toasts.Warning("Нужен профиль", "Создайте игровой профиль: раздел «Играть».");
-            await _navigation.NavigateAsync("play").ConfigureAwait(true);
-            return;
-        }
-
-        var account = _state.CurrentAccount;
-        if (account is null)
-        {
-            _toasts.Warning("Нужен аккаунт", "Добавьте аккаунт в разделе «Аккаунты».");
-            await _navigation.NavigateAsync("accounts").ConfigureAwait(true);
-            return;
-        }
-
-        IsBusy = true;
-        try
-        {
-            var session = await _sessions.GetSessionAsync(account).ConfigureAwait(true);
-            if (!session.IsSuccess)
-            {
-                _toasts.Error("Нет доступа к аккаунту", session.Message ?? "Войдите заново.");
-                await _navigation.NavigateAsync("accounts").ConfigureAwait(true);
-                return;
-            }
-
-            if (session.Value!.IsOffline)
-            {
-                _toasts.Warning("Локальный профиль",
-                    "Игра запустится в оффлайн-режиме: официальные серверы недоступны, скин не отправляется.");
-            }
-
-            var result = await _launcher.LaunchAsync(profile, account, session.Value.AccessToken).ConfigureAwait(true);
-            if (!result.IsSuccess)
-            {
-                _toasts.Error("Не удалось запустить", result.Message ?? "Неизвестная ошибка.");
-                return;
-            }
-
-            IsGameRunning = true;
-            PlayButtonText = "ИДЁТ ИГРА";
-            _toasts.Success("Minecraft запущен", $"{profile.Name} · {profile.DisplayVersion}");
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    [RelayCommand]
-    private async Task InstallAsync()
-    {
-        var profile = _state.CurrentProfile;
-        if (profile is null)
-        {
-            _toasts.Warning("Нужен профиль", "Сначала создайте профиль на странице «Играть».");
-            return;
-        }
-
-        IsInstalling = true;
-        InstallStatus = "Установка…";
-        try
-        {
-            await _navigation.NavigateAsync("versions").ConfigureAwait(true);
-            _toasts.Show("Установка", $"Выберите версию {profile.MinecraftVersion} на странице «Версии».");
-        }
-        finally
-        {
-            IsInstalling = false;
-        }
-    }
-
-    [RelayCommand]
-    private Task OpenNetworkAsync() => _navigation.NavigateAsync("network");
-
-    [RelayCommand]
-    private void OpenGameFolder()
-    {
-        if (!CanOpenGameFolder)
-        {
-            return;
-        }
-
-        try
-        {
-            var info = new System.Diagnostics.ProcessStartInfo(MinecraftRoot) { UseShellExecute = true };
-            System.Diagnostics.Process.Start(info)?.Dispose();
-        }
-        catch (Exception ex)
-        {
-            _toasts.Error("Папка не открылась", ex.Message);
-        }
-    }
-
-    [RelayCommand]
-    private Task OpenContentAsync(string? type) => _navigation.NavigateAsync(type switch
-    {
-        "mods" => "mods",
-        "modpacks" => "modpacks",
-        _ => "mods"
-    });
-
-    [RelayCommand]
-    private async Task CopyNetworkAddressAsync()
-    {
-        if (string.IsNullOrEmpty(NetworkAddress) || NetworkAddress == "—")
-        {
-            _toasts.Warning("Адрес недоступен", "Сначала подключитесь к комнате.");
-            return;
-        }
-
-        // Копирование через буфер обмена доступно только из UI-потока: ViewModel не должен
-        // знать про TopLevel, поэтому берём его через сервис.
-        var copied = await _clipboard.SetTextAsync(NetworkAddress).ConfigureAwait(true);
-        if (copied)
-        {
-            _toasts.Success("Адрес скопирован", NetworkAddress);
-        }
-        else
-        {
-            _toasts.Warning("Не удалось скопировать", $"Адрес: {NetworkAddress}");
-        }
-    }
-
-    /// <summary>Приход по ссылке ehot://join/… с главного экрана — уводим в Game Network с кодом.</summary>
-    public async Task OnNavigatedToAsync(object? parameter, CancellationToken ct = default)
-    {
-        if (parameter is DeepLink)
-        {
-            await _navigation.NavigateAsync("network", parameter, ct).ConfigureAwait(true);
-            return;
-        }
-
-        // Без этой ветки главная не загружала новости и тренды: навигация вызывает именно
-        // интерфейсный перегруз, а не override базового класса.
-        await LoadHomeAsync(ct).ConfigureAwait(true);
-    }
 }
 
-public sealed class NewsCardViewModel(NewsItem item)
+public sealed record VersionChoice(VersionSummary Summary)
 {
-    public string Title => item.Title;
-
-    public string Version => item.Version;
-
-    public string Type => item.Type switch
-    {
-        "snapshot" => "Снапшот",
-        "release" => "Релиз",
-        _ => item.Type
-    };
-
-    public string DateLabel => item.Date.ToLocalTime().ToString("dd.MM.yyyy");
-
-    public string ImageUrl => item.ImageUrl;
-
-    public bool HasImage => !string.IsNullOrEmpty(item.ImageUrl);
+    public string Id => Summary.Id;
+    public string TypeLabel => Summary.Type == "snapshot" ? "снапшот" : "релиз";
+    public override string ToString() => Id;
 }
 
-public sealed class ContentCardViewModel(ContentProject project)
+public sealed class LoaderOption
 {
-    public string Title => project.Title;
-
-    public string Description => project.Description;
-
-    public string? IconUrl => project.IconUrl;
-
-    public string Author => project.Author ?? "—";
-
-    public string DownloadsLabel => project.Downloads switch
+    public LoaderOption(string label, LoaderKind loader, bool isAvailable, string hint)
     {
-        >= 1_000_000 => $"{project.Downloads / 1_000_000.0:0.#} млн",
-        >= 1_000 => $"{project.Downloads / 1_000.0:0.#} тыс.",
-        _ => project.Downloads.ToString()
-    };
+        Label = label;
+        Loader = loader;
+        IsAvailable = isAvailable;
+        Hint = hint;
+    }
 
-    public string CategoriesLabel => string.Join(" · ", project.Categories.Take(2));
-
-    public ContentProject Project => project;
+    public string Label { get; }
+    public LoaderKind Loader { get; }
+    public bool IsAvailable { get; }
+    public string Hint { get; }
+    public bool IsOptiFine { get; init; }
 }
