@@ -175,9 +175,13 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <TextBlock Text="Пока пусто. Войдите через Microsoft или создайте локальный профиль выше."
-                       Classes="caption"
-                       IsVisible="{Binding Accounts.Count, Converter={x:Static vm:TextConverters.IsZero}}" />
+            <StackPanel Spacing="8" HorizontalAlignment="Center" Margin="0,4,0,0"
+                        IsVisible="{Binding Accounts.Count, Converter={x:Static vm:TextConverters.IsZero}}">
+              <Image Source="avares://EHOT.Launcher/Assets/mascot-raccoon.png" Width="110" Height="110"
+                     Stretch="Uniform" HorizontalAlignment="Center" Opacity="0.9" />
+              <TextBlock Text="Пока пусто. Войдите через Microsoft или создайте локальный профиль выше."
+                         Classes="caption" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="320" />
+            </StackPanel>
           </StackPanel>
         </Border>
 
