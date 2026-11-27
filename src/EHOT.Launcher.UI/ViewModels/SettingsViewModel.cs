@@ -200,7 +200,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public UpdateViewModel Updates => _updates;
 
-    public string VersionLabel
+    public static string VersionLabel
     {
         get
         {
@@ -213,7 +213,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public string PlatformLabel => $"{_platform.OsName} {_platform.OsVersion} · {_platform.Architecture}";
 
-    public string BuildInfo
+    public static string BuildInfo
     {
         get
         {
