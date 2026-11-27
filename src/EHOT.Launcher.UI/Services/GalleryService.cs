@@ -1,4 +1,5 @@
 using EHOT.Launcher.Core.Models;
+using EHOT.Launcher.UI.ViewModels;
 
 namespace EHOT.Launcher.UI.Services;
 
