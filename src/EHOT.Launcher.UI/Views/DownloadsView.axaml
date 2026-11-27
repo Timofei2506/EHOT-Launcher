@@ -59,7 +59,7 @@
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="dl:DownloadSnapshot">
                     <Border CornerRadius="12" Padding="13,11" Margin="0,0,0,7" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
-                            BorderBrush="#1E2739" BorderThickness="1">
+                            BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
                       <StackPanel Spacing="7">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                           <TextBlock Text="{Binding DisplayName}" FontSize="12.5" FontWeight="SemiBold"

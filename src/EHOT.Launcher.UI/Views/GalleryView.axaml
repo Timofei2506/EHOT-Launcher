@@ -37,7 +37,7 @@
                         Command="{Binding $parent[ItemsControl].((vm:GalleryViewModel)DataContext).OpenPreviewCommand}"
                         CommandParameter="{Binding}">
                   <StackPanel Spacing="8">
-                    <Border Height="150" CornerRadius="12" Background="#181A20" ClipToBounds="True">
+                    <Border Height="150" CornerRadius="12" Background="{StaticResource GlassSurfaceBrush}" ClipToBounds="True">
                       <Image Source="{Binding FullPath, Converter={x:Static imgs:LocalThumbnailConverter.Instance}, ConverterParameter=420}"
                              Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
@@ -74,7 +74,7 @@
             <Path Data="{StaticResource IconClose}" Classes="icon" />
           </Button>
         </Grid>
-        <Border Grid.Row="1" Margin="0,16" CornerRadius="16" ClipToBounds="True" Background="#181A20">
+        <Border Grid.Row="1" Margin="0,16" CornerRadius="16" ClipToBounds="True" Background="{StaticResource GlassSurfaceBrush}">
           <Image Source="{Binding SelectedItem.FullPath, Converter={x:Static imgs:LocalThumbnailConverter.Instance}, ConverterParameter=1400}"
                  Stretch="Uniform" />
         </Border>
