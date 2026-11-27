@@ -33,22 +33,20 @@ public sealed class NavigationSmokeTests
         }
     }
 
-    /// <summary>Все разделы бокового меню: ключ навигации и ожидаемый тип View.</summary>
+    /// <summary>Все разделы нового рельса и скрытые рабочие экраны: ключ навигации и ожидаемый тип View.</summary>
     public static TheoryData<string, string> Sections => new()
     {
         { "home", "HomeView" },
-        { "play", "PlayView" },
-        { "versions", "VersionsView" },
-        { "mods", "BrowseModsView" },
-        { "modpacks", "BrowseModpacksView" },
-        { "resourcepacks", "BrowseResourcePacksView" },
-        { "shaders", "BrowseShadersView" },
-        { "worlds", "BrowseWorldsView" },
-        { "network", "GameNetworkView" },
+        { "catalog", "CatalogView" },
+        { "gallery", "GalleryView" },
+        { "news", "NewsView" },
+        { "servers", "ServersView" },
+        { "builds", "BuildsView" },
+        { "settings", "SettingsView" },
         { "accounts", "AccountsView" },
         { "downloads", "DownloadsView" },
-        { "settings", "SettingsView" },
-        { "about", "AboutView" }
+        { "import", "ImportView" },
+        { "network", "GameNetworkView" }
     };
 
     [AvaloniaTheory]

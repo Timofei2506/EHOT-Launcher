@@ -132,6 +132,8 @@ public static class AppBootstrap
         services.AddSingleton<IUpdateService, GitHubUpdateService>();
         services.AddSingleton<UpdateViewModel>();
         services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<IGalleryService, GalleryService>();
+        services.AddSingleton<IServerCatalogService, ServerCatalogService>();
         services.AddSingleton<ISkinFilePicker, SkinFilePicker>();
         services.AddSingleton<DeepLinkRouter>(sp => new DeepLinkRouter(
             sp.GetRequiredService<ILoggerFactory>().CreateLogger("DeepLink"),
@@ -143,6 +145,11 @@ public static class AppBootstrap
 
         services.AddSingleton<MainWindowViewModel>();
         services.AddSingleton<HomeViewModel>();
+        services.AddSingleton<CatalogViewModel>();
+        services.AddSingleton<BuildsViewModel>();
+        services.AddSingleton<ServersViewModel>();
+        services.AddSingleton<NewsViewModel>();
+        services.AddSingleton<GalleryViewModel>();
         services.AddSingleton<PlayViewModel>();
         services.AddSingleton<VersionsViewModel>();
         services.AddSingleton<ModsViewModel>();

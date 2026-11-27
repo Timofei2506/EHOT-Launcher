@@ -24,6 +24,7 @@ public static class GameModule
         services.AddSingleton<IGameLauncher, GameLauncher>();
         services.AddSingleton<IProfileManager, ProfileManager>();
         services.AddSingleton<IForeignLauncherImportService, ForeignLauncherImportService>();
+        services.AddSingleton<Servers.IServerPinger, Servers.MinecraftServerPinger>();
         return services;
     }
 }
