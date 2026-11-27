@@ -1,3 +1,3 @@
-49769e8da03c6963efebb7792d8e58e3307b7763dd4d1bfa6a36577ca1ed4851  EHOT-Launcher-0.2.2-osx-arm64.dmg
-310b89adf6afef8ee1cdfaec6fb75cb23264714d4ac2d07f936b4f11c080ad0c  EHOT-Launcher-0.2.2-osx-x64.dmg
-7cc75174d01372b13a080094552c118dad307396c94c3236d59106cc2ff977ad  EHOT-Launcher-0.2.2-win-x64-setup.exe
+ed5d20cac46bee3b7397b6bcc27005c5f00707a91a01e74f99848ace6c83456c  EHOT-Launcher-0.3.0-osx-arm64.dmg
+7d02f5bb85554f391443dbc5fae0a33ba5881eabf6f0b204da5d6e671fac5cad  EHOT-Launcher-0.3.0-osx-x64.dmg
+37e5abdfe80b84c91da2f430dd6a9ebcc2f3ad513e3dae4f38b2335e148609f1  EHOT-Launcher-0.3.0-win-x64-setup.exe
