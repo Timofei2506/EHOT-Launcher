@@ -1,3 +1,11 @@
+using Avalonia.Controls;
+
 namespace EHOT.Launcher.UI.Views;
 
-public partial class NewsView { public NewsView() { InitializeComponent(); } }
+public partial class NewsView : UserControl
+{
+    public NewsView()
+    {
+        InitializeComponent();
+    }
+}
