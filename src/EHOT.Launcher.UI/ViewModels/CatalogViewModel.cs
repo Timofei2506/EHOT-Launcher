@@ -7,17 +7,20 @@ namespace EHOT.Launcher.UI.ViewModels;
 public sealed partial class CatalogViewModel : ViewModelBase, INavigationAware
 {
     private readonly ModsViewModel _mods;
+    private readonly ModpacksViewModel _modpacks;
     private readonly ResourcePacksViewModel _resourcePacks;
     private readonly ShadersViewModel _shaders;
     private readonly WorldsViewModel _dataPacks;
 
     public CatalogViewModel(
         ModsViewModel mods,
+        ModpacksViewModel modpacks,
         ResourcePacksViewModel resourcePacks,
         ShadersViewModel shaders,
         WorldsViewModel dataPacks)
     {
         _mods = mods;
+        _modpacks = modpacks;
         _resourcePacks = resourcePacks;
         _shaders = shaders;
         _dataPacks = dataPacks;
@@ -46,6 +49,9 @@ public sealed partial class CatalogViewModel : ViewModelBase, INavigationAware
     private Task ShowModsAsync() => SelectSectionAsync("mods", null, CancellationToken.None);
 
     [RelayCommand]
+    private Task ShowModpacksAsync() => SelectSectionAsync("modpacks", null, CancellationToken.None);
+
+    [RelayCommand]
     private Task ShowResourcePacksAsync() => SelectSectionAsync("resourcepacks", null, CancellationToken.None);
 
     [RelayCommand]
@@ -58,6 +64,7 @@ public sealed partial class CatalogViewModel : ViewModelBase, INavigationAware
     {
         ContentBrowseViewModel next = section switch
         {
+            "modpacks" => _modpacks,
             "resourcepacks" => _resourcePacks,
             "shaders" => _shaders,
             "datapacks" => _dataPacks,
@@ -66,6 +73,7 @@ public sealed partial class CatalogViewModel : ViewModelBase, INavigationAware
 
         SelectedSection = section switch
         {
+            "modpacks" => "modpacks",
             "resourcepacks" => "resourcepacks",
             "shaders" => "shaders",
             "datapacks" => "datapacks",

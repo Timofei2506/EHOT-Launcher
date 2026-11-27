@@ -150,8 +150,6 @@ public static class AppBootstrap
         services.AddSingleton<ServersViewModel>();
         services.AddSingleton<NewsViewModel>();
         services.AddSingleton<GalleryViewModel>();
-        services.AddSingleton<PlayViewModel>();
-        services.AddSingleton<VersionsViewModel>();
         services.AddSingleton<ModsViewModel>();
         services.AddSingleton<ModpacksViewModel>();
         services.AddSingleton<ResourcePacksViewModel>();
@@ -161,7 +159,6 @@ public static class AppBootstrap
         services.AddSingleton<AccountsViewModel>();
         services.AddSingleton<DownloadsViewModel>();
         services.AddSingleton<SettingsViewModel>();
-        services.AddSingleton<AboutViewModel>();
 
         return services.BuildServiceProvider(new ServiceProviderOptions
         {
