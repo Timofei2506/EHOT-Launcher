@@ -1,0 +1,94 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             xmlns:controls="using:EHOT.Launcher.UI.Controls"
+             xmlns:imgs="using:EHOT.Launcher.UI.Converters"
+             x:Class="EHOT.Launcher.UI.Views.NewsView"
+             x:DataType="vm:NewsViewModel">
+
+  <Grid>
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Новости Minecraft" Classes="h1" />
+          <TextBlock Text="Официальные публикации Mojang · источник: launchercontent.mojang.com" Classes="body" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="ghost" Command="{Binding RefreshCommand}" VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Path Data="{StaticResource IconRefresh}" Classes="icon" Width="15" Height="15" />
+            <TextBlock Text="Обновить" FontSize="12.5" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+      </Grid>
+
+      <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="8">
+        <Button Classes="pill" Command="{Binding SetTabCommand}" CommandParameter="Все" Content="Все" />
+        <Button Classes="pill" Command="{Binding SetTabCommand}" CommandParameter="Обновления" Content="Обновления" />
+        <Button Classes="pill" Command="{Binding SetTabCommand}" CommandParameter="Снапшоты" Content="Снапшоты" />
+      </StackPanel>
+
+      <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+        <Grid>
+          <ItemsControl ItemsSource="{Binding Items}" IsVisible="{Binding HasItems}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:NewsCardViewModel">
+                <Border Classes="card" Padding="12" Margin="0,0,0,12">
+                  <Button Classes="ghost" Padding="0" Background="Transparent" BorderThickness="0" HorizontalAlignment="Stretch"
+                          Command="{Binding $parent[ItemsControl].((vm:NewsViewModel)DataContext).OpenArticleCommand}"
+                          CommandParameter="{Binding}">
+                    <Grid ColumnDefinitions="112,*,Auto" ColumnSpacing="16">
+                      <Border Width="112" Height="112" CornerRadius="12" Background="{StaticResource SurfaceBrush}" ClipToBounds="True">
+                        <controls:RemoteImage Url="{Binding ImageUrl}" Stretch="UniformToFill" Width="112" Height="112"
+                                              IsVisible="{Binding HasImage}" />
+                      </Border>
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="7">
+                        <TextBlock Text="{Binding TypeLabel}" Classes="eyebrow" />
+                        <TextBlock Text="{Binding Title}" Classes="h3" TextWrapping="Wrap" MaxLines="2" />
+                        <TextBlock Text="{Binding Meta}" Classes="caption" />
+                      </StackPanel>
+                      <Path Grid.Column="2" Data="{StaticResource IconChevronRight}" Classes="icon" VerticalAlignment="Center" />
+                    </Grid>
+                  </Button>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <StackPanel IsVisible="{Binding !HasItems}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+            <TextBlock Text="Новости не загрузились" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
+            <TextBlock Text="Официальный источник Mojang не ответил. Проверьте сеть и обновите." Classes="caption" TextWrapping="Wrap" HorizontalAlignment="Center" />
+          </StackPanel>
+        </Grid>
+      </ScrollViewer>
+    </Grid>
+
+    <!-- Подробная статья -->
+    <Border IsVisible="{Binding IsArticleOpen}" Background="#E6111216" ZIndex="20">
+      <Grid RowDefinitions="Auto,*,Auto" Margin="28" MaxWidth="980">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+          <StackPanel Spacing="3">
+            <TextBlock Text="{Binding ArticleMeta}" Classes="eyebrow" />
+            <TextBlock Text="{Binding ArticleTitle}" Classes="h1" TextWrapping="Wrap" />
+          </StackPanel>
+          <Button Grid.Column="1" Classes="icon" Command="{Binding CloseArticleCommand}" ToolTip.Tip="Закрыть">
+            <Path Data="{StaticResource IconClose}" Classes="icon" />
+          </Button>
+        </Grid>
+        <ScrollViewer Grid.Row="1" Margin="0,18" VerticalScrollBarVisibility="Auto">
+          <StackPanel Spacing="14">
+            <Border Height="260" CornerRadius="16" Background="{StaticResource SurfaceBrush}" ClipToBounds="True">
+              <controls:RemoteImage Url="{Binding ArticleImageUrl}" Stretch="UniformToFill" />
+            </Border>
+            <TextBox Text="{Binding ArticleBody}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                     FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Background="Transparent"
+                     BorderThickness="0" Padding="0" MinHeight="240" />
+          </StackPanel>
+        </ScrollViewer>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right">
+          <TextBlock Text="{Binding ArticleLink}" Classes="caption" VerticalAlignment="Center" MaxWidth="480" TextTrimming="CharacterEllipsis" />
+          <Button Classes="primary" Command="{Binding OpenOriginalCommand}" Content="Открыть оригинал" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

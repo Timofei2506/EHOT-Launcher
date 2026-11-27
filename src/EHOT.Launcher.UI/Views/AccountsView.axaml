@@ -31,7 +31,7 @@
             <StackPanel Spacing="12">
               <StackPanel Orientation="Horizontal" Spacing="10">
                 <Border Width="32" Height="32" CornerRadius="10" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card">
-                  <TextBlock Text="M" FontWeight="Bold" FontSize="14" Foreground="#A5B4FC"
+                  <TextBlock Text="M" FontWeight="Bold" FontSize="14" Foreground="{StaticResource TextBrush}"
                              HorizontalAlignment="Center" VerticalAlignment="Center" />
                 </Border>
                 <StackPanel VerticalAlignment="Center" Spacing="2">
@@ -58,7 +58,7 @@
                 </Grid>
               </Border>
 
-              <Border Padding="12" CornerRadius="10" Background="#1A38BDF8" IsVisible="{Binding IsLoggingIn}">
+              <Border Padding="12" CornerRadius="10" Background="#1AF07832" IsVisible="{Binding IsLoggingIn}">
                 <StackPanel Spacing="6">
                   <TextBlock Text="Код для входа" Classes="caption" FontSize="10.5" />
                   <TextBlock Text="{Binding DeviceCode}" FontSize="22" FontWeight="Bold"
@@ -92,7 +92,7 @@
                 <TextBox Text="{Binding NewUsername, Mode=TwoWay}" PlaceholderText="3–16 символов" />
               </StackPanel>
 
-              <Border Padding="10,8" CornerRadius="10" Background="#101724"
+              <Border Padding="10,8" CornerRadius="10" Background="{StaticResource GlassSurfaceBrush}"
                       IsVisible="{Binding HasUsernameStatus}">
                 <StackPanel Spacing="3">
                   <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -132,11 +132,11 @@
               <ItemsControl.ItemTemplate>
                 <DataTemplate x:DataType="models:AccountInfo">
                   <Border CornerRadius="12" Padding="12,10" Margin="0,0,0,6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
-                          BorderBrush="#1E2739" BorderThickness="1">
+                          BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
                     <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="10">
                       <!-- Голова со скина; пока скина нет — инициал ника -->
                       <Border Width="38" Height="38" CornerRadius="10" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" ClipToBounds="True"
-                              BorderBrush="#26314A" BorderThickness="1">
+                              BorderBrush="{StaticResource GlassBorderSoftBrush}" BorderThickness="1">
                         <Panel>
                           <TextBlock Text="{Binding Username, Converter={x:Static vm:TextConverters.FirstLetter}}"
                                      FontWeight="Bold" Foreground="White"
@@ -175,9 +175,13 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <TextBlock Text="Пока пусто. Войдите через Microsoft или создайте локальный профиль выше."
-                       Classes="caption"
-                       IsVisible="{Binding Accounts.Count, Converter={x:Static vm:TextConverters.IsZero}}" />
+            <StackPanel Spacing="8" HorizontalAlignment="Center" Margin="0,4,0,0"
+                        IsVisible="{Binding Accounts.Count, Converter={x:Static vm:TextConverters.IsZero}}">
+              <Image Source="avares://EHOT.Launcher/Assets/mascot-raccoon.png" Width="110" Height="110"
+                     Stretch="Uniform" HorizontalAlignment="Center" Opacity="0.9" />
+              <TextBlock Text="Пока пусто. Войдите через Microsoft или создайте локальный профиль выше."
+                         Classes="caption" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="320" />
+            </StackPanel>
           </StackPanel>
         </Border>
 
@@ -191,7 +195,7 @@
                 </Border.Transitions>
           <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="16">
             <Border Width="64" Height="64" CornerRadius="14" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" ClipToBounds="True"
-                    BorderBrush="#26314A" BorderThickness="1" VerticalAlignment="Center">
+                    BorderBrush="{StaticResource GlassBorderSoftBrush}" BorderThickness="1" VerticalAlignment="Center">
               <Panel>
                 <Path Data="{StaticResource IconUser}" Classes="icon" Width="26" Height="26"
                       HorizontalAlignment="Center" VerticalAlignment="Center"

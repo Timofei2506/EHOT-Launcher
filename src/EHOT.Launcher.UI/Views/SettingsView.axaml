@@ -18,6 +18,7 @@
     </Grid>
 
     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <StackPanel Spacing="16">
       <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
 
         <!-- ══════ Левая колонка ══════ -->
@@ -202,6 +203,41 @@
           </Border>
         </StackPanel>
       </Grid>
+
+      <!-- ══════ О ЛАУНЧЕРЕ ══════ -->
+      <Border CornerRadius="16" Padding="18" Classes="glass-card" Background="{StaticResource GlassCardBrush}"
+              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="18">
+          <Image Source="avares://EHOT.Launcher/Assets/ehot-logo-orange.png" Width="64" Height="64" Stretch="UniformToFill" VerticalAlignment="Top">
+            <Image.Clip>
+              <RectangleGeometry RadiusX="14" RadiusY="14" Rect="0,0,64,64" />
+            </Image.Clip>
+          </Image>
+          <StackPanel Grid.Column="1" Spacing="6">
+            <Grid ColumnDefinitions="*,Auto">
+              <StackPanel Spacing="1" VerticalAlignment="Center">
+                <TextBlock Text="EHOT Launcher" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextBrush}" />
+                <TextBlock Text="{Binding VersionLabel}" Classes="caption" />
+              </StackPanel>
+              <Button Grid.Column="1" Classes="primary" Content="Проверить обновления" Command="{Binding CheckUpdatesCommand}" VerticalAlignment="Center" />
+            </Grid>
+            <TextBlock Text="Кроссплатформенный лаунчер Minecraft Java Edition: профили, установка версий и модов, каталог контента и собственная сеть для совместной игры." Classes="body" FontSize="12" />
+            <TextBlock Classes="caption">
+              <Run Text="{Binding RuntimeLabel}" /><Run Text=" · " /><Run Text="{Binding PlatformLabel}" /><Run Text=" · " /><Run Text="{Binding BuildInfo}" />
+            </TextBlock>
+            <TextBlock Text="{Binding Updates.StatusText}" Classes="caption" Foreground="{StaticResource AccentHotBrush}" />
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Button Classes="ghost" Content="GitHub" Command="{Binding OpenGitHubCommand}" />
+              <Button Classes="ghost" Content="Релизы" Command="{Binding OpenReleasesCommand}" />
+              <Button Classes="ghost" Content="Сообщить об ошибке" Command="{Binding OpenIssuesCommand}" />
+            </StackPanel>
+            <Border Classes="divider" Margin="0,6" />
+            <TextBlock Text="{Binding LegalNotice}" Classes="caption" FontSize="10" TextWrapping="Wrap" />
+            <TextBlock Text="{Binding Credits}" Classes="caption" FontSize="10" TextWrapping="Wrap" />
+          </StackPanel>
+        </Grid>
+      </Border>
+      </StackPanel>
     </ScrollViewer>
   </Grid>
 </UserControl>

@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             x:Class="EHOT.Launcher.UI.Views.CatalogView"
+             x:DataType="vm:CatalogViewModel">
+
+  <Grid RowDefinitions="Auto,*" RowSpacing="12">
+    <!-- Единый пункт рельса: типы контента переключаются на месте -->
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="8">
+      <Button Classes="pill" Command="{Binding ShowModsCommand}" Content="Моды" />
+      <Button Classes="pill" Command="{Binding ShowModpacksCommand}" Content="Модпаки" />
+      <Button Classes="pill" Command="{Binding ShowResourcePacksCommand}" Content="Ресурспаки" />
+      <Button Classes="pill" Command="{Binding ShowShadersCommand}" Content="Шейдеры" />
+      <Button Classes="pill" Command="{Binding ShowDataPacksCommand}" Content="Датапаки" />
+    </StackPanel>
+
+    <ContentControl Grid.Row="1" Content="{Binding CurrentSection}" />
+  </Grid>
+</UserControl>

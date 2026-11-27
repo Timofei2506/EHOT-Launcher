@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input.Platform;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
+using Avalonia.Media.Imaging;
 using Microsoft.Extensions.Logging;
 
 namespace EHOT.Launcher.UI.Services;
@@ -18,6 +19,9 @@ public interface IClipboardService
 
     /// <summary>Читает текст из буфера обмена (null — пусто или недоступно).</summary>
     Task<string?> GetTextAsync();
+
+    /// <summary>Кладёт изображение в буфер обмена. false — если формат/файл недоступен.</summary>
+    Task<bool> SetBitmapAsync(string path);
 }
 
 public sealed class ClipboardService(ILogger<ClipboardService> logger) : IClipboardService
@@ -46,6 +50,36 @@ public sealed class ClipboardService(ILogger<ClipboardService> logger) : IClipbo
             catch (Exception ex)
             {
                 logger.LogDebug("Копирование не удалось: {Message}", ex.Message);
+                return false;
+            }
+        });
+    }
+
+    public Task<bool> SetBitmapAsync(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        {
+            return Task.FromResult(false);
+        }
+
+        return Dispatcher.UIThread.InvokeAsync<bool>(async () =>
+        {
+            try
+            {
+                var clipboard = await GetClipboardAsync();
+                if (clipboard is null)
+                {
+                    logger.LogDebug("Буфер обмена недоступен в этом окружении");
+                    return false;
+                }
+
+                using var bitmap = new Bitmap(path);
+                await clipboard.SetBitmapAsync(bitmap);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                logger.LogDebug("Копирование изображения не удалось: {Message}", ex.Message);
                 return false;
             }
         });

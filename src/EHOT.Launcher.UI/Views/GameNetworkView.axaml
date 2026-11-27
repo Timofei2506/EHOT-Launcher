@@ -128,7 +128,7 @@
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="net:RoomPeer">
                     <Border CornerRadius="12" Padding="10,8" Margin="0,0,0,6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
-                            BorderBrush="#1E2739" BorderThickness="1">
+                            BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
                       <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
                         <Border Width="30" Height="30" CornerRadius="9" Background="{StaticResource AccentGradient}">
                           <TextBlock Text="{Binding DisplayName, Converter={x:Static vm:TextConverters.FirstLetter}}"

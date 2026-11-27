@@ -137,7 +137,7 @@
                                 BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1" ClipToBounds="True">
                           <Panel>
                             <TextBlock Text="{Binding Initial}" FontWeight="Bold" FontSize="20"
-                                       Foreground="#C4B5FD"
+                                       Foreground="{StaticResource AccentHotBrush}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"
                                        IsVisible="{Binding !HasIcon}" />
                             <controls:RemoteImage Url="{Binding IconUrl}"
@@ -224,9 +224,9 @@
           <StackPanel Spacing="12">
 
             <StackPanel Orientation="Horizontal" Spacing="10">
-              <Border Width="44" Height="44" CornerRadius="12" Background="#1E2740">
+              <Border Width="44" Height="44" CornerRadius="12" Background="#2A211B">
                 <TextBlock Text="{Binding SelectedProject.Title, Converter={x:Static vm:TextConverters.FirstLetter}}"
-                           FontWeight="Bold" FontSize="17" Foreground="#C4B5FD"
+                           FontWeight="Bold" FontSize="17" Foreground="{StaticResource AccentHotBrush}"
                            HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
               <StackPanel VerticalAlignment="Center" Spacing="3">

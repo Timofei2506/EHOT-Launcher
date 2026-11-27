@@ -46,7 +46,7 @@
         <Style Selector="^:pointerover /template/ Border#Root">
           <Setter Property="Background" Value="{StaticResource SurfaceHighBrush}" />
           <Setter Property="BorderBrush" Value="{StaticResource AccentBlueBrush}" />
-          <Setter Property="BoxShadow" Value="0 12 32 -8 #4438BDF8" />
+          <Setter Property="BoxShadow" Value="0 12 32 -8 #40F07832" />
         </Style>
         <Style Selector="^:pressed /template/ Border#Root">
           <Setter Property="Background" Value="{StaticResource SecondaryBrush}" />
@@ -63,16 +63,16 @@
         <Setter Property="BorderBrush" Value="#00000000" />
         <Setter Property="Foreground" Value="#FFFFFF" />
         <Style Selector="^ /template/ Border#Root">
-          <Setter Property="BoxShadow" Value="0 12 30 -10 #9938BDF8" />
+          <Setter Property="BoxShadow" Value="0 12 30 -10 #59F07832" />
         </Style>
         <Style Selector="^:pointerover /template/ Border#Root">
           <Setter Property="Background" Value="{StaticResource AccentGradientHorizontal}" />
-          <Setter Property="BoxShadow" Value="0 18 40 -12 #B338BDF8" />
+          <Setter Property="BoxShadow" Value="0 18 40 -12 #66F07832" />
           <Setter Property="BorderBrush" Value="rgba(255,255,255,0.35)" />
         </Style>
         <Style Selector="^:pressed /template/ Border#Root">
           <Setter Property="Opacity" Value="0.9" />
-          <Setter Property="BoxShadow" Value="0 6 16 -6 #4438BDF8" />
+          <Setter Property="BoxShadow" Value="0 6 16 -6 #40F07832" />
         </Style>
       </ControlTheme>
 
@@ -124,7 +124,7 @@
         <Setter Property="FontSize" Value="13" />
         <Setter Property="MinHeight" Value="38" />
         <Setter Property="CaretBrush" Value="{StaticResource AccentBlueBrush}" />
-        <Setter Property="SelectionBrush" Value="#5538BDF8" />
+        <Setter Property="SelectionBrush" Value="#44F07832" />
         <Setter Property="SelectionForegroundBrush" Value="{StaticResource TextBrush}" />
         <Setter Property="PlaceholderForeground" Value="#7C8AA0" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -195,8 +195,8 @@
 
       <!-- Кнопка-«таблетка»: для строк списков (Установить, Открыть…). -->
       <ControlTheme x:Key="EhotPillButton" TargetType="Button" BasedOn="{StaticResource EhotButton}">
-        <Setter Property="Background" Value="#1A2033" />
-        <Setter Property="BorderBrush" Value="#2A3350" />
+        <Setter Property="Background" Value="#1E2028" />
+        <Setter Property="BorderBrush" Value="#333641" />
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
         <Setter Property="Padding" Value="14,6" />
         <Setter Property="CornerRadius" Value="999" />
@@ -232,7 +232,7 @@
           <Setter Property="Background" Value="#0DFFFFFF" />
         </Style>
         <Style Selector="^:checked /template/ Border#Root">
-          <Setter Property="Background" Value="#1A8B5CF6" />
+          <Setter Property="Background" Value="#1AF07832" />
         </Style>
         <Style Selector="^:checked /template/ Border#Indicator">
           <Setter Property="Opacity" Value="1" />

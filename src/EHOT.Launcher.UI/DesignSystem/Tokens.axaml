@@ -2,28 +2,28 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
   <!-- ============================================================
-       EHOT Launcher · дизайн-токены
-       Все цвета, радиусы, отступы и типографика — только отсюда.
+       EHOT Launcher · дизайн-токены v2 (концепт: тёмный + оранжевый)
        ============================================================ -->
 
-  <!-- Палитра (базовая из ТЗ) -->
-  <Color x:Key="ColorBackground">#0B0D13</Color>
-  <Color x:Key="ColorSecondary">#151923</Color>
-  <Color x:Key="ColorSurface">#20263A</Color>
-  <Color x:Key="ColorPurple">#8B5CF6</Color>
-  <Color x:Key="ColorBlue">#38BDF8</Color>
-  <Color x:Key="ColorText">#F8FAFC</Color>
-  <Color x:Key="ColorTextSecondary">#94A3B8</Color>
+  <!-- Палитра из ТЗ/концепта -->
+  <Color x:Key="ColorBackground">#111216</Color>
+  <Color x:Key="ColorSecondary">#191B22</Color>
+  <Color x:Key="ColorSurface">#22242D</Color>
+  <Color x:Key="ColorSurfaceHigh">#262932</Color>
+  <Color x:Key="ColorAccent">#F07832</Color>
+  <Color x:Key="ColorAccentHot">#FF9A45</Color>
+  <Color x:Key="ColorText">#F5F5F5</Color>
+  <Color x:Key="ColorTextSecondary">#999BA6</Color>
+  <Color x:Key="ColorTextMuted">#6E7078</Color>
 
   <!-- Производные -->
-  <Color x:Key="ColorSurfaceHigh">#272E45</Color>
-  <Color x:Key="ColorBorder">#2A3147</Color>
-  <Color x:Key="ColorBorderSoft">#1E2434</Color>
-  <Color x:Key="ColorSuccess">#34D399</Color>
-  <Color x:Key="ColorWarning">#FBBF24</Color>
-  <Color x:Key="ColorDanger">#F87171</Color>
-  <Color x:Key="ColorPurpleSoft">#1C1930</Color>
-  <Color x:Key="ColorBlueSoft">#0F2333</Color>
+  <Color x:Key="ColorBorder">#2C2F38</Color>
+  <Color x:Key="ColorBorderSoft">#22252D</Color>
+  <Color x:Key="ColorSuccess">#3DD68C</Color>
+  <Color x:Key="ColorWarning">#FFC24B</Color>
+  <Color x:Key="ColorDanger">#F25555</Color>
+  <Color x:Key="ColorAccentSoft">#2A211B</Color>
+  <Color x:Key="ColorAccentDeep">#B6531F</Color>
 
   <!-- Кисти -->
   <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource ColorBackground}" />
@@ -34,75 +34,74 @@
   <SolidColorBrush x:Key="BorderSoftBrush" Color="{StaticResource ColorBorderSoft}" />
   <SolidColorBrush x:Key="TextBrush" Color="{StaticResource ColorText}" />
   <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource ColorTextSecondary}" />
-  <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource ColorPurple}" />
-  <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource ColorBlue}" />
+  <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource ColorTextMuted}" />
+  <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource ColorAccent}" />
+  <SolidColorBrush x:Key="AccentHotBrush" Color="{StaticResource ColorAccentHot}" />
+  <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource ColorAccentSoft}" />
+  <SolidColorBrush x:Key="AccentBlueBrush" Color="{StaticResource ColorAccentHot}" />
   <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource ColorSuccess}" />
   <SolidColorBrush x:Key="WarningBrush" Color="{StaticResource ColorWarning}" />
   <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource ColorDanger}" />
   <SolidColorBrush x:Key="TransparentBrush" Color="Transparent" />
 
-  <!-- Стеклянные эффекты (acrylic/glassmorphism) -->
-  <SolidColorBrush x:Key="GlassBrush" Color="#140B0D13" />
-  <SolidColorBrush x:Key="GlassSurfaceBrush" Color="#180B0D13" />
-  <SolidColorBrush x:Key="GlassCardBrush" Color="#1A0B0D13" />
-  <SolidColorBrush x:Key="GlassSidebarBrush" Color="#160B0D13" />
-  <SolidColorBrush x:Key="GlassTitleBarBrush" Color="#140B0D13" />
+  <!-- Плоские поверхности (без «стекла»), градиенты только для акцента -->
+  <SolidColorBrush x:Key="GlassBrush" Color="#191B22" />
+  <SolidColorBrush x:Key="GlassSurfaceBrush" Color="#1E2028" />
+  <SolidColorBrush x:Key="GlassCardBrush" Color="#22242D" />
+  <SolidColorBrush x:Key="GlassSidebarBrush" Color="#171920" />
+  <SolidColorBrush x:Key="GlassTitleBarBrush" Color="#111216" />
 
-  <!-- Стеклянная обводка -->
-  <SolidColorBrush x:Key="GlassBorderBrush" Color="#3A4155" />
-  <SolidColorBrush x:Key="GlassBorderSoftBrush" Color="#262B38" />
-
-  <!-- Свечение для акцентов -->
-  <SolidColorBrush x:Key="AccentGlowBrush" Color="#8B5CF6" />
-
+  <SolidColorBrush x:Key="GlassBorderBrush" Color="#333641" />
+  <SolidColorBrush x:Key="GlassBorderSoftBrush" Color="#262932" />
+  <SolidColorBrush x:Key="AccentGlowBrush" Color="{StaticResource ColorAccent}" />
 
   <!-- Градиенты -->
   <LinearGradientBrush x:Key="AccentGradient" StartPoint="0%,0%" EndPoint="100%,100%">
-    <GradientStop Color="#8B5CF6" Offset="0" />
-    <GradientStop Color="#6366F1" Offset="0.55" />
-    <GradientStop Color="#38BDF8" Offset="1" />
+    <GradientStop Color="#FF9A45" Offset="0" />
+    <GradientStop Color="#F07832" Offset="0.55" />
+    <GradientStop Color="#D65A24" Offset="1" />
   </LinearGradientBrush>
 
   <LinearGradientBrush x:Key="AccentGradientHorizontal" StartPoint="0%,50%" EndPoint="100%,50%">
-    <GradientStop Color="#8B5CF6" Offset="0" />
-    <GradientStop Color="#38BDF8" Offset="1" />
+    <GradientStop Color="#F07832" Offset="0" />
+    <GradientStop Color="#FF9A45" Offset="1" />
   </LinearGradientBrush>
 
   <LinearGradientBrush x:Key="HeroGradient" StartPoint="0%,0%" EndPoint="100%,100%">
-    <GradientStop Color="#221B3E" Offset="0" />
-    <GradientStop Color="#141A2C" Offset="0.6" />
-    <GradientStop Color="#0E1220" Offset="1" />
+    <GradientStop Color="#241B16" Offset="0" />
+    <GradientStop Color="#191B22" Offset="0.55" />
+    <GradientStop Color="#14151B" Offset="1" />
   </LinearGradientBrush>
 
   <LinearGradientBrush x:Key="CardGradient" StartPoint="0%,0%" EndPoint="100%,100%">
-    <GradientStop Color="#20263A" Offset="0" />
-    <GradientStop Color="#181D2C" Offset="1" />
+    <GradientStop Color="#23252E" Offset="0" />
+    <GradientStop Color="#1F212A" Offset="1" />
   </LinearGradientBrush>
 
   <LinearGradientBrush x:Key="GlassOverlay" StartPoint="0%,0%" EndPoint="100%,100%">
-    <GradientStop Color="#26FFFFFF" Offset="0" />
-    <GradientStop Color="#08FFFFFF" Offset="1" />
+    <GradientStop Color="#18FFFFFF" Offset="0" />
+    <GradientStop Color="#06FFFFFF" Offset="1" />
   </LinearGradientBrush>
 
   <LinearGradientBrush x:Key="SidebarGradient" StartPoint="0%,0%" EndPoint="100%,100%">
-    <GradientStop Color="#12151F" Offset="0" />
-    <GradientStop Color="#0D1017" Offset="1" />
+    <GradientStop Color="#181922" Offset="0" />
+    <GradientStop Color="#14151C" Offset="1" />
   </LinearGradientBrush>
 
   <!-- Радиусы -->
-  <CornerRadius x:Key="RadiusSm">8</CornerRadius>
-  <CornerRadius x:Key="RadiusMd">12</CornerRadius>
+  <CornerRadius x:Key="RadiusSm">10</CornerRadius>
+  <CornerRadius x:Key="RadiusMd">14</CornerRadius>
   <CornerRadius x:Key="RadiusLg">18</CornerRadius>
   <CornerRadius x:Key="RadiusXl">24</CornerRadius>
   <CornerRadius x:Key="RadiusPill">999</CornerRadius>
 
-  <x:Double x:Key="RadiusSmValue">8</x:Double>
-  <x:Double x:Key="RadiusMdValue">12</x:Double>
+  <x:Double x:Key="RadiusSmValue">10</x:Double>
+  <x:Double x:Key="RadiusMdValue">14</x:Double>
 
-  <!-- Тени -->
-  <BoxShadows x:Key="ShadowSoft">0 8 24 0 #40000000</BoxShadows>
-  <BoxShadows x:Key="ShadowCard">0 10 30 0 #55000000</BoxShadows>
-  <BoxShadows x:Key="ShadowAccent">0 12 32 -6 #668B5CF6</BoxShadows>
+  <!-- Тени: акценты светятся, карточки плоские -->
+  <BoxShadows x:Key="ShadowSoft">0 8 22 0 #38000000</BoxShadows>
+  <BoxShadows x:Key="ShadowCard">0 12 26 0 #40000000</BoxShadows>
+  <BoxShadows x:Key="ShadowAccent">0 10 30 -8 #66F07832</BoxShadows>
 
   <!-- Типографика -->
   <x:Double x:Key="FontDisplay">40</x:Double>
@@ -113,25 +112,30 @@
   <x:Double x:Key="FontSmall">12</x:Double>
   <x:Double x:Key="FontTiny">11</x:Double>
 
-  <!-- Иконки (геометрия 24×24, stroke-подобные контуры) -->
+  <!-- Иконки (геометрия 24×24) -->
   <StreamGeometry x:Key="IconHome">M12 3.2 3.6 10v10.2h5.6v-6h5.6v6h5.6V10z</StreamGeometry>
   <StreamGeometry x:Key="IconPlay">M8 5.2 18.6 12 8 18.8z</StreamGeometry>
+  <StreamGeometry x:Key="IconCube">M12 2.6 20.2 7.3v9.4L12 21.4 3.8 16.7V7.3zM12 2.6v18.8M3.8 7.3l8.2 4.7 8.2-4.7</StreamGeometry>
   <StreamGeometry x:Key="IconLayers">M12 3 3 7.5 12 12l9-4.5zM3 12.2l9 4.5 9-4.5M3 16.8l9 4.5 9-4.5</StreamGeometry>
   <StreamGeometry x:Key="IconPuzzle">M9 3h3v2.2a1.8 1.8 0 1 0 3.6 0V3H19a1 1 0 0 1 1 1v4.4h-2.2a1.8 1.8 0 1 0 0 3.6H20V20a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-8h2.2a1.8 1.8 0 1 0 0-3.6H4V4a1 1 0 0 1 1-1z</StreamGeometry>
   <StreamGeometry x:Key="IconBox">M12 3 4 7v10l8 4 8-4V7zM4 7l8 4 8-4M12 11v10</StreamGeometry>
   <StreamGeometry x:Key="IconBrush">M4 20c0-3 2-4 3-6l9-9 3 3-9 9c-2 1-3 3-6 3zM14 6l4 4</StreamGeometry>
   <StreamGeometry x:Key="IconSparkle">M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.9 2.1L22 19l-2.1.9L19 22l-.9-2.1L16 19l2.1-.9z</StreamGeometry>
   <StreamGeometry x:Key="IconMap">M9 4 3 6.5V20l6-2.5 6 2.5 6-2.5V4l-6 2.5zM9 4v13.5M15 6.5V20</StreamGeometry>
+  <StreamGeometry x:Key="IconGallery">M4 5h16a1.4 1.4 0 0 1 1.4 1.4v11.2A1.4 1.4 0 0 1 20 19H4a1.4 1.4 0 0 1-1.4-1.4V6.4A1.4 1.4 0 0 1 4 5zM4 15l4.5-4.2 4.2 3.7L17.4 9 21 12.8M8.2 9.2a1.2 1.2 0 1 0 0-2.4 1.2 1.2 0 0 0 0 2.4z</StreamGeometry>
+  <StreamGeometry x:Key="IconNews">M5 4h11a1 1 0 0 1 1 1v14M5 4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h11M8 8h5M8 12h5M8 16h3M17 8h2a1 1 0 0 1 1 1v10a2 2 0 0 1-2 2</StreamGeometry>
+  <StreamGeometry x:Key="IconServer">M4 5.5h16a1.4 1.4 0 0 1 1.4 1.4v3.2a1.4 1.4 0 0 1-1.4 1.4H4a1.4 1.4 0 0 1-1.4-1.4V6.9A1.4 1.4 0 0 1 4 5.5zM4 14h16a1.4 1.4 0 0 1 1.4 1.4v3.2a1.4 1.4 0 0 1-1.4 1.4H4a1.4 1.4 0 0 1-1.4-1.4v-3.2A1.4 1.4 0 0 1 4 14zM7.2 8.6h.1M7.2 17.1h.1</StreamGeometry>
+  <StreamGeometry x:Key="IconStar">M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z</StreamGeometry>
   <StreamGeometry x:Key="IconNetwork">M12 3a2.2 2.2 0 1 1 0 4.4A2.2 2.2 0 0 1 12 3zM5 16.6a2.2 2.2 0 1 1 0 4.4 2.2 2.2 0 0 1 0-4.4zM19 16.6a2.2 2.2 0 1 1 0 4.4 2.2 2.2 0 0 1 0-4.4zM12 7.4v5.2M12 12.6 6.4 16.4M12 12.6l5.6 3.8</StreamGeometry>
   <StreamGeometry x:Key="IconUser">M12 4a4 4 0 1 1 0 8 4 4 0 0 1 0-8zM4.5 20.2c0-3.6 3.4-5.8 7.5-5.8s7.5 2.2 7.5 5.8</StreamGeometry>
   <StreamGeometry x:Key="IconDownload">M12 3.5v10.8M8.2 10.6 12 14.4l3.8-3.8M4.5 16.5v2.2a1.8 1.8 0 0 0 1.8 1.8h11.4a1.8 1.8 0 0 0 1.8-1.8v-2.2</StreamGeometry>
   <StreamGeometry x:Key="IconSettings">M12 8.6a3.4 3.4 0 1 1 0 6.8 3.4 3.4 0 0 1 0-6.8zM19.2 12c0-.5 0-1-.1-1.4l2-1.4-1.9-3.3-2.3.9c-.7-.5-1.4-.9-2.2-1.2L14.3 3h-3.9l-.4 2.6c-.8.3-1.5.7-2.2 1.2l-2.3-.9-1.9 3.3 2 1.4c-.1.4-.1.9-.1 1.4s0 1 .1 1.4l-2 1.4 1.9 3.3 2.3-.9c.7.5 1.4.9 2.2 1.2l.4 2.6h3.9l.4-2.6c.8-.3 1.5-.7 2.2-1.2l2.3.9 1.9-3.3-2-1.4c.1-.4.1-.9.1-1.4z</StreamGeometry>
-  <StreamGeometry x:Key="IconInfo">M12 3.4a8.6 8.6 0 1 1 0 17.2 8.6 8.6 0 0 1 0-17.2zM12 10.2v6M12 7.4v.2</StreamGeometry>  <StreamGeometry x:Key="IconImport">M3 3v18h18V3H3zm2 16V5h14l-.002.156.002.156V19H5zM7 5h10a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1m0 2h10v10H7z</StreamGeometry>
+  <StreamGeometry x:Key="IconInfo">M12 3.4a8.6 8.6 0 1 1 0 17.2 8.6 8.6 0 0 1 0-17.2zM12 10.2v6M12 7.4v.2</StreamGeometry>
+  <StreamGeometry x:Key="IconImport">M3 3v18h18V3H3zm2 16V5h14l-.002.156.002.156V19H5zM7 5h10a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1m0 2h10v10H7z</StreamGeometry>
   <StreamGeometry x:Key="IconSearch">M10.6 4a6.6 6.6 0 1 1 0 13.2 6.6 6.6 0 0 1 0-13.2zM15.4 15.4 20 20</StreamGeometry>
   <StreamGeometry x:Key="IconBell">M12 3.6a5.4 5.4 0 0 1 5.4 5.4v4l1.6 3H5l1.6-3v-4A5.4 5.4 0 0 1 12 3.6zM9.6 19.2a2.5 2.5 0 0 0 4.8 0</StreamGeometry>
   <StreamGeometry x:Key="IconMinimize">M5 12h14</StreamGeometry>
   <StreamGeometry x:Key="IconMaximize">M6 6h12v12H6z</StreamGeometry>
-  <!-- Аккуратные глифы окна: одинаковый визуальный вес у всех трёх кнопок -->
   <StreamGeometry x:Key="IconWinMinimize">M5 11h14</StreamGeometry>
   <StreamGeometry x:Key="IconWinMaximize">M5.5 5.5h13v13h-13z</StreamGeometry>
   <StreamGeometry x:Key="IconWinRestore">M5 8.5h10.5v10.5H5zM8.5 8.5V5H19v10.5h-3.5</StreamGeometry>
@@ -149,10 +153,7 @@
   <StreamGeometry x:Key="IconExternal">M14 4h6v6M20 4l-8.4 8.4M18 14v4.6A1.4 1.4 0 0 1 16.6 20H5.4A1.4 1.4 0 0 1 4 18.6V7.4A1.4 1.4 0 0 1 5.4 6H10</StreamGeometry>
   <StreamGeometry x:Key="IconPause">M8.6 5h2.2v14H8.6zM13.2 5h2.2v14h-2.2z</StreamGeometry>
 
-  <!-- Единый размер иконки -->
   <x:Double x:Key="IconSize">18</x:Double>
-
-  <!-- Задержки стаггерирования (для появления элементов по очереди) -->
   <x:Double x:Key="StaggerDelay0">0</x:Double>
   <x:Double x:Key="StaggerDelay1">0.06</x:Double>
   <x:Double x:Key="StaggerDelay2">0.12</x:Double>

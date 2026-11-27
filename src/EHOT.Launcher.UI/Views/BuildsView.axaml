@@ -1,0 +1,142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
+             xmlns:conv="using:EHOT.Launcher.UI.Converters"
+             x:Class="EHOT.Launcher.UI.Views.BuildsView"
+             x:DataType="vm:BuildsViewModel">
+
+  <UserControl.Resources>
+    <conv:SelectedBackgroundConverter x:Key="SelectedBackground" />
+    <conv:BoolToFavoriteConverter x:Key="Favorite" />
+  </UserControl.Resources>
+
+  <Grid>
+    <Grid RowDefinitions="Auto,*" RowSpacing="14">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+        <StackPanel Spacing="4">
+          <TextBlock Text="Сборки" Classes="h1" />
+          <TextBlock Text="Ваши профили-инстансы: память, версия, клон и удаление — всё реальное, данные на диске" Classes="body" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="ghost" Command="{Binding RefreshCommand}" VerticalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="8">
+            <Path Data="{StaticResource IconRefresh}" Classes="icon" Width="15" Height="15" />
+            <TextBlock Text="Обновить" FontSize="12.5" VerticalAlignment="Center" />
+          </StackPanel>
+        </Button>
+      </Grid>
+
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <Grid>
+          <ItemsControl ItemsSource="{Binding Items}" IsVisible="{Binding HasItems}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <UniformGrid Columns="2" />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:BuildCardViewModel">
+                <Border Classes="card" Margin="0,0,12,12" Padding="16"
+                        BorderBrush="{Binding IsCurrent, Converter={StaticResource SelectedBackground}, ConverterParameter=border}"
+                        BorderThickness="1.5">
+                  <StackPanel Spacing="12">
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="14">
+                      <Border Width="56" Height="56" CornerRadius="14" Background="{StaticResource AccentGradient}">
+                        <TextBlock Text="{Binding Initial}" FontSize="24" FontWeight="Bold" Foreground="White"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Border>
+                      <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                          <TextBlock Text="{Binding Name}" FontSize="14.5" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                          <Border Grid.Column="1" Classes="chip" Padding="7,2" IsVisible="{Binding IsModpack}">
+                            <TextBlock Text="Modrinth" FontSize="9.5" Foreground="{StaticResource AccentHotBrush}" />
+                          </Border>
+                        </Grid>
+                        <TextBlock Text="{Binding DisplayVersion}" FontSize="11.5" Foreground="{StaticResource AccentHotBrush}" />
+                        <TextBlock Text="{Binding AccountName}" Classes="caption" TextTrimming="CharacterEllipsis" />
+                      </StackPanel>
+                      <Button Grid.Column="2" Classes="icon" VerticalAlignment="Top" ToolTip.Tip="В избранное"
+                              Command="{Binding $parent[ItemsControl].((vm:BuildsViewModel)DataContext).ToggleFavoriteCommand}"
+                              CommandParameter="{Binding}">
+                        <Path Data="{StaticResource IconStar}" Stroke="{Binding IsFavorite, Converter={StaticResource Favorite}}"
+                              StrokeThickness="1.6" Fill="Transparent" Width="20" Height="20"
+                              HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Button>
+                    </Grid>
+
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="{Binding AllocatedMemoryMb, StringFormat='{}{0} МБ'}" Classes="caption" />
+                      <TextBlock Text="·" Classes="caption" />
+                      <TextBlock Text="{Binding LastLaunchLabel}" Classes="caption" />
+                    </StackPanel>
+
+                    <Grid ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                      <Button Classes="primary" Command="{Binding $parent[ItemsControl].((vm:BuildsViewModel)DataContext).UseCommand}"
+                              CommandParameter="{Binding}" Content="Использовать"
+                              IsVisible="{Binding !IsCurrent}" />
+                      <Border Grid.Column="0" Classes="chip" Padding="10,6" HorizontalAlignment="Left"
+                              IsVisible="{Binding IsCurrent}" BorderBrush="{StaticResource AccentBrush}">
+                        <TextBlock Text="Текущая сборка" FontSize="11.5" Foreground="{StaticResource AccentHotBrush}" />
+                      </Border>
+                      <Button Grid.Column="1" Classes="icon" ToolTip.Tip="Клонировать"
+                              Command="{Binding $parent[ItemsControl].((vm:BuildsViewModel)DataContext).OpenCloneEditorCommand}"
+                              CommandParameter="{Binding}">
+                        <Path Data="{StaticResource IconCopy}" Classes="icon" Width="15" Height="15" />
+                      </Button>
+                      <Button Grid.Column="2" Classes="icon" ToolTip.Tip="Открыть папку инстанса"
+                              Command="{Binding $parent[ItemsControl].((vm:BuildsViewModel)DataContext).OpenFolderCommand}"
+                              CommandParameter="{Binding}">
+                        <Path Data="{StaticResource IconFolder}" Classes="icon" Width="15" Height="15" />
+                      </Button>
+                      <Button Grid.Column="3" Classes="icon" ToolTip.Tip="Удалить запись сборки"
+                              Command="{Binding $parent[ItemsControl].((vm:BuildsViewModel)DataContext).AskDeleteCommand}"
+                              CommandParameter="{Binding}">
+                        <Path Data="{StaticResource IconTrash}" Classes="icon" Width="15" Height="15" />
+                      </Button>
+                    </Grid>
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <StackPanel IsVisible="{Binding !HasItems}" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
+            <Image Source="avares://EHOT.Launcher/Assets/mascot-raccoon.png" Width="150" Height="150" Stretch="Uniform" />
+            <TextBlock Text="Сборок пока нет" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" />
+            <TextBlock Text="Нажмите «Играть» — профиль для запуска создастся автоматически." Classes="caption" HorizontalAlignment="Center" />
+            <Button Classes="primary" Command="{Binding OpenHomeCommand}" Content="Открыть «Играть»" HorizontalAlignment="Center" />
+          </StackPanel>
+        </Grid>
+      </ScrollViewer>
+    </Grid>
+
+    <!-- Клонирование -->
+    <Border IsVisible="{Binding IsCloneEditorOpen}" Background="#B8111216" ZIndex="20">
+      <Border Classes="card glass-card" Width="460" Padding="20" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Spacing="12">
+          <TextBlock Text="Клонировать сборку" Classes="h3" />
+          <TextBox Text="{Binding CloneName, Mode=TwoWay}" PlaceholderText="Название новой сборки" />
+          <TextBlock Text="Файлы игры скачаются в новую папку инстанса при первом запуске." Classes="caption" />
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Classes="ghost" Command="{Binding CloseCloneEditorCommand}" Content="Отмена" />
+            <Button Classes="primary" Command="{Binding ConfirmCloneCommand}" Content="Клонировать" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Border>
+
+    <!-- Подтверждение удаления записи (файлы на диске остаются) -->
+    <Border IsVisible="{Binding ItemPendingDelete, Converter={x:Static ObjectConverters.IsNotNull}}" Background="#CC111216" ZIndex="30">
+      <Border Classes="card glass-card" Width="460" Padding="18" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <StackPanel Spacing="12">
+          <TextBlock Text="Удалить запись сборки?" Classes="h3" />
+          <TextBlock Text="{Binding ItemPendingDelete.Name}" FontSize="13" FontWeight="SemiBold" />
+          <TextBlock Text="Сама папка инстанса и сохранения на диске останутся нетронутыми." Classes="caption" />
+          <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+            <Button Classes="ghost" Command="{Binding CancelDeleteCommand}" Content="Отмена" />
+            <Button Classes="danger" Command="{Binding ConfirmDeleteCommand}" Content="Удалить запись" />
+          </StackPanel>
+        </StackPanel>
+      </Border>
+    </Border>
+  </Grid>
+</UserControl>

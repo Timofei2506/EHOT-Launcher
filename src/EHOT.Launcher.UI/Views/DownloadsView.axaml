@@ -59,7 +59,7 @@
                 <ItemsControl.ItemTemplate>
                   <DataTemplate x:DataType="dl:DownloadSnapshot">
                     <Border CornerRadius="12" Padding="13,11" Margin="0,0,0,7" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
-                            BorderBrush="#1E2739" BorderThickness="1">
+                            BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
                       <StackPanel Spacing="7">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
                           <TextBlock Text="{Binding DisplayName}" FontSize="12.5" FontWeight="SemiBold"
@@ -93,6 +93,8 @@
 
               <StackPanel Spacing="6" VerticalAlignment="Center" HorizontalAlignment="Center"
                           IsVisible="{Binding !Active.Count}">
+                <Image Source="avares://EHOT.Launcher/Assets/mascot-raccoon.png" Width="96" Height="96"
+                       Stretch="Uniform" HorizontalAlignment="Center" Opacity="0.85" />
                 <TextBlock Text="Очередь пуста" Classes="h3" HorizontalAlignment="Center" />
                 <TextBlock Classes="caption" TextAlignment="Center" MaxWidth="280" TextWrapping="Wrap"
                            Text="Установка версии, мода или сборки появится здесь: прогресс, скорость и отмена." />
@@ -133,6 +135,8 @@
 
               <StackPanel Spacing="6" VerticalAlignment="Center" HorizontalAlignment="Center"
                           IsVisible="{Binding !History.Count}">
+                <Image Source="avares://EHOT.Launcher/Assets/mascot-raccoon.png" Width="96" Height="96"
+                       Stretch="Uniform" HorizontalAlignment="Center" Opacity="0.85" />
                 <TextBlock Text="Пока ничего не скачано" Classes="h3" HorizontalAlignment="Center" />
                 <TextBlock Classes="caption" TextAlignment="Center" MaxWidth="260" TextWrapping="Wrap"
                            Text="Здесь появятся завершённые загрузки с датой и временем." />

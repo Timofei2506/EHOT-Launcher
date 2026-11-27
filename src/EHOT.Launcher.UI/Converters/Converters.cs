@@ -53,10 +53,10 @@ public sealed class ToastKindBrushConverter : IValueConverter
     {
         var color = value switch
         {
-            ToastKind.Success => "#34D399",
-            ToastKind.Warning => "#FBBF24",
-            ToastKind.Error => "#F87171",
-            _ => "#38BDF8"
+            ToastKind.Success => "#3DD68C",
+            ToastKind.Warning => "#FFC24B",
+            ToastKind.Error => "#F25555",
+            _ => "#FF9A45"
         };
 
         return new SolidColorBrush(Color.Parse(color));
@@ -111,6 +111,34 @@ public sealed class SpeedConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         => value is double d && d > 0 ? BytesToHumanConverter.Format((long)d) + "/с" : "—";
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>bool (online) → кириллический статус-цвет: онлайн зелёный, офлайн красный.</summary>
+public sealed class BoolToOnlineBrushConverter : IValueConverter
+{
+    public static BoolToOnlineBrushConverter Instance { get; } = new();
+    private static readonly IBrush Online = new SolidColorBrush(Color.Parse("#3DD68C"));
+    private static readonly IBrush Offline = new SolidColorBrush(Color.Parse("#F25555"));
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is bool b && b ? Online : Offline;
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}
+
+/// <summary>bool (избранное) → оранжевый цвет для звезды либо приглушённый для обычной.</summary>
+public sealed class BoolToFavoriteConverter : IValueConverter
+{
+    public static BoolToFavoriteConverter Instance { get; } = new();
+    private static readonly IBrush Favorite = new SolidColorBrush(Color.Parse("#FF9A45"));
+    private static readonly IBrush Normal = new SolidColorBrush(Color.Parse("#6E7078"));
+
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is bool b && b ? Favorite : Normal;
 
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotSupportedException();

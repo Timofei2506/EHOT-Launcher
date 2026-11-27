@@ -1,19 +1,19 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
-             xmlns:conv2="using:EHOT.Launcher.UI.Converters"
+        xmlns:conv2="using:EHOT.Launcher.UI.Converters"
         xmlns:conv="using:EHOT.Launcher.UI.Converters"
         xmlns:services="using:EHOT.Launcher.UI.Services"
         x:Class="EHOT.Launcher.UI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="EHOT Launcher"
-        Width="1280" Height="820"
-        MinWidth="980" MinHeight="640"
+        Width="1320" Height="800"
+        MinWidth="1040" MinHeight="680"
         Background="{StaticResource BackgroundBrush}"
         ExtendClientAreaToDecorationsHint="True"
         ExtendClientAreaTitleBarHeightHint="-1"
         WindowDecorations="BorderOnly"
-        TransparencyLevelHint="Mica, Blur, None"
+        TransparencyLevelHint="None"
         Icon="avares://EHOT.Launcher/Assets/ehot.ico"
         Loaded="OnLoaded">
 
@@ -27,28 +27,24 @@
   <Grid Name="RootGrid" RowDefinitions="Auto,*" Classes="window-load">
 
     <!-- ══════════════ Titlebar ══════════════ -->
-    <Grid Grid.Row="0" Height="48" Background="{StaticResource GlassTitleBarBrush}" ColumnDefinitions="Auto,*,Auto" Panel.ZIndex="10">
-      <StackPanel Orientation="Horizontal" Spacing="10" Margin="20,0,0,0" VerticalAlignment="Center">
-        <Border Width="24" Height="24" CornerRadius="8" Background="{StaticResource AccentGradient}">
-          <TextBlock Text="E" FontSize="13" FontWeight="Bold" Foreground="White"
-                     HorizontalAlignment="Center" VerticalAlignment="Center" />
-        </Border>
-        <TextBlock Text="EHOT Launcher" FontSize="12.5" FontWeight="SemiBold" LetterSpacing="0.2"
+    <Grid Grid.Row="0" Height="46" Background="{StaticResource GlassTitleBarBrush}" ColumnDefinitions="Auto,*,Auto" Panel.ZIndex="10">
+      <StackPanel Orientation="Horizontal" Spacing="9" Margin="16,0,0,0" VerticalAlignment="Center">
+        <Button Classes="icon" Command="{Binding NavigateCommand}" CommandParameter="home" ToolTip.Tip="На главный экран" Padding="0" Background="Transparent" BorderThickness="0">
+          <Image Source="avares://EHOT.Launcher/Assets/ehot-logo-orange.png" Width="26" Height="26" Stretch="UniformToFill">
+            <Image.Clip>
+              <RectangleGeometry RadiusX="7" RadiusY="7" Rect="0 0 26 26" />
+            </Image.Clip>
+          </Image>
+        </Button>
+        <TextBlock Text="EHOT Launcher" FontSize="13" FontWeight="Bold"
                    Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" />
-        <Border Classes="chip" Padding="8,2" VerticalAlignment="Center" Background="{StaticResource AccentGradient}">
-          <TextBlock Text="BETA" FontSize="9" FontWeight="Bold" Foreground="{StaticResource AccentBlueBrush}" />
-        </Border>
       </StackPanel>
 
-      <!-- Перетаскивание окна -->
       <Border Grid.Column="1" Background="Transparent" PointerPressed="OnTitleBarPressed" />
 
-      <!-- Кнопки окна: единая сетка 46×32, тонкий глиф по центру, мягкий ховер.
-           Раньше три кнопки были разного размера с разной толщиной штриха и «прыгали» под курсором. -->
-      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch" Margin="0,0,8,0"
-                  Spacing="0" Classes="window-buttons">
+      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch" Margin="0,0,8,0" Spacing="0">
         <Button Classes="window" Click="OnMinimizeClick" ToolTip.Tip="Свернуть">
-          <Path Data="{StaticResource IconWinMinimize}" x:Name="MinGlyph" />
+          <Path Data="{StaticResource IconWinMinimize}" />
         </Button>
         <Button Classes="window" Click="OnMaximizeClick" ToolTip.Tip="Развернуть во весь экран">
           <Path Data="{StaticResource IconWinMaximize}" x:Name="MaxGlyph" />
@@ -60,19 +56,19 @@
     </Grid>
 
     <!-- ══════════════ Основная область ══════════════ -->
-    <Grid Grid.Row="1" ColumnDefinitions="236,*,300">
+    <Grid Grid.Row="1" ColumnDefinitions="226,*">
 
       <!-- Sidebar -->
       <Border Grid.Column="0" Background="{StaticResource GlassSidebarBrush}" BorderBrush="{StaticResource GlassBorderSoftBrush}" BorderThickness="0,0,1,0">
         <Grid RowDefinitions="Auto,*,Auto">
 
-          <StackPanel Grid.Row="0" Margin="16,18,16,10" Spacing="12">
+          <StackPanel Grid.Row="0" Margin="12,14,12,8" Spacing="2">
             <Button Command="{Binding ToggleSearchCommand}" Classes="ghost"
-                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="11,8">
+                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="11,8" Background="{StaticResource GlassCardBrush}">
               <Grid ColumnDefinitions="Auto,*,Auto">
-                <Path Data="{StaticResource IconSearch}" Classes="icon" />
-                <TextBlock Grid.Column="1" Text="Поиск по каталогу" Margin="9,0,0,0"
-                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12.5" VerticalAlignment="Center" />
+                <Path Data="{StaticResource IconSearch}" Classes="icon" Width="15" Height="15" />
+                <TextBlock Grid.Column="1" Text="Поиск в каталоге" Margin="9,0,0,0"
+                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12" VerticalAlignment="Center" />
                 <Border Grid.Column="2" Classes="chip" Padding="6,1">
                   <TextBlock Text="⌘K" FontSize="9.5" Foreground="{StaticResource TextSecondaryBrush}" />
                 </Border>
@@ -80,77 +76,51 @@
             </Button>
           </StackPanel>
 
-          <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="10,4,10,0">
-            <StackPanel>
-              <!-- Пункты рельса: группы «Игра», «Каталог», «Вместе», «Система» -->
-              <ItemsControl ItemsSource="{Binding NavigationItems}">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate x:DataType="vm:NavigationItemViewModel">
-                    <StackPanel>
-                      <!-- Заголовок группы повторяется у каждого пункта, но виден только у первого
-                           (так не нужен отдельный тип списка и сохраняется порядок) -->
-                      <TextBlock Text="{Binding Group}" Classes="eyebrow" Margin="11,12,0,5" FontSize="9.5"
-                                 IsVisible="{Binding IsGroupStart}" />
-
-                      <Button Classes="ghost scale-hover" Command="{Binding SelectCommand}"
-                              HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
-                              Padding="0" Background="Transparent" BorderThickness="0">
-                        <Border CornerRadius="10" Padding="11,8" Margin="0,1"
-                                Background="{Binding IsSelected, Converter={StaticResource SelectedBackground}}">
-                          <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                            <Path Data="{Binding IconKey, Converter={StaticResource IconKey}}" Classes="icon"
-                                  Width="16" Height="16"
-                                  Stroke="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}"
-                                  VerticalAlignment="Center" />
-                            <StackPanel Grid.Column="1" Margin="11,0,0,0" Spacing="1" VerticalAlignment="Center">
-                              <TextBlock Text="{Binding Title}" FontSize="12.5"
-                                         Foreground="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}" />
-                              <!-- Что открыто внутри каталога: «Моды», «Сборки» и т.д. -->
-                              <TextBlock Text="{Binding SubTitle}" FontSize="9.5" Margin="0,1,0,0"
-                                         Foreground="{StaticResource AccentBlueBrush}"
-                                         IsVisible="{Binding HasSubItems}" />
-                            </StackPanel>
-                            <!-- Шеврон раскрытия подпунктов -->
-                            <Path Grid.Column="2" Data="{StaticResource IconChevronDown}" Classes="icon"
-                                  Width="10" Height="10" VerticalAlignment="Center" Margin="6,0"
-                                  IsVisible="{Binding HasSubItems}" />
-                            <Border Grid.Column="3" Width="6" Height="6" CornerRadius="3"
-                                    Background="{StaticResource AccentBlueBrush}" VerticalAlignment="Center"
-                                    IsVisible="{Binding IsSelected}" />
-                          </Grid>
-                        </Border>
-                      </Button>
-
-                      <!-- Подпункты каталога -->
-                      <ItemsControl ItemsSource="{Binding SubItems}" IsVisible="{Binding IsExpanded}" Margin="26,2,0,4">
-                        <ItemsControl.ItemTemplate>
-                          <DataTemplate x:DataType="services:NavigationEntry">
-                            <Button Classes="ghost" Padding="0" Background="Transparent" BorderThickness="0"
-                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                                    Command="{Binding $parent[ItemsControl].((vm:NavigationItemViewModel)DataContext).OpenSubItemCommand}"
-                                    CommandParameter="{Binding}">
-                              <TextBlock Text="{Binding Title}" FontSize="12" Margin="11,6"
-                                         Foreground="{StaticResource TextSecondaryBrush}" />
-                            </Button>
-                          </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                      </ItemsControl>
-                    </StackPanel>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
-            </StackPanel>
+          <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="10,6,10,0">
+            <ItemsControl ItemsSource="{Binding NavigationItems}">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:NavigationItemViewModel">
+                  <Button Command="{Binding SelectCommand}" Classes="nav" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                          Padding="0" Margin="0,2" Background="Transparent" BorderThickness="0">
+                    <Border CornerRadius="12" Padding="12,10"
+                            Background="{Binding IsSelected, Converter={StaticResource SelectedBackground}}"
+                            BorderBrush="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=border}"
+                            BorderThickness="1">
+                      <Grid ColumnDefinitions="Auto,*,Auto">
+                        <Path Data="{Binding IconKey, Converter={StaticResource IconKey}}" Classes="icon"
+                              Width="17" Height="17"
+                              Stroke="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}"
+                              VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Margin="11,0,0,0" Spacing="1" VerticalAlignment="Center">
+                          <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold"
+                                     Foreground="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}" />
+                        </StackPanel>
+                        <Border Grid.Column="2" Width="6" Height="6" CornerRadius="3"
+                                Background="{StaticResource AccentBrush}" VerticalAlignment="Center"
+                                IsVisible="{Binding IsSelected}" />
+                      </Grid>
+                    </Border>
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
           </ScrollViewer>
 
-          <!-- Аккаунт внизу сайдбара -->
-          <Border Grid.Row="2" Margin="12" Padding="12" CornerRadius="14" Background="{StaticResource GlassCardBrush}"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+          <!-- Аккаунт внизу рельса -->
+          <Border Grid.Row="2" Margin="12" Padding="10" CornerRadius="14" Background="{StaticResource GlassCardBrush}"
+                  BorderBrush="{StaticResource GlassBorderSoftBrush}" BorderThickness="1">
             <Button Command="{Binding OpenProfileCommand}" Background="Transparent" BorderThickness="0"
                     Padding="0" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch">
-              <Grid ColumnDefinitions="Auto,*">
-                <Border Width="34" Height="34" CornerRadius="10" Background="{StaticResource AccentGradient}">
-                  <TextBlock Text="{Binding AccountInitials}" FontWeight="Bold" FontSize="14"
-                             Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" />
+              <Grid ColumnDefinitions="Auto,*,Auto">
+                <Border Width="36" Height="36" CornerRadius="10" Background="#332A24" ClipToBounds="True" BorderBrush="#3A322B" BorderThickness="1">
+                  <Panel>
+                    <TextBlock Text="{Binding AccountInitials}" FontWeight="Bold" FontSize="14"
+                               Foreground="{StaticResource AccentHotBrush}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                               IsVisible="{Binding AccountSkinPath, Converter={x:Static ObjectConverters.IsNull}}" />
+                    <Image Width="36" Height="36" Stretch="Uniform" RenderOptions.BitmapInterpolationMode="None"
+                           IsVisible="{Binding AccountSkinPath, Converter={x:Static ObjectConverters.IsNotNull}}"
+                           Source="{Binding AccountSkinPath, Converter={x:Static conv2:SkinFaceConverter.Instance}}" />
+                  </Panel>
                 </Border>
                 <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center" Spacing="1">
                   <TextBlock Text="{Binding AccountName}" FontSize="12.5" FontWeight="SemiBold"
@@ -158,6 +128,8 @@
                   <TextBlock Text="{Binding AccountKindLabel}" FontSize="10.5"
                              Foreground="{StaticResource TextSecondaryBrush}" />
                 </StackPanel>
+                <Path Grid.Column="2" Data="{StaticResource IconChevronRight}" Classes="icon" Width="14" Height="14"
+                      VerticalAlignment="Center" />
               </Grid>
             </Button>
           </Border>
@@ -165,169 +137,69 @@
       </Border>
 
       <!-- Контент -->
-      <Grid Grid.Column="1" RowDefinitions="Auto,*">
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="26,18,26,8">
-          <StackPanel Spacing="2">
-            <TextBlock Text="{Binding CurrentPage.ErrorMessage, FallbackValue=''}" Classes="caption"
-                       Foreground="{StaticResource DangerBrush}" IsVisible="{Binding CurrentPage.HasError}" />
-          </StackPanel>
+      <Grid Grid.Column="1" RowDefinitions="Auto,*" Background="{StaticResource BackgroundBrush}">
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="24,12,24,6">
+          <TextBlock Text="{Binding CurrentPage.ErrorMessage, FallbackValue=''}" Classes="caption"
+                     Foreground="{StaticResource DangerBrush}" IsVisible="{Binding CurrentPage.HasError}"
+                     TextWrapping="Wrap" VerticalAlignment="Center" />
           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
             <Button Classes="icon" Command="{Binding OpenNotificationsCommand}" ToolTip.Tip="Уведомления">
               <Path Data="{StaticResource IconBell}" Classes="icon" />
             </Button>
-            <Border Classes="chip" VerticalAlignment="Center">
-              <StackPanel Orientation="Horizontal" Spacing="6">
-                <Ellipse Width="6" Height="6" Fill="{StaticResource SuccessBrush}" VerticalAlignment="Center" />
-                <TextBlock Text="{Binding NetworkIndicator}" FontSize="10.5"
-                           Foreground="{StaticResource TextSecondaryBrush}" />
-              </StackPanel>
-            </Border>
+            <Button Classes="icon" Command="{Binding OpenDownloadsCommand}" ToolTip.Tip="Очередь загрузок">
+              <Path Data="{StaticResource IconDownload}" Classes="icon" />
+            </Button>
           </StackPanel>
         </Grid>
 
         <Grid Grid.Row="1" RowDefinitions="Auto,*">
-          <!-- ══════ Обновление лаунчера: показывается только когда есть что обновлять ══════ -->
-          <Border Grid.Row="0" IsVisible="{Binding Updates.IsVisible}" Margin="26,0,26,10"
+          <!-- Обновление лаунчера: только когда есть что обновлять -->
+          <Border Grid.Row="0" IsVisible="{Binding Updates.IsVisible}" Margin="24,0,24,10"
                   CornerRadius="12" Padding="14,11" Background="{StaticResource GlassCardBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1">
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-              <Border Width="26" Height="26" CornerRadius="8" Background="{StaticResource AccentGradient}"
-                      VerticalAlignment="Center">
-                <Path Data="{StaticResource IconDownload}" Classes="icon" />
+              <Border Width="26" Height="26" CornerRadius="8" Background="{StaticResource AccentGradient}" VerticalAlignment="Center">
+                <Path Data="{StaticResource IconDownload}" Classes="icon" Stroke="White" Width="14" Height="14" HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
-
               <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
                 <TextBlock FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"
                            Text="{Binding Updates.StatusText}" TextWrapping="Wrap" />
                 <TextBlock FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}"
                            Text="{Binding Updates.ReleaseNotes}" TextWrapping="Wrap" MaxLines="2"
                            IsVisible="{Binding Updates.ReleaseNotes, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                <TextBlock FontSize="10.5" Foreground="{StaticResource DangerBrush}"
-                           Text="{Binding Updates.ErrorText}" TextWrapping="Wrap"
-                           IsVisible="{Binding Updates.ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}" />
                 <ProgressBar Value="{Binding Updates.Progress}" Maximum="1" Height="4" Margin="0,3,0,0"
                              IsVisible="{Binding Updates.IsDownloading}" Foreground="{StaticResource AccentBrush}" />
               </StackPanel>
-
               <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="7" VerticalAlignment="Center">
-                <Button Classes="primary" Content="Скачать" Command="{Binding Updates.DownloadCommand}"
-                        IsVisible="{Binding Updates.HasUpdate}" />
-                <Button Classes="primary" Content="Установить и перезапустить"
-                        Command="{Binding Updates.InstallCommand}" IsVisible="{Binding Updates.IsReady}" />
-                <Button Classes="ghost" Content="Страница релиза" Command="{Binding Updates.OpenReleasePageCommand}" />
-                <Button Classes="icon" Content="✕" Command="{Binding Updates.DismissCommand}" ToolTip.Tip="Скрыть" />
+                <Button Classes="primary" Content="Скачать" Command="{Binding Updates.DownloadCommand}" IsVisible="{Binding Updates.HasUpdate}" />
+                <Button Classes="primary" Content="Установить и перезапустить" Command="{Binding Updates.InstallCommand}" IsVisible="{Binding Updates.IsReady}" />
+                <Button Classes="icon" Command="{Binding Updates.DismissCommand}" ToolTip.Tip="Скрыть">
+                  <Path Data="{StaticResource IconClose}" Classes="icon" Width="12" Height="12" />
+                </Button>
               </StackPanel>
             </Grid>
           </Border>
 
-          <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Margin="26,0,26,18">
+          <ContentControl Grid.Row="1" Content="{Binding CurrentPage}" Margin="24,0,24,20">
             <ContentControl.Transitions>
               <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.22" />
-                <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.22" Easing="CubicEaseOut" />
+                <DoubleTransition Property="Opacity" Duration="0:0:0.20" />
               </Transitions>
             </ContentControl.Transitions>
           </ContentControl>
         </Grid>
       </Grid>
-
-      <!-- Правая колонка: контекст -->
-      <Border Grid.Column="2" Background="{StaticResource GlassSurfaceBrush}" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1,0,0,0">
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-          <StackPanel Margin="18,20" Spacing="14">
-
-            <TextBlock Text="ТЕКУЩИЙ ПРОФИЛЬ" Classes="eyebrow" />
-
-            <Border Classes="card glass-card" Padding="16">
-              <StackPanel Spacing="10">
-                <TextBlock Text="{Binding ProfileName}" Classes="h3" TextTrimming="CharacterEllipsis" />
-                <TextBlock Text="{Binding ProfileVersion}" Classes="caption" />
-                <Border Classes="divider" />
-                <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto">
-                  <TextBlock Text="Платформа" Classes="caption" />
-                  <TextBlock Grid.Column="1" Text="{Binding PlatformLabel}" Classes="caption"
-                             HorizontalAlignment="Right" Foreground="{StaticResource TextBrush}" />
-                  <TextBlock Grid.Row="1" Text="Аккаунт" Classes="caption" Margin="0,4,0,0" />
-                  <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding AccountName}" Classes="caption" Margin="0,4,0,0"
-                             HorizontalAlignment="Right" Foreground="{StaticResource TextBrush}" />
-                </Grid>
-              </StackPanel>
-            </Border>
-
-            <TextBlock Text="БЫСТРЫЕ ДЕЙСТВИЯ" Classes="eyebrow" Margin="0,8,0,0" />
-
-            <StackPanel Spacing="8">
-              <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                      Command="{Binding NavigateCommand}" CommandParameter="play">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                  <Path Data="{StaticResource IconPlay}" Classes="icon" Width="15" Height="15" />
-                  <TextBlock Text="Профили и запуск" FontSize="12.5" VerticalAlignment="Center" />
-                </StackPanel>
-              </Button>
-              <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                      Command="{Binding NavigateCommand}" CommandParameter="versions">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                  <Path Data="{StaticResource IconLayers}" Classes="icon" Width="15" Height="15" />
-                  <TextBlock Text="Установить версию" FontSize="12.5" VerticalAlignment="Center" />
-                </StackPanel>
-              </Button>
-              <Button Classes="ghost" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
-                      Command="{Binding NavigateCommand}" CommandParameter="accounts">
-                <StackPanel Orientation="Horizontal" Spacing="10">
-                  <Path Data="{StaticResource IconUser}" Classes="icon" Width="15" Height="15" />
-                  <TextBlock Text="Аккаунт и вход" FontSize="12.5" VerticalAlignment="Center" />
-                </StackPanel>
-              </Button>
-            </StackPanel>
-
-            <Border Classes="divider" />
-
-            <StackPanel Spacing="6" IsVisible="{Binding IsAccountSelected}">
-              <TextBlock Text="КАК Я ЗАХОЖУ В ИГРУ" Classes="eyebrow" />
-              <Border CornerRadius="12" Padding="12" Background="{StaticResource GlassCardBrush}">
-                <StackPanel Spacing="8">
-                  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                    <Border Width="48" Height="48" CornerRadius="12" Background="#1E2740" ClipToBounds="True"
-                            BorderBrush="#26314A" BorderThickness="1">
-                      <Image Source="{Binding AccountSkinPath, Converter={x:Static conv2:SkinFaceConverter.Instance}}"
-                             Width="48" Height="48" Stretch="Uniform" />
-                    </Border>
-                    <StackPanel Grid.Column="1" Spacing="2" VerticalAlignment="Center">
-                      <TextBlock Text="{Binding AccountName}" FontSize="12.5" FontWeight="SemiBold"
-                                 Foreground="{StaticResource TextBrush}" />
-                      <TextBlock Text="{Binding AccountSkinLabel}" Classes="caption" FontSize="10.5"
-                                 TextWrapping="Wrap" />
-                    </StackPanel>
-                  </Grid>
-                  <Border Classes="divider" />
-                  <TextBlock Text="{Binding AccountUuidSource}" Classes="caption" FontSize="10.5" TextWrapping="Wrap" />
-                  <TextBlock Text="{Binding AccountUuid}" FontSize="9.5" TextWrapping="Wrap" FontFamily="monospace"
-                             Foreground="{StaticResource TextMutedBrush}" />
-                </StackPanel>
-              </Border>
-            </StackPanel>
-
-          </StackPanel>
-        </ScrollViewer>
-      </Border>
     </Grid>
 
     <!-- ══════════════ Toasts ══════════════ -->
     <ItemsControl Grid.Row="1" ItemsSource="{Binding Toasts}" HorizontalAlignment="Right"
-                  VerticalAlignment="Bottom" Margin="0,0,320,24" IsHitTestVisible="True">
+                  VerticalAlignment="Bottom" Margin="0,0,24,24" IsHitTestVisible="True">
       <ItemsControl.ItemTemplate>
         <DataTemplate x:DataType="services:Toast">
-          <Border Classes="card" Width="330" Margin="0,6,0,0" Padding="14">
-            <Border.Transitions>
-              <Transitions>
-                <DoubleTransition Property="Opacity" Duration="0:0:0.3" Easing="CubicEaseOut" />
-                <DoubleTransition Property="TranslateTransform.X" Duration="0:0:0.3" Easing="CubicEaseOut" />
-              </Transitions>
-            </Border.Transitions>
+          <Border Classes="card" Width="340" Margin="0,6,0,0" Padding="14">
             <Grid ColumnDefinitions="4,*,Auto">
               <Border Background="{Binding Accent}" CornerRadius="2" Width="4" />
-              <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="2">
-                <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="SemiBold"
-                           Foreground="{StaticResource TextBrush}" />
+              <StackPanel Grid.Column="1" Margin="11,0,0,0" Spacing="2">
+                <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
                 <TextBlock Text="{Binding Message}" Classes="caption" TextWrapping="Wrap" MaxLines="3" />
               </StackPanel>
               <Button Grid.Column="2" Classes="icon" Padding="4" VerticalAlignment="Top"
@@ -341,21 +213,15 @@
       </ItemsControl.ItemTemplate>
     </ItemsControl>
 
-    <!-- ══════════════ Глобальный поиск (overlay) ══════════════ -->
-    <Border Grid.Row="1" IsVisible="{Binding IsSearchOpen}" Background="#99000000">
-      <Border.Transitions>
-        <Transitions>
-          <DoubleTransition Property="Opacity" Duration="0:0:0.2" />
-        </Transitions>
-      </Border.Transitions>
-      <Border Classes="card glass-card" Width="560" VerticalAlignment="Top" Margin="0,120,0,0" Padding="18">
+    <!-- ══════════════ Глобальный поиск ══════════════ -->
+    <Border Grid.Row="1" IsVisible="{Binding IsSearchOpen}" Background="#B8111216" ZIndex="20">
+      <Border Classes="card glass-card" Width="620" VerticalAlignment="Top" Margin="0,92,0,0" Padding="16">
         <StackPanel Spacing="12">
-          <TextBlock Text="Глобальный поиск" Classes="h3" />
-          <TextBox Classes="ehot" Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Название мода, сборки, шейдера…"
-                   AcceptsReturn="False" />
+          <TextBlock Text="Поиск в каталоге Modrinth" Classes="h3" />
+          <TextBox Text="{Binding SearchText, Mode=TwoWay}" PlaceholderText="Название мода, сборки, текстуры или шейдера…" AcceptsReturn="False" />
           <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
             <Button Classes="ghost" Command="{Binding ToggleSearchCommand}" Content="Отмена" />
-            <Button Classes="primary" Command="{Binding SubmitSearchCommand}" Content="Искать" />
+            <Button Classes="primary" Command="{Binding SubmitSearchCommand}" Content="Найти" />
           </StackPanel>
         </StackPanel>
       </Border>

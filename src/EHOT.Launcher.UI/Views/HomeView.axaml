@@ -1,330 +1,136 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
-             xmlns:conv="using:EHOT.Launcher.UI.Converters"
-             xmlns:models="using:EHOT.Launcher.Core.Models"
-             xmlns:conv2="using:EHOT.Launcher.UI.Converters"
              xmlns:controls="using:EHOT.Launcher.UI.Controls"
+             xmlns:conv="using:EHOT.Launcher.UI.Converters"
              x:Class="EHOT.Launcher.UI.Views.HomeView"
              x:DataType="vm:HomeViewModel">
 
-  <UserControl.Resources>
-    <conv:BytesToHumanConverter x:Key="Bytes" />
-  </UserControl.Resources>
+  <Grid>
+    <!-- Фон главного экрана -->
+    <Image Source="avares://EHOT.Launcher/Assets/home-bg.jpg" Stretch="UniformToFill" Opacity="0.46" />
+    <Border Background="#B8111216" />
 
-  <ScrollViewer VerticalScrollBarVisibility="Auto">
-    <StackPanel Spacing="18" Margin="0,0,6,0">
+    <Grid RowDefinitions="*,Auto" Margin="8,4,8,0">
+      <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="28">
 
-      <!-- ═══ Hero: профиль + ИГРАТЬ ═══ -->
-      <Border Classes="hero">
-        <Border.Transitions>
-          <Transitions>
-            <DoubleTransition Property="Opacity" Duration="0:0:0.4" />
-            <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.4" Easing="CubicEaseOut" />
-          </Transitions>
-        </Border.Transitions>
-        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto">
-
-          <!-- Левая часть: скин игрока, ник и профиль -->
-          <StackPanel Grid.Row="0" Grid.Column="0" Spacing="6" Margin="0,0,20,0">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <TextBlock Text="{Binding Greeting}" Classes="eyebrow" />
-              <TextBlock Text="·" Classes="eyebrow" Foreground="{StaticResource TextSecondaryBrush}" />
-              <TextBlock Text="{Binding AccountKindLabel}" Classes="eyebrow"
-                         Foreground="{StaticResource TextSecondaryBrush}" />
-            </StackPanel>
-
-            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="18" Margin="0,4,0,0">
-              <!-- Объёмное превью скина: вращается мышью. Если скина нет — инициал ника
-                   с подписью, что скин можно загрузить в «Аккаунтах». -->
-              <Panel Width="104" Height="132" VerticalAlignment="Center">
-                <Border CornerRadius="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="#2A3350" BorderThickness="1"
-                        IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNotNull}}">
-                  <controls:Skin3DView SkinPath="{Binding SkinPath}" Margin="2" />
-                </Border>
-                <Border Width="104" Height="132" CornerRadius="16" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card"
-                        BorderBrush="#2A3350" BorderThickness="1"
-                        IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNull}}">
-                  <TextBlock Text="{Binding AccountInitials}" FontSize="34" FontWeight="Bold"
-                             Foreground="#C4B5FD" HorizontalAlignment="Center" VerticalAlignment="Center" />
-                </Border>
-              </Panel>
-
-              <StackPanel Grid.Column="1" Spacing="4" VerticalAlignment="Center">
-                <TextBlock Text="{Binding AccountName}" FontSize="32" FontWeight="Bold" LetterSpacing="-0.6"
-                           Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" MaxLines="1" />
-                <TextBlock Text="{Binding ProfileName}" FontSize="14" FontWeight="SemiBold"
-                           Foreground="{StaticResource AccentBlueBrush}" TextTrimming="CharacterEllipsis" MaxLines="1" />
-                <TextBlock Text="{Binding ProfileVersion}" Classes="caption" FontSize="11" />
-              </StackPanel>
-            </Grid>
+        <!-- Левая часть: приветствие и запуск -->
+        <StackPanel Spacing="18" VerticalAlignment="Center" MaxWidth="720">
+          <StackPanel Spacing="4">
+            <TextBlock Text="{Binding Greeting}" FontSize="38" FontWeight="Bold" LetterSpacing="-0.8"
+                       Foreground="{StaticResource TextBrush}" />
+            <TextBlock Text="{Binding Hint}" Classes="body" FontSize="14" />
           </StackPanel>
 
-          <!-- Кнопка ИГРАТЬ справа, всегда одной ширины -->
-          <StackPanel Grid.Row="0" Grid.Column="1" Spacing="8" VerticalAlignment="Center">
-            <Button Classes="primary" Width="208" Height="60" CornerRadius="18"
-                    Command="{Binding PlayCommand}" IsEnabled="{Binding IsBusy, Converter={x:Static BoolConverters.Not}}">
-              <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
-                <Path Data="{StaticResource IconPlay}" Fill="White" Stretch="Uniform" Width="18" Height="18" />
-                <TextBlock Text="{Binding PlayButtonText}" FontSize="18" FontWeight="Bold" LetterSpacing="1.2"
-                           VerticalAlignment="Center" />
-              </StackPanel>
-            </Button>
-            <TextBlock Text="{Binding InstallStatus}" Classes="caption" HorizontalAlignment="Center"
-                       TextTrimming="CharacterEllipsis" MaxWidth="208" />
-          </StackPanel>
-
-          <!-- Нижняя строка: три показателя + предупреждение -->
-          <Grid Grid.Row="1" Grid.ColumnSpan="2" Margin="0,22,0,0" ColumnDefinitions="*,*,*" ColumnSpacing="18">
-            <StackPanel Spacing="6">
-              <TextBlock Text="УСТАНОВКА" Classes="caption" FontSize="9.5" LetterSpacing="1.1" />
-              <ProgressBar Classes="ehot" Height="5" Value="{Binding InstallProgress}" Maximum="1" />
-            </StackPanel>
-
-            <StackPanel Grid.Column="1" Spacing="5">
-              <TextBlock Text="ПОСЛЕДНИЙ ЗАПУСК" Classes="caption" FontSize="9.5" LetterSpacing="1.1" />
-              <TextBlock Text="{Binding LastLaunchLabel}" FontSize="12" Foreground="{StaticResource TextBrush}"
-                         TextTrimming="CharacterEllipsis" />
-            </StackPanel>
-
-            <StackPanel Grid.Column="2" Spacing="5">
-              <TextBlock Text="АККАУНТ" Classes="caption" FontSize="9.5" LetterSpacing="1.1" />
-              <TextBlock Text="{Binding AccountUuidLabel}" FontSize="12" Foreground="{StaticResource TextBrush}"
-                         TextTrimming="CharacterEllipsis" />
-              <TextBlock Text="{Binding NetworkStatus}" FontSize="10.5" Classes="caption"
-                         TextTrimming="CharacterEllipsis" />
-            </StackPanel>
+          <!-- Версия + канал -->
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="10" MaxWidth="640">
+            <ComboBox ItemsSource="{Binding Channels}" SelectedItem="{Binding SelectedChannel, Mode=TwoWay}"
+                      Width="132" ToolTip.Tip="Тип версий" />
+            <ComboBox Grid.Column="1" ItemsSource="{Binding Versions}" SelectedItem="{Binding SelectedVersion, Mode=TwoWay}"
+                      PlaceholderText="Версия Minecraft">
+              <ComboBox.ItemTemplate>
+                <DataTemplate x:DataType="vm:VersionChoice">
+                  <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                    <TextBlock Text="{Binding Id}" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                    <TextBlock Grid.Column="1" Text="{Binding TypeLabel}" Classes="caption" />
+                  </Grid>
+                </DataTemplate>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
           </Grid>
 
-          <Border Grid.Row="2" Grid.ColumnSpan="2" Margin="0,16,0,0" Padding="12,10" CornerRadius="12"
-                  Background="#1AFBBF24" IsVisible="{Binding HasCapabilityWarning}">
-            <StackPanel Orientation="Horizontal" Spacing="10">
-              <Path Data="{StaticResource IconWarning}" Classes="icon" Stroke="{StaticResource WarningBrush}"
-                    Width="15" Height="15" VerticalAlignment="Top" />
-              <TextBlock Text="{Binding CapabilityWarning}" FontSize="11.5" TextWrapping="Wrap"
-                         Foreground="{StaticResource WarningBrush}" MaxWidth="760" />
+          <!-- Загрузчики -->
+          <ItemsControl ItemsSource="{Binding LoaderOptions}" MaxWidth="640">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                  <WrapPanel Orientation="Horizontal" />
+                </ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="vm:LoaderOption">
+                  <Button Classes="pill" Margin="0,0,8,8" Padding="14,7"
+                          IsEnabled="{Binding IsAvailable}"
+                          Command="{Binding $parent[ItemsControl].((vm:HomeViewModel)DataContext).SelectLoaderCommand}"
+                          CommandParameter="{Binding}"
+                          ToolTip.Tip="{Binding Hint}">
+                    <TextBlock Text="{Binding Label}" FontSize="12" FontWeight="SemiBold" />
+                  </Button>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- Кнопка запуска -->
+          <Button Classes="primary" Width="420" Height="58" CornerRadius="16" HorizontalAlignment="Left"
+                  Command="{Binding PlayCommand}" IsEnabled="{Binding IsBusy, Converter={x:Static BoolConverters.Not}}">
+            <StackPanel Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center">
+              <Path Data="{StaticResource IconPlay}" Fill="White" Width="18" Height="18" Stretch="Uniform" />
+              <TextBlock Text="{Binding PlayButtonText}" FontSize="19" FontWeight="Bold" LetterSpacing="0.2" />
+            </StackPanel>
+          </Button>
+
+          <StackPanel Spacing="6" MaxWidth="560">
+            <TextBlock Text="{Binding InstallStatus}" Classes="caption" />
+            <ProgressBar Classes="ehot" Height="6" IsIndeterminate="{Binding IsInstalling}"
+                         Value="{Binding InstallProgress}" Maximum="1" />
+            <TextBlock Text="{Binding LastLaunchLabel}" Classes="caption" FontSize="10.5" />
+          </StackPanel>
+        </StackPanel>
+
+        <!-- Правая часть: персонаж -->
+        <Grid Grid.Column="1" Width="300" VerticalAlignment="Center">
+          <Border CornerRadius="22" Background="#26191116" BorderBrush="#33FFFFFF" BorderThickness="1" Padding="18">
+            <StackPanel Spacing="10" HorizontalAlignment="Center">
+              <Panel Width="220" Height="285">
+                <Border CornerRadius="18" Background="#1A111216" IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNotNull}}">
+                  <controls:Skin3DView SkinPath="{Binding SkinPath}" Margin="2" />
+                </Border>
+                <StackPanel IsVisible="{Binding SkinPath, Converter={x:Static ObjectConverters.IsNull}}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="12">
+                  <Image Source="avares://EHOT.Launcher/Assets/mascot-raccoon.png" Width="150" Height="150" Stretch="Uniform" />
+                  <TextBlock Text="Скин не загружен" Classes="caption" HorizontalAlignment="Center" />
+                </StackPanel>
+              </Panel>
+              <TextBlock Text="{Binding AccountName}" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"
+                         Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" MaxWidth="230" />
+              <TextBlock Text="{Binding AccountKindLabel}" Classes="caption" HorizontalAlignment="Center" />
             </StackPanel>
           </Border>
         </Grid>
+      </Grid>
+
+      <!-- Нижняя карточка «что нового» -->
+      <Border Grid.Row="1" Margin="0,10,0,10" CornerRadius="16" Padding="14,12"
+              Background="#CC1B1B22" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1">
+        <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+          <Image Source="avares://EHOT.Launcher/Assets/ehot-logo-orange.png" Width="42" Height="42" Stretch="UniformToFill" />
+          <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+            <TextBlock Text="{Binding WhatsNewTitle}" Classes="h3" />
+            <TextBlock Text="{Binding WhatsNewSummary}" Classes="caption" MaxLines="1" TextTrimming="CharacterEllipsis" />
+          </StackPanel>
+          <Button Grid.Column="2" Classes="ghost" Command="{Binding OpenNewsCommand}" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <TextBlock Text="Подробнее" FontSize="12.5" VerticalAlignment="Center" />
+              <Path Data="{StaticResource IconChevronRight}" Classes="icon" Width="12" Height="12" />
+            </StackPanel>
+          </Button>
+        </Grid>
       </Border>
+    </Grid>
 
-      <!-- ═══ Быстрые действия ═══ -->
-      <Grid ColumnDefinitions="*,*,*,*" ColumnSpacing="12">
-        <Border Classes="card scale-hover reveal delay-0" Padding="16" Cursor="Hand">
-          <Button Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Stretch"
-                  Command="{Binding OpenContentCommand}" CommandParameter="mods">
-            <StackPanel Spacing="8">
-              <Border Width="38" Height="38" CornerRadius="11" Background="#1A8B5CF6" HorizontalAlignment="Left">
-                <Path Data="{StaticResource IconPuzzle}" Classes="icon" Stroke="{StaticResource AccentBrush}"
-                      HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-              <TextBlock Text="Моды" Classes="h3" />
-              <TextBlock Text="Каталог Modrinth" Classes="caption" TextWrapping="Wrap" MaxLines="2" />
-            </StackPanel>
-          </Button>
+    <!-- Сплэш запуска: реальные стадии, без выдуманного процента -->
+    <Grid IsVisible="{Binding IsBusy}" Background="#D9111216">
+      <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="18">
+        <Image Source="avares://EHOT.Launcher/Assets/mascot-raccoon.png" Width="220" Height="220" Stretch="Uniform" />
+        <TextBlock Text="Запуск Minecraft…" FontSize="30" FontWeight="Bold" HorizontalAlignment="Center" />
+        <TextBlock Text="{Binding InstallStatus}" Classes="caption" HorizontalAlignment="Center" MaxWidth="520" TextWrapping="Wrap" TextAlignment="Center" />
+        <ProgressBar Classes="ehot" Width="420" Height="8" IsIndeterminate="True" />
+        <Border Classes="chip" Padding="14,8" HorizontalAlignment="Center">
+          <StackPanel Orientation="Horizontal" Spacing="10">
+            <Path Data="{StaticResource IconSparkle}" Classes="icon" Stroke="{StaticResource AccentHotBrush}" Width="14" Height="14" />
+            <TextBlock Text="Совет: OptiFine или Iris помогут поднять FPS в тяжёлых мирах." FontSize="11.5" Foreground="{StaticResource TextSecondaryBrush}" />
+          </StackPanel>
         </Border>
-
-        <Border Grid.Column="1" Classes="card scale-hover reveal delay-1" Padding="16">
-          <Button Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Stretch"
-                  Command="{Binding OpenContentCommand}" CommandParameter="modpacks">
-            <StackPanel Spacing="8">
-              <Border Width="38" Height="38" CornerRadius="11" Background="#1A38BDF8" HorizontalAlignment="Left">
-                <Path Data="{StaticResource IconBox}" Classes="icon blue"
-                      HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-              <TextBlock Text="Сборки" Classes="h3" />
-              <TextBlock Text="Готовые модпаки" Classes="caption" TextWrapping="Wrap" MaxLines="2" />
-            </StackPanel>
-          </Button>
-        </Border>
-
-        <Border Grid.Column="2" Classes="card scale-hover reveal delay-2" Padding="16">
-          <Button Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Stretch"
-                  Command="{Binding OpenNetworkCommand}">
-            <StackPanel Spacing="8">
-              <Border Width="38" Height="38" CornerRadius="11" Background="#1A34D399" HorizontalAlignment="Left">
-                <Path Data="{StaticResource IconNetwork}" Classes="icon" Stroke="{StaticResource SuccessBrush}"
-                      HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-              <TextBlock Text="Играть вместе" Classes="h3" />
-              <TextBlock Text="{Binding NetworkDetail}" Classes="caption" TextWrapping="Wrap" MaxLines="2" />
-            </StackPanel>
-          </Button>
-        </Border>
-
-        <Border Grid.Column="3" Classes="card scale-hover reveal delay-3" Padding="16">
-          <Button Background="Transparent" BorderThickness="0" Padding="0" HorizontalAlignment="Stretch"
-                  Command="{Binding OpenGameFolderCommand}" IsVisible="{Binding CanOpenGameFolder}"
-                  ToolTip.Tip="{Binding MinecraftRoot}">
-            <StackPanel Spacing="8">
-              <Border Width="38" Height="38" CornerRadius="11" Background="#1AFBBF24" HorizontalAlignment="Left">
-                <Path Data="{StaticResource IconFolder}" Classes="icon" Stroke="{StaticResource WarningBrush}"
-                      HorizontalAlignment="Center" VerticalAlignment="Center" />
-              </Border>
-              <TextBlock Text="Каталог игры" Classes="h3" />
-              <TextBlock Text="{Binding MinecraftFolderDetail}" Classes="caption" TextWrapping="Wrap" MaxLines="2" />
-            </StackPanel>
-          </Button>
-        </Border>
-      </Grid>
-
-      <!-- ═══ Новости ═══ -->
-      <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Text="Новости Minecraft" Classes="h2" />
-        <TextBlock Grid.Column="1" Text="официальный источник Mojang" Classes="caption" VerticalAlignment="Center" />
-      </Grid>
-
-      <Border CornerRadius="14" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
-              IsVisible="{Binding News.Count, Converter={x:Static vm:TextConverters.IsZero}}">
-        <TextBlock Text="Новости не загрузились: источник Mojang не ответил при запуске." Classes="caption"
-                   TextWrapping="Wrap" />
-      </Border>
-
-      <ItemsControl ItemsSource="{Binding News}">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <UniformGrid Columns="3" />
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:NewsCardViewModel">
-            <Border CornerRadius="14" Margin="0,0,12,0" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card scale-hover"
-                    BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
-              <StackPanel Spacing="8">
-                <Border Height="92" CornerRadius="12" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card">
-                  <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="4">
-                    <TextBlock Text="{Binding Type}" Classes="eyebrow" HorizontalAlignment="Center" />
-                    <TextBlock Text="{Binding Version}" FontWeight="SemiBold" FontSize="15"
-                               Foreground="{StaticResource TextBrush}" HorizontalAlignment="Center" />
-                  </StackPanel>
-                </Border>
-                <TextBlock Text="{Binding Title}" Classes="h3" TextWrapping="Wrap" MaxLines="2" />
-                <TextBlock Text="{Binding DateLabel}" Classes="caption" />
-              </StackPanel>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-
-      <!-- ═══ Популярные моды ═══ -->
-      <Grid ColumnDefinitions="*,Auto">
-        <TextBlock Text="Популярные моды" Classes="h2" />
-        <TextBlock Grid.Column="1" Text="по загрузкам Modrinth" Classes="caption" VerticalAlignment="Center" />
-      </Grid>
-
-      <Border CornerRadius="14" Padding="16" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
-              IsVisible="{Binding PopularMods.Count, Converter={x:Static vm:TextConverters.IsZero}}">
-        <TextBlock Text="Каталог Modrinth не ответил — популярные моды появятся после загрузки." Classes="caption"
-                   TextWrapping="Wrap" />
-      </Border>
-
-      <ItemsControl ItemsSource="{Binding PopularMods}">
-        <ItemsControl.ItemsPanel>
-          <ItemsPanelTemplate>
-            <UniformGrid Columns="4" />
-          </ItemsPanelTemplate>
-        </ItemsControl.ItemsPanel>
-        <ItemsControl.ItemTemplate>
-          <DataTemplate x:DataType="vm:ContentCardViewModel">
-            <Border CornerRadius="14" Margin="0,0,10,10" Padding="14" Background="{StaticResource GlassCardBrush}" Classes="glass-card scale-hover"
-                    BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
-              <StackPanel Spacing="6">
-                <Grid ColumnDefinitions="Auto,*">
-                  <Border Width="38" Height="38" CornerRadius="10" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card" ClipToBounds="True"
-                          BorderBrush="#26314A" BorderThickness="1">
-                    <Panel>
-                      <TextBlock Text="{Binding Title, Converter={x:Static vm:TextConverters.FirstLetter}}"
-                                 FontWeight="Bold" FontSize="16" Foreground="#C4B5FD"
-                                 HorizontalAlignment="Center" VerticalAlignment="Center"
-                                 IsVisible="{Binding Title, Converter={x:Static ObjectConverters.IsNotNull}, ConverterParameter=x}" />
-                      <controls:RemoteImage Url="{Binding IconUrl}"
-                                            Width="34" Height="34" Stretch="Uniform" />
-                    </Panel>
-                  </Border>
-                  <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center" Spacing="2">
-                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="12.5"
-                               Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
-                    <TextBlock Text="{Binding Author}" Classes="caption" TextTrimming="CharacterEllipsis" />
-                  </StackPanel>
-                </Grid>
-                <TextBlock Text="{Binding Description}" Classes="caption" MaxLines="2" TextWrapping="Wrap" />
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                  <TextBlock Text="{Binding DownloadsLabel}" Classes="caption" Foreground="{StaticResource AccentBlueBrush}" />
-                  <TextBlock Text="{Binding CategoriesLabel}" Classes="caption" TextTrimming="CharacterEllipsis" />
-                </StackPanel>
-              </StackPanel>
-            </Border>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-
-      <!-- ═══ Популярные сборки + недавние запуски ═══ -->
-      <Grid ColumnDefinitions="*,*" ColumnSpacing="14">
-        <StackPanel Spacing="10">
-          <TextBlock Text="Популярные сборки" Classes="h2" />
-          <Border CornerRadius="14" Padding="14" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
-                  IsVisible="{Binding PopularModpacks.Count, Converter={x:Static vm:TextConverters.IsZero}}">
-            <TextBlock Text="Сборки не загрузились: каталог недоступен." Classes="caption" TextWrapping="Wrap" />
-          </Border>
-          <ItemsControl ItemsSource="{Binding PopularModpacks}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="vm:ContentCardViewModel">
-                <Border CornerRadius="12" Margin="0,0,0,8" Padding="12" Background="{StaticResource GlassCardBrush}" Classes="glass-card scale-hover"
-                        BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
-                  <Grid ColumnDefinitions="Auto,*,Auto">
-                    <Border Width="30" Height="30" CornerRadius="8" Background="#1A38BDF8">
-                      <Path Data="{StaticResource IconBox}" Classes="icon blue" Width="15" Height="15"
-                            HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    </Border>
-                    <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
-                      <TextBlock Text="{Binding Title}" FontSize="12.5" FontWeight="SemiBold"
-                                 Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
-                      <TextBlock Text="{Binding Description}" Classes="caption" MaxLines="1"
-                                 TextTrimming="CharacterEllipsis" />
-                    </StackPanel>
-                    <TextBlock Grid.Column="2" Text="{Binding DownloadsLabel}" Classes="caption"
-                               VerticalAlignment="Center" />
-                  </Grid>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-        </StackPanel>
-
-        <StackPanel Grid.Column="1" Spacing="10">
-          <TextBlock Text="Недавние запуски" Classes="h2" />
-          <ItemsControl ItemsSource="{Binding RecentLaunches}">
-            <ItemsControl.ItemTemplate>
-              <DataTemplate x:DataType="models:LaunchRecord">
-                <Border CornerRadius="12" Margin="0,0,0,8" Padding="12" Background="{StaticResource GlassCardBrush}" Classes="glass-card scale-hover"
-                        BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
-                  <Grid ColumnDefinitions="*,Auto">
-                    <StackPanel>
-                      <TextBlock Text="{Binding ProfileName}" FontSize="12.5" FontWeight="SemiBold"
-                                 Foreground="{StaticResource TextBrush}" />
-                      <TextBlock Text="{Binding MinecraftVersion}" Classes="caption" />
-                    </StackPanel>
-                    <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
-                      <TextBlock Text="{Binding StartedAt, StringFormat='{}{0:dd.MM HH:mm}'}" Classes="caption" />
-                      <TextBlock Text="{Binding Status}" Classes="caption" Foreground="{StaticResource AccentBlueBrush}" />
-                    </StackPanel>
-                  </Grid>
-                </Border>
-              </DataTemplate>
-            </ItemsControl.ItemTemplate>
-          </ItemsControl>
-
-          <Border CornerRadius="14" Padding="14" Background="{StaticResource GlassCardBrush}" Classes="glass-card"
-                  BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1"
-                  IsVisible="{Binding RecentLaunches.Count, Converter={x:Static vm:TextConverters.IsZero}}">
-            <TextBlock Text="Пока нет истории запусков — самое время начать." Classes="caption" TextWrapping="Wrap" />
-          </Border>
-        </StackPanel>
-      </Grid>
-
-    </StackPanel>
-  </ScrollViewer>
+      </StackPanel>
+    </Grid>
+  </Grid>
 </UserControl>

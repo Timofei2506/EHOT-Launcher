@@ -4,22 +4,29 @@ using Avalonia.Media;
 
 namespace EHOT.Launcher.UI.Converters;
 
-/// <summary>Выбран ли пункт навигации → фон и цвет текста.</summary>
+/// <summary>Выбран ли пункт навигации → фон, рамка и цвет текста.</summary>
 public sealed class SelectedBackgroundConverter : IValueConverter
 {
-    private static readonly IBrush Selected = new SolidColorBrush(Color.Parse("#1F8B5CF6"));
+    private static readonly IBrush Selected = new SolidColorBrush(Color.Parse("#1AF07832"));
+    private static readonly IBrush SelectedBorder = new SolidColorBrush(Color.Parse("#40F07832"));
     private static readonly IBrush Normal = Brushes.Transparent;
+    private static readonly IBrush NormalBorder = Brushes.Transparent;
+    private static readonly IBrush SelectedText = new SolidColorBrush(Color.Parse("#F5F5F5"));
+    private static readonly IBrush NormalText = new SolidColorBrush(Color.Parse("#999BA6"));
 
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
         var isSelected = value is bool b && b;
-        var isText = parameter is string p && p.Equals("text", StringComparison.OrdinalIgnoreCase);
+        var mode = parameter as string;
 
-        if (isText)
+        if (string.Equals(mode, "text", StringComparison.OrdinalIgnoreCase))
         {
-            return isSelected
-                ? new SolidColorBrush(Color.Parse("#F8FAFC"))
-                : new SolidColorBrush(Color.Parse("#94A3B8"));
+            return isSelected ? SelectedText : NormalText;
+        }
+
+        if (string.Equals(mode, "border", StringComparison.OrdinalIgnoreCase))
+        {
+            return isSelected ? SelectedBorder : NormalBorder;
         }
 
         return isSelected ? Selected : Normal;

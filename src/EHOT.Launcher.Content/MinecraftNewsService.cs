@@ -11,7 +11,12 @@ public interface IMinecraftNewsService
     Task<IReadOnlyList<NewsItem>> GetLatestAsync(int count = 8, CancellationToken ct = default);
 
     Task<string?> GetArticleHtmlAsync(string contentPath, CancellationToken ct = default);
+
+    Task<NewsArticle?> GetArticleAsync(string contentPath, CancellationToken ct = default);
 }
+
+/// <summary>Полная официальная статья Java Edition (заголовок, обложка, HTML-текст).</summary>
+public sealed record NewsArticle(string Title, string Version, string Type, string ImageUrl, string BodyHtml);
 
 public sealed class MinecraftNewsService(IHttpService http, ILogService log) : IMinecraftNewsService
 {
@@ -63,11 +68,27 @@ public sealed class MinecraftNewsService(IHttpService http, ILogService log) : I
 
     public async Task<string?> GetArticleHtmlAsync(string contentPath, CancellationToken ct = default)
     {
+        var article = await GetArticleAsync(contentPath, ct).ConfigureAwait(false);
+        return article?.BodyHtml;
+    }
+
+    public async Task<NewsArticle?> GetArticleAsync(string contentPath, CancellationToken ct = default)
+    {
         try
         {
             var url = $"https://launchercontent.mojang.com/v2/{contentPath.TrimStart('/')}";
-            var response = await http.GetStringAsync(new Uri(url), ct: ct).ConfigureAwait(false);
-            return response.IsSuccess ? response.Content : null;
+            var article = await http.GetJsonAsync<LauncherContentArticle>(new Uri(url), ct: ct).ConfigureAwait(false);
+            if (article?.Title is null)
+            {
+                return null;
+            }
+
+            return new NewsArticle(
+                article.Title,
+                article.Version ?? string.Empty,
+                article.Type ?? "release",
+                article.Image?.Url is null ? string.Empty : ImageRoot + article.Image.Url,
+                article.Body ?? string.Empty);
         }
         catch (Exception ex)
         {
@@ -80,6 +101,24 @@ public sealed class MinecraftNewsService(IHttpService http, ILogService log) : I
     {
         [JsonPropertyName("entries")]
         public List<LauncherContentEntry>? Entries { get; set; }
+    }
+
+    private sealed class LauncherContentArticle
+    {
+        [JsonPropertyName("title")]
+        public string? Title { get; set; }
+
+        [JsonPropertyName("version")]
+        public string? Version { get; set; }
+
+        [JsonPropertyName("type")]
+        public string? Type { get; set; }
+
+        [JsonPropertyName("image")]
+        public LauncherContentImage? Image { get; set; }
+
+        [JsonPropertyName("body")]
+        public string? Body { get; set; }
     }
 
     private sealed class LauncherContentEntry
