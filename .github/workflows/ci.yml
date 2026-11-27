@@ -326,17 +326,6 @@ jobs:
           git diff --cached --quiet || git commit -m "site: загрузки ${APP_VERSION}"
           git push
 
-      - name: Установить Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Деплой сайта в Vercel
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          npm i -g vercel@latest
-          vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
-          vercel deploy --prod --yes --token="$VERCEL_TOKEN"
+      # Деплой сайта выполняется автоматически: проект Vercel (ehot-launcher-site)
+      # связан с репозиторием и сам собирает production при каждом push в main.
+      # Явный `vercel deploy` из CI не нужен — git integration делает это надёжнее.
