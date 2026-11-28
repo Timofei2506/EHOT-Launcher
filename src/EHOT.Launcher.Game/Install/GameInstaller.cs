@@ -43,7 +43,8 @@ public sealed class GameInstaller(
     IDownloadManager downloads,
     NativesExtractor natives,
     IPlatformInfo platform,
-    ILogService log) : IGameInstaller
+    ILogService log,
+    Import.IForeignGameFilesService foreign) : IGameInstaller
 {
     private const string ResourcesUrl = "https://resources.download.minecraft.net";
 
@@ -92,6 +93,14 @@ public sealed class GameInstaller(
             Directory.CreateDirectory(versionDir);
 
             progress?.Report(new InstallProgress("Подготовка", 0, $"Версия {versionId}"));
+
+            // Переиспользуем всё, что уже лежит в других лаунчерах: ассеты и библиотеки
+            // глобальны, папка версии — точечно. Жёсткие ссылки, без копирования места.
+            var linked = await foreign.LinkMissingAsync(minecraftDirectory, versionId, ct).ConfigureAwait(false);
+            if (linked.Linked + linked.Copied > 0)
+            {
+                progress?.Report(new InstallProgress("Подготовка", 0.02, $"Подтянуто из других лаунчеров: {linked.Linked + linked.Copied} файлов"));
+            }
 
             var resolvedResult = await versions.ResolveAsync(versionId, versionsDir, ct).ConfigureAwait(false);
             if (!resolvedResult.IsSuccess)

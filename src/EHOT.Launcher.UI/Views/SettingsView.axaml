@@ -2,8 +2,15 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:EHOT.Launcher.UI.ViewModels"
              xmlns:core="using:EHOT.Launcher.Core.Platform"
+             xmlns:conv="using:EHOT.Launcher.UI.Converters"
              x:Class="EHOT.Launcher.UI.Views.SettingsView"
              x:DataType="vm:SettingsViewModel">
+
+  <UserControl.Resources>
+    <conv:IconKeyConverter x:Key="IconKey" />
+    <conv:SelectedBackgroundConverter x:Key="SelectedBackground" />
+    <conv:StringEqualsConverter x:Key="Section" />
+  </UserControl.Resources>
 
   <Grid RowDefinitions="Auto,*" RowSpacing="16">
 
@@ -17,227 +24,259 @@
               VerticalAlignment="Center" />
     </Grid>
 
-    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-      <StackPanel Spacing="16">
-      <Grid ColumnDefinitions="*,*" ColumnSpacing="16">
+    <!-- ══════ Концепт: левый список разделов + панель ══════ -->
+    <Grid Grid.Row="1" ColumnDefinitions="232,*" ColumnSpacing="16">
 
-        <!-- ══════ Левая колонка ══════ -->
+      <!-- Левый список -->
+      <Border Grid.Column="0" CornerRadius="16" Padding="12" VerticalAlignment="Top"
+              Background="{StaticResource GlassSidebarBrush}"
+              BorderBrush="{StaticResource GlassBorderSoftBrush}" BorderThickness="1">
+        <ItemsControl ItemsSource="{Binding Tabs}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="vm:SettingsTab">
+              <Button Command="{Binding $parent[ItemsControl].((vm:SettingsViewModel)DataContext).SelectSectionCommand}"
+                      CommandParameter="{Binding Key}"
+                      Classes="nav" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch"
+                      Padding="0" Margin="0,2" Background="Transparent" BorderThickness="0">
+                <Border CornerRadius="10" Padding="12,10"
+                        Background="{Binding IsSelected, Converter={StaticResource SelectedBackground}}"
+                        BorderBrush="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=border}"
+                        BorderThickness="1">
+                  <StackPanel Orientation="Horizontal" Spacing="11">
+                    <Path Data="{Binding IconKey, Converter={StaticResource IconKey}}" Classes="icon"
+                          Width="16" Height="16" VerticalAlignment="Center"
+                          Stroke="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}" />
+                    <TextBlock Text="{Binding Label}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center"
+                               Foreground="{Binding IsSelected, Converter={StaticResource SelectedBackground}, ConverterParameter=text}" />
+                  </StackPanel>
+                </Border>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </Border>
+
+      <!-- Панель раздела -->
+      <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
         <StackPanel Spacing="16">
 
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
-                  <Border.Transitions>
-                    <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
-                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
-                    </Transitions>
-                  </Border.Transitions>
-            <StackPanel Spacing="10">
-              <TextBlock Text="ФАЙЛЫ" Classes="eyebrow" />
-
-              <StackPanel Spacing="5">
-                <TextBlock Text="Каталог Minecraft" Classes="caption" FontSize="11" />
-                <TextBox Text="{Binding MinecraftDirectory, Mode=TwoWay}" />
+          <!-- ════════ Основные ════════ -->
+          <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={StaticResource Section}, ConverterParameter=general}">
+            <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="14">
+                <TextBlock Text="ПОВЕДЕНИЕ" Classes="eyebrow" />
+                <CheckBox IsChecked="{Binding AutoUpdateContent, Mode=TwoWay}"><TextBlock Text="Автоматически обновлять контент" TextWrapping="Wrap" /></CheckBox>
+                <CheckBox IsChecked="{Binding CheckLauncherUpdates, Mode=TwoWay}"><TextBlock Text="Проверять обновления лаунчера при запуске" TextWrapping="Wrap" /></CheckBox>
+                <Border CornerRadius="10" Padding="11" Background="{StaticResource GlassCardBrush}" Classes="glass-card">
+                  <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
+                             Text="Обновление никогда не ставится без вашего нажатия: лаунчер только показывает, что вышла новая версия." />
+                </Border>
+                <CheckBox IsChecked="{Binding NotificationsEnabled, Mode=TwoWay}"><TextBlock Text="Системные уведомления" TextWrapping="Wrap" /></CheckBox>
               </StackPanel>
-
-              <StackPanel Spacing="5">
-                <TextBlock Text="Каталог загрузок" Classes="caption" FontSize="11" />
-                <TextBox Text="{Binding DownloadsDirectory, Mode=TwoWay}" />
-              </StackPanel>
-
-              <Border CornerRadius="10" Padding="11" Background="{StaticResource GlassCardBrush}" Classes="glass-card">
-                <TextBlock Text="{Binding AppDataPath, StringFormat='Данные лаунчера: {0}'}"
-                           Classes="caption" FontSize="10.5" TextWrapping="Wrap" />
-              </Border>
-            </StackPanel>
-          </Border>
-
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
-                  <Border.Transitions>
-                    <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
-                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
-                    </Transitions>
-                  </Border.Transitions>
-            <StackPanel Spacing="14">
-              <TextBlock Text="ПРОИЗВОДИТЕЛЬНОСТЬ" Classes="eyebrow" />
-
-              <StackPanel Spacing="6">
-                <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="Максимум RAM" Classes="body" VerticalAlignment="Center" />
-                  <TextBlock Grid.Column="1" Text="{Binding MaxMemoryMb, StringFormat='{}{0} МБ'}"
-                             FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
-                </Grid>
-                <Slider Minimum="1024" Maximum="32768" TickFrequency="512"
-                        Value="{Binding MaxMemoryMb, Mode=TwoWay}" />
-              </StackPanel>
-
-              <StackPanel Spacing="6">
-                <Grid ColumnDefinitions="*,Auto">
-                  <TextBlock Text="Параллельных загрузок" Classes="body" VerticalAlignment="Center" />
-                  <TextBlock Grid.Column="1" Text="{Binding MaxParallelDownloads}"
-                             FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
-                </Grid>
-                <Slider Minimum="1" Maximum="8" TickFrequency="1"
-                        Value="{Binding MaxParallelDownloads, Mode=TwoWay}" />
-              </StackPanel>
-
-              <CheckBox IsChecked="{Binding ReduceAnimations, Mode=TwoWay}"><TextBlock Text="Уменьшить анимации" TextWrapping="Wrap" /></CheckBox>
-            </StackPanel>
-          </Border>
-
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
-                  <Border.Transitions>
-                    <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
-                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
-                    </Transitions>
-                  </Border.Transitions>
-            <StackPanel Spacing="10">
-              <TextBlock Text="JAVA" Classes="eyebrow" />
-              <ItemsControl ItemsSource="{Binding JavaRuntimes}">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <Border CornerRadius="9" Padding="10,7" Margin="0,0,0,6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card">
-                      <TextBlock Text="{Binding DisplayName}" FontSize="11.5"
-                                 Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
-                    </Border>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
-              <Button Classes="ghost" Content="Сканировать заново" Command="{Binding RescanJavaCommand}"
-                      HorizontalAlignment="Stretch" />
-            </StackPanel>
-          </Border>
-        </StackPanel>
-
-        <!-- ══════ Правая колонка ══════ -->
-        <StackPanel Grid.Column="1" Spacing="16">
-
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
-                  <Border.Transitions>
-                    <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
-                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
-                    </Transitions>
-                  </Border.Transitions>
-            <StackPanel Spacing="10">
-              <TextBlock Text="СЕТЬ И GAME NETWORK" Classes="eyebrow" />
-
-              <StackPanel Spacing="5">
-                <TextBlock Text="Адрес контрольного сервера" Classes="caption" FontSize="11" />
-                <TextBox Text="{Binding ControlPlaneUrl, Mode=TwoWay}"
-                         PlaceholderText="https://api.ehot.example" />
-              </StackPanel>
-
-              <CheckBox IsChecked="{Binding PreferDirect, Mode=TwoWay}"><TextBlock Text="Предпочитать прямое соединение" TextWrapping="Wrap" /></CheckBox>
-              <CheckBox IsChecked="{Binding AllowRelay, Mode=TwoWay}"><TextBlock Text="Разрешить relay как резерв" TextWrapping="Wrap" /></CheckBox>
-
-              <Border CornerRadius="10" Padding="11" Background="{StaticResource GlassCardBrush}" Classes="glass-card">
-                <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
-                           Text="Без настроенного сервера комнаты недоступны — лаунчер сообщит об этом, а не создаст фиктивную комнату." />
-              </Border>
-            </StackPanel>
-          </Border>
-
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
-                  <Border.Transitions>
-                    <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
-                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
-                    </Transitions>
-                  </Border.Transitions>
-            <StackPanel Spacing="10">
-              <TextBlock Text="ПОВЕДЕНИЕ" Classes="eyebrow" />
-              <CheckBox IsChecked="{Binding AutoUpdateContent, Mode=TwoWay}"><TextBlock Text="Автоматически обновлять контент" TextWrapping="Wrap" /></CheckBox>
-              <CheckBox IsChecked="{Binding CheckLauncherUpdates, Mode=TwoWay}"><TextBlock Text="Проверять обновления лаунчера при запуске" TextWrapping="Wrap" /></CheckBox>
-              <Border CornerRadius="10" Padding="11" Background="{StaticResource GlassCardBrush}" Classes="glass-card">
-                <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
-                           Text="Обновление никогда не ставится без вашего нажатия: лаунчер только показывает, что вышла новая версия." />
-              </Border>
-              <CheckBox IsChecked="{Binding NotificationsEnabled, Mode=TwoWay}"><TextBlock Text="Системные уведомления" TextWrapping="Wrap" /></CheckBox>
-            </StackPanel>
-          </Border>
-
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
-                  <Border.Transitions>
-                    <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
-                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
-                    </Transitions>
-                  </Border.Transitions>
-            <StackPanel Spacing="10">
-              <TextBlock Text="ДИАГНОСТИКА" Classes="eyebrow" />
-              <TextBlock Text="{Binding DiagnosticsSummary}" Classes="caption" TextWrapping="Wrap" />
-              <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Classes="ghost" Content="Открыть логи" Command="{Binding OpenLogsCommand}" />
-                <Button Classes="danger" Content="Очистить кэш" Command="{Binding ClearCacheCommand}" />
-              </StackPanel>
-            </StackPanel>
-          </Border>
-
-          <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >
-                  <Border.Transitions>
-                    <Transitions>
-                      <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
-                      <DoubleTransition Property="TranslateTransform.Y" Duration="0:0:0.3" Easing="CubicEaseOut" />
-                    </Transitions>
-                  </Border.Transitions>
-            <StackPanel Spacing="8">
-              <TextBlock Text="ВОЗМОЖНОСТИ СИСТЕМЫ" Classes="eyebrow" />
-              <ItemsControl ItemsSource="{Binding Capabilities}">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate x:DataType="core:Capability">
-                    <Grid ColumnDefinitions="Auto,*" Margin="0,4">
-                      <Ellipse Width="6" Height="6" Fill="{Binding State, Converter={x:Static vm:NetConverters.CapabilityBrush}}"
-                               VerticalAlignment="Top" Margin="0,5,0,0" />
-                      <StackPanel Grid.Column="1" Margin="9,0,0,0" Spacing="1">
-                        <TextBlock Text="{Binding Title}" FontSize="11.5" Foreground="{StaticResource TextBrush}" />
-                        <TextBlock Text="{Binding Detail}" Classes="caption" FontSize="10.5" TextWrapping="Wrap"
-                                   IsVisible="{Binding Detail, Converter={x:Static ObjectConverters.IsNotNull}}" />
-                      </StackPanel>
-                    </Grid>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
-            </StackPanel>
-          </Border>
-        </StackPanel>
-      </Grid>
-
-      <!-- ══════ О ЛАУНЧЕРЕ ══════ -->
-      <Border CornerRadius="16" Padding="18" Classes="glass-card" Background="{StaticResource GlassCardBrush}"
-              BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
-        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="18">
-          <Image Source="avares://EHOT.Launcher/Assets/ehot-logo-orange.png" Width="64" Height="64" Stretch="UniformToFill" VerticalAlignment="Top">
-            <Image.Clip>
-              <RectangleGeometry RadiusX="14" RadiusY="14" Rect="0,0,64,64" />
-            </Image.Clip>
-          </Image>
-          <StackPanel Grid.Column="1" Spacing="6">
-            <Grid ColumnDefinitions="*,Auto">
-              <StackPanel Spacing="1" VerticalAlignment="Center">
-                <TextBlock Text="EHOT Launcher" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextBrush}" />
-                <TextBlock Text="{Binding VersionLabel}" Classes="caption" />
-              </StackPanel>
-              <Button Grid.Column="1" Classes="primary" Content="Проверить обновления" Command="{Binding CheckUpdatesCommand}" VerticalAlignment="Center" />
-            </Grid>
-            <TextBlock Text="Кроссплатформенный лаунчер Minecraft Java Edition: профили, установка версий и модов, каталог контента и собственная сеть для совместной игры." Classes="body" FontSize="12" />
-            <TextBlock Classes="caption">
-              <Run Text="{Binding RuntimeLabel}" /><Run Text=" · " /><Run Text="{Binding PlatformLabel}" /><Run Text=" · " /><Run Text="{Binding BuildInfo}" />
-            </TextBlock>
-            <TextBlock Text="{Binding Updates.StatusText}" Classes="caption" Foreground="{StaticResource AccentHotBrush}" />
-            <StackPanel Orientation="Horizontal" Spacing="8">
-              <Button Classes="ghost" Content="GitHub" Command="{Binding OpenGitHubCommand}" />
-              <Button Classes="ghost" Content="Релизы" Command="{Binding OpenReleasesCommand}" />
-              <Button Classes="ghost" Content="Сообщить об ошибке" Command="{Binding OpenIssuesCommand}" />
-            </StackPanel>
-            <Border Classes="divider" Margin="0,6" />
-            <TextBlock Text="{Binding LegalNotice}" Classes="caption" FontSize="10" TextWrapping="Wrap" />
-            <TextBlock Text="{Binding Credits}" Classes="caption" FontSize="10" TextWrapping="Wrap" />
+            </Border>
           </StackPanel>
-        </Grid>
-      </Border>
-      </StackPanel>
-    </ScrollViewer>
+
+          <!-- ════════ Minecraft ════════ -->
+          <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={StaticResource Section}, ConverterParameter=minecraft}">
+            <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="10">
+                <TextBlock Text="ФАЙЛЫ" Classes="eyebrow" />
+
+                <StackPanel Spacing="5">
+                  <TextBlock Text="Каталог Minecraft" Classes="caption" FontSize="11" />
+                  <TextBox Text="{Binding MinecraftDirectory, Mode=TwoWay}" />
+                </StackPanel>
+
+                <StackPanel Spacing="5">
+                  <TextBlock Text="Каталог загрузок" Classes="caption" FontSize="11" />
+                  <TextBox Text="{Binding DownloadsDirectory, Mode=TwoWay}" />
+                </StackPanel>
+
+                <Border CornerRadius="10" Padding="11" Background="{StaticResource GlassCardBrush}" Classes="glass-card">
+                  <TextBlock Text="{Binding AppDataPath, StringFormat='Данные лаунчера: {0}'}"
+                             Classes="caption" FontSize="10.5" TextWrapping="Wrap" />
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="14">
+                <TextBlock Text="ПАМЯТЬ" Classes="eyebrow" />
+                <StackPanel Spacing="6">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="Максимум RAM" Classes="body" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding MaxMemoryMb, StringFormat='{}{0} МБ'}"
+                               FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                  </Grid>
+                  <Slider Minimum="1024" Maximum="32768" TickFrequency="512"
+                          Value="{Binding MaxMemoryMb, Mode=TwoWay}" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
+
+            <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="10">
+                <TextBlock Text="JAVA" Classes="eyebrow" />
+                <ItemsControl ItemsSource="{Binding JavaRuntimes}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                      <Border CornerRadius="9" Padding="10,7" Margin="0,0,0,6" Background="{StaticResource GlassSurfaceBrush}" Classes="glass-card">
+                        <TextBlock Text="{Binding DisplayName}" FontSize="11.5"
+                                   Foreground="{StaticResource TextBrush}" TextTrimming="CharacterEllipsis" />
+                      </Border>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <Button Classes="ghost" Content="Сканировать заново" Command="{Binding RescanJavaCommand}"
+                        HorizontalAlignment="Stretch" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <!-- ════════ Интерфейс ════════ -->
+          <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={StaticResource Section}, ConverterParameter=interface}">
+            <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="10">
+                <TextBlock Text="ИНТЕРФЕЙС" Classes="eyebrow" />
+                <CheckBox IsChecked="{Binding ReduceAnimations, Mode=TwoWay}"><TextBlock Text="Уменьшить анимации" TextWrapping="Wrap" /></CheckBox>
+                <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
+                           Text="Убирает анимации переходов и появления окон. Полезно, если ноутбук тормозит или вы чувствительны к движению." />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <!-- ════════ Загрузка ════════ -->
+          <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={StaticResource Section}, ConverterParameter=download}">
+            <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="10">
+                <TextBlock Text="ЗАГРУЗКИ" Classes="eyebrow" />
+                <StackPanel Spacing="6">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="Параллельных загрузок" Classes="body" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding MaxParallelDownloads}"
+                               FontSize="13.5" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}" />
+                  </Grid>
+                  <Slider Minimum="1" Maximum="8" TickFrequency="1"
+                          Value="{Binding MaxParallelDownloads, Mode=TwoWay}" />
+                </StackPanel>
+                <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
+                           Text="Сколько файлов качать одновременно при установке версий и модов. 3–4 — разумный максимум для большинства соединений." />
+              </StackPanel>
+            </Border>
+
+            <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="10">
+                <TextBlock Text="СЕТЬ И GAME NETWORK" Classes="eyebrow" />
+
+                <StackPanel Spacing="5">
+                  <TextBlock Text="Адрес контрольного сервера" Classes="caption" FontSize="11" />
+                  <TextBox Text="{Binding ControlPlaneUrl, Mode=TwoWay}"
+                           PlaceholderText="https://api.ehot.example" />
+                </StackPanel>
+
+                <CheckBox IsChecked="{Binding PreferDirect, Mode=TwoWay}"><TextBlock Text="Предпочитать прямое соединение" TextWrapping="Wrap" /></CheckBox>
+                <CheckBox IsChecked="{Binding AllowRelay, Mode=TwoWay}"><TextBlock Text="Разрешить relay как резерв" TextWrapping="Wrap" /></CheckBox>
+
+                <Border CornerRadius="10" Padding="11" Background="{StaticResource GlassCardBrush}" Classes="glass-card">
+                  <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
+                             Text="Без настроенного сервера комнаты недоступны — лаунчер сообщит об этом, а не создаст фиктивную комнату." />
+                </Border>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <!-- ════════ Аккаунт ════════ -->
+          <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={StaticResource Section}, ConverterParameter=account}">
+            <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="12">
+                <TextBlock Text="АККАУНТ" Classes="eyebrow" />
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="14">
+                  <Border Width="52" Height="52" CornerRadius="12" Background="{StaticResource AccentGradient}" VerticalAlignment="Center">
+                    <Path Data="{StaticResource IconUser}" Stroke="White" Width="26" Height="26"
+                          HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Border>
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                    <TextBlock Text="{Binding AccountSummary}" FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap" />
+                    <TextBlock Classes="caption" FontSize="10.5" TextWrapping="Wrap"
+                               Text="Вход через Microsoft (лицензионный) или локальный профиль без лицензии, скин и UUID." />
+                  </StackPanel>
+                </Grid>
+                <Button Classes="primary" Content="Открыть аккаунты" Command="{Binding OpenAccountsCommand}"
+                        HorizontalAlignment="Left" />
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+          <!-- ════════ О лаунчере ════════ -->
+          <StackPanel Spacing="16" IsVisible="{Binding SelectedSection, Converter={StaticResource Section}, ConverterParameter=about}">
+            <Border CornerRadius="16" Padding="18" Classes="glass-card" Background="{StaticResource GlassCardBrush}"
+                    BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <Grid ColumnDefinitions="Auto,*" ColumnSpacing="18">
+                <Image Source="avares://EHOT.Launcher/Assets/ehot-logo-orange.png" Width="64" Height="64" Stretch="UniformToFill" VerticalAlignment="Top">
+                  <Image.Clip>
+                    <RectangleGeometry RadiusX="14" RadiusY="14" Rect="0,0,64,64" />
+                  </Image.Clip>
+                </Image>
+                <StackPanel Grid.Column="1" Spacing="6">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Spacing="1" VerticalAlignment="Center">
+                      <TextBlock Text="EHOT Launcher" FontSize="17" FontWeight="Bold" Foreground="{StaticResource TextBrush}" />
+                      <TextBlock Text="{Binding VersionLabel}" Classes="caption" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Classes="primary" Content="Проверить обновления" Command="{Binding CheckUpdatesCommand}" VerticalAlignment="Center" />
+                  </Grid>
+                  <TextBlock Text="Кроссплатформенный лаунчер Minecraft Java Edition: профили, установка версий и модов, каталог контента и собственная сеть для совместной игры." Classes="body" FontSize="12" />
+                  <TextBlock Classes="caption">
+                    <Run Text="{Binding RuntimeLabel}" /><Run Text=" · " /><Run Text="{Binding PlatformLabel}" /><Run Text=" · " /><Run Text="{Binding BuildInfo}" />
+                  </TextBlock>
+                  <TextBlock Text="{Binding Updates.StatusText}" Classes="caption" Foreground="{StaticResource AccentHotBrush}" />
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Classes="ghost" Content="GitHub" Command="{Binding OpenGitHubCommand}" />
+                    <Button Classes="ghost" Content="Релизы" Command="{Binding OpenReleasesCommand}" />
+                    <Button Classes="ghost" Content="Сообщить об ошибке" Command="{Binding OpenIssuesCommand}" />
+                  </StackPanel>
+                  <Border Classes="divider" Margin="0,6" />
+                  <TextBlock Text="{Binding LegalNotice}" Classes="caption" FontSize="10" TextWrapping="Wrap" />
+                  <TextBlock Text="{Binding Credits}" Classes="caption" FontSize="10" TextWrapping="Wrap" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="10">
+                <TextBlock Text="ДИАГНОСТИКА" Classes="eyebrow" />
+                <TextBlock Text="{Binding DiagnosticsSummary}" Classes="caption" TextWrapping="Wrap" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <Button Classes="ghost" Content="Открыть логи" Command="{Binding OpenLogsCommand}" />
+                  <Button Classes="danger" Content="Очистить кэш" Command="{Binding ClearCacheCommand}" />
+                </StackPanel>
+              </StackPanel>
+            </Border>
+
+            <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+              <StackPanel Spacing="8">
+                <TextBlock Text="ВОЗМОЖНОСТИ СИСТЕМЫ" Classes="eyebrow" />
+                <ItemsControl ItemsSource="{Binding Capabilities}">
+                  <ItemsControl.ItemTemplate>
+                    <DataTemplate x:DataType="core:Capability">
+                      <Grid ColumnDefinitions="Auto,*" Margin="0,4">
+                        <Ellipse Width="6" Height="6" Fill="{Binding State, Converter={x:Static vm:NetConverters.CapabilityBrush}}"
+                                 VerticalAlignment="Top" Margin="0,5,0,0" />
+                        <StackPanel Grid.Column="1" Margin="9,0,0,0" Spacing="1">
+                          <TextBlock Text="{Binding Title}" FontSize="11.5" Foreground="{StaticResource TextBrush}" />
+                          <TextBlock Text="{Binding Detail}" Classes="caption" FontSize="10.5" TextWrapping="Wrap"
+                                     IsVisible="{Binding Detail, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                        </StackPanel>
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.ItemTemplate>
+                </ItemsControl>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+
+        </StackPanel>
+      </ScrollViewer>
+    </Grid>
   </Grid>
 </UserControl>

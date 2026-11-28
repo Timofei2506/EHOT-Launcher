@@ -139,7 +139,7 @@ public sealed class DeepLinkRouter : IDisposable
                     break;
 
                 case DeepLinkKind.Install:
-                    await _navigation.NavigateAsync("modpacks", link).ConfigureAwait(false);
+                    await _navigation.NavigateAsync("builds", link).ConfigureAwait(false);
                     break;
             }
         }

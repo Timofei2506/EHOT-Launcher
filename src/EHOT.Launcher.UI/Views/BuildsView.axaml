@@ -11,21 +11,44 @@
   </UserControl.Resources>
 
   <Grid>
-    <Grid RowDefinitions="Auto,*" RowSpacing="14">
+    <Grid RowDefinitions="Auto,Auto,*" RowSpacing="14">
       <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
         <StackPanel Spacing="4">
           <TextBlock Text="Сборки" Classes="h1" />
           <TextBlock Text="Ваши профили-инстансы: память, версия, клон и удаление — всё реальное, данные на диске" Classes="body" />
         </StackPanel>
-        <Button Grid.Column="1" Classes="ghost" Command="{Binding RefreshCommand}" VerticalAlignment="Center">
-          <StackPanel Orientation="Horizontal" Spacing="8">
-            <Path Data="{StaticResource IconRefresh}" Classes="icon" Width="15" Height="15" />
-            <TextBlock Text="Обновить" FontSize="12.5" VerticalAlignment="Center" />
-          </StackPanel>
-        </Button>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <Button Classes="primary" Command="{Binding PickAndImportMrpackCommand}"
+                  IsEnabled="{Binding IsImporting, Converter={x:Static BoolConverters.Not}}"
+                  ToolTip.Tip="Импортировать сборку из файла .mrpack (Modrinth)">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Path Data="{StaticResource IconDownload}" Classes="icon" Width="15" Height="15" Stroke="White" />
+              <TextBlock Text="Импорт .mrpack" FontSize="12.5" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Classes="ghost" Command="{Binding RefreshCommand}"
+                  VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Path Data="{StaticResource IconRefresh}" Classes="icon" Width="15" Height="15" />
+              <TextBlock Text="Обновить" FontSize="12.5" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
       </Grid>
 
-      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+      <!-- Импорт сборки: реальный прогресс этапа -->
+      <Border Grid.Row="1" IsVisible="{Binding IsImporting}"
+              CornerRadius="12" Padding="14,10" Background="{StaticResource GlassCardBrush}"
+              BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+          <ProgressBar Width="200" Height="5" Minimum="0" Maximum="1" Value="{Binding ImportFraction}"
+                       Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" />
+          <TextBlock Grid.Column="1" Text="{Binding ImportStatus}" Classes="caption" TextWrapping="Wrap"
+                     VerticalAlignment="Center" />
+        </Grid>
+      </Border>
+
+      <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
         <Grid>
           <ItemsControl ItemsSource="{Binding Items}" IsVisible="{Binding HasItems}">
             <ItemsControl.ItemsPanel>

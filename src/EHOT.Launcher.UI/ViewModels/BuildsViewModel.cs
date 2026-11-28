@@ -2,26 +2,46 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using EHOT.Launcher.Core.Models;
+using EHOT.Launcher.Content.Install;
+using EHOT.Launcher.Content.Modpacks;
 using EHOT.Launcher.Game.Profiles;
 using EHOT.Launcher.UI.Services;
+using EHOT.Launcher.Core.Platform;
 
 namespace EHOT.Launcher.UI.ViewModels;
 
 /// <summary>«Сборки»: профили-инстансы с операциями, которые реально выполняются (выбор, клон, избранное, удаление).</summary>
-public sealed partial class BuildsViewModel : ViewModelBase
+public sealed partial class BuildsViewModel : ViewModelBase, INavigationAware
 {
     private readonly IAppState _state;
     private readonly IProfileManager _profiles;
     private readonly IToastService _toasts;
     private readonly INavigationService _navigation;
+    private readonly IMrpackFilePicker _picker;
+    private readonly IModpackService _modpacks;
+    private readonly IAppPaths _paths;
 
-    public BuildsViewModel(IAppState state, IProfileManager profiles, IToastService toasts, INavigationService navigation)
+    public BuildsViewModel(IAppState state, IProfileManager profiles, IToastService toasts,
+        INavigationService navigation, IMrpackFilePicker picker, IModpackService modpacks, IAppPaths paths)
     {
         _state = state;
         _profiles = profiles;
         _toasts = toasts;
         _navigation = navigation;
+        _picker = picker;
+        _modpacks = modpacks;
+        _paths = paths;
     }
+
+    /// <summary>Этап импорта .mrpack (показывается под заголовком).</summary>
+    [ObservableProperty]
+    private string _importStatus = string.Empty;
+
+    [ObservableProperty]
+    private bool _isImporting;
+
+    [ObservableProperty]
+    private double _importFraction;
 
     public ObservableCollection<BuildCardViewModel> Items { get; } = [];
 
@@ -43,6 +63,71 @@ public sealed partial class BuildsViewModel : ViewModelBase
     private string? _cloneSourceId;
 
     public override async Task OnNavigatedToAsync(CancellationToken ct = default) => await ReloadAsync(ct).ConfigureAwait(true);
+
+    public async Task OnNavigatedToAsync(object? parameter, CancellationToken ct = default)
+    {
+        // Диплинк ehot-launcher://install?file=... или .mrpack-файл из «Открыть с помощью».
+        var path = parameter switch
+        {
+            DeepLink { Kind: DeepLinkKind.Install, FilePath: { Length: > 0 } p } => p,
+            string p when p.EndsWith(".mrpack", StringComparison.OrdinalIgnoreCase) && File.Exists(p) => p,
+            _ => null
+        };
+
+        if (path is not null)
+        {
+            await ImportMrpackAsync(path, ct).ConfigureAwait(true);
+            return;
+        }
+
+        await ReloadAsync(ct).ConfigureAwait(true);
+    }
+
+    [RelayCommand]
+    private async Task PickAndImportMrpackAsync(CancellationToken ct = default)
+    {
+        var path = await _picker.PickMrpackAsync().ConfigureAwait(true);
+        if (path is not null)
+        {
+            await ImportMrpackAsync(path, ct).ConfigureAwait(true);
+        }
+    }
+
+    private async Task ImportMrpackAsync(string archivePath, CancellationToken ct)
+    {
+        IsImporting = true;
+        ImportFraction = 0;
+        ImportStatus = "Чтение индекса сборки…";
+        try
+        {
+            var progress = new Progress<ContentInstallProgress>(p =>
+            {
+                ImportStatus = p.Detail is { Length: > 0 } detail ? $"{p.Stage} — {detail}" : p.Stage;
+                ImportFraction = p.Fraction;
+            });
+
+            var result = await _modpacks.ImportMrpackAsync(archivePath, _paths.AppDataDirectory, progress, ct).ConfigureAwait(true);
+            if (result.IsSuccess && result.Value is { } summary)
+            {
+                _toasts.Success("Сборка импортирована", $"«{summary.Name}» · Minecraft {summary.MinecraftVersion} · {summary.Mods} модов");
+            }
+            else
+            {
+                _toasts.Error("Не удалось импортировать сборку", result.Message ?? "Неизвестная ошибка.");
+            }
+        }
+        catch (Exception ex)
+        {
+            _toasts.Error("Не удалось импортировать сборку", ex.Message);
+        }
+        finally
+        {
+            IsImporting = false;
+            ImportStatus = string.Empty;
+            ImportFraction = 0;
+            await ReloadAsync(CancellationToken.None).ConfigureAwait(true);
+        }
+    }
 
     [RelayCommand]
     private async Task RefreshAsync() => await ReloadAsync(CancellationToken.None).ConfigureAwait(true);

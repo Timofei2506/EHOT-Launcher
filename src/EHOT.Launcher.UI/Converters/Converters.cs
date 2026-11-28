@@ -143,3 +143,13 @@ public sealed class BoolToFavoriteConverter : IValueConverter
     public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         => throw new NotSupportedException();
 }
+
+/// <summary>Сравнение строки с ConverterParameter (без учёта регистра) → bool.</summary>
+public sealed class StringEqualsConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => value is string v && parameter is string p && string.Equals(v, p, StringComparison.OrdinalIgnoreCase);
+
+    public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        => throw new NotSupportedException();
+}

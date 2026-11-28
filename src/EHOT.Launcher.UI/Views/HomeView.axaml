@@ -123,7 +123,7 @@
         <Image Source="avares://EHOT.Launcher/Assets/mascot-raccoon.png" Width="220" Height="220" Stretch="Uniform" />
         <TextBlock Text="Запуск Minecraft…" FontSize="30" FontWeight="Bold" HorizontalAlignment="Center" />
         <TextBlock Text="{Binding InstallStatus}" Classes="caption" HorizontalAlignment="Center" MaxWidth="520" TextWrapping="Wrap" TextAlignment="Center" />
-        <ProgressBar Classes="ehot" Width="420" Height="8" IsIndeterminate="True" />
+        <ProgressBar Classes="ehot" Width="420" Height="8" Value="{Binding InstallProgress}" Maximum="1" />
         <Border Classes="chip" Padding="14,8" HorizontalAlignment="Center">
           <StackPanel Orientation="Horizontal" Spacing="10">
             <Path Data="{StaticResource IconSparkle}" Classes="icon" Stroke="{StaticResource AccentHotBrush}" Width="14" Height="14" />

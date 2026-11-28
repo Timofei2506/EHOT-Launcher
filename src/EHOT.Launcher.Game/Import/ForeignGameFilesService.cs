@@ -83,6 +83,14 @@ public interface IForeignGameFilesService
         IReadOnlyList<ForeignVersionInfo> selected,
         string destinationMinecraftDirectory,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Быстрый best-effort перенос ДО установки: подтягивает ассеты и библиотеки целиком
+    /// и только папку versions/&lt;versionId&gt; из чужих лаунчеров (жёсткие ссылки, без дублирования
+    /// места). Вызывается из установщика: если файлы уже есть локально, они не трогаются.
+    /// Никогда не бросает наружу — любая ошибка означает «просто не подтянулось».
+    /// </summary>
+    Task<(int Linked, int Copied)> LinkMissingAsync(string destinationMinecraftDirectory, string versionId, CancellationToken ct = default);
 }
 
 public sealed class ForeignGameFilesService(ILogService log) : IForeignGameFilesService
@@ -344,6 +352,47 @@ public sealed class ForeignGameFilesService(ILogService log) : IForeignGameFiles
             return 0;
         }
     }
+
+    public Task<(int Linked, int Copied)> LinkMissingAsync(string destinationMinecraftDirectory, string versionId, CancellationToken ct = default)
+        => Task.Run(() =>
+        {
+            var linked = 0;
+            var copied = 0;
+            var skipped = 0;
+            var failed = 0;
+            try
+            {
+                foreach (var (label, root) in CandidateRoots())
+                {
+                    ct.ThrowIfCancellationRequested();
+                    if (!Directory.Exists(root))
+                    {
+                        continue;
+                    }
+
+                    MergeTree(Path.Combine(root, "assets"), Path.Combine(destinationMinecraftDirectory, "assets"), ct,
+                        ref linked, ref copied, ref skipped, ref failed);
+                    MergeTree(Path.Combine(root, "libraries"), Path.Combine(destinationMinecraftDirectory, "libraries"), ct,
+                        ref linked, ref copied, ref skipped, ref failed);
+                    if (!string.IsNullOrWhiteSpace(versionId))
+                    {
+                        MergeTree(Path.Combine(root, "versions", versionId), Path.Combine(destinationMinecraftDirectory, "versions", versionId), ct,
+                            ref linked, ref copied, ref skipped, ref failed);
+                    }
+                }
+
+                if (linked + copied > 0)
+                {
+                    log.Info("ForeignGameFiles", $"Подтянуто из других лаунчеров перед установкой {versionId}: ссылок {linked}, копий {copied}, пропущено {skipped}, ошибок {failed}");
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                log.Warn("ForeignGameFiles", $"Не удалось подтянуть файлы из других лаунчеров: {ex.Message}");
+            }
+
+            return (linked, copied);
+        }, ct);
 
     public Task<ForeignImportResult> ImportAsync(
         IReadOnlyList<ForeignVersionInfo> selected,

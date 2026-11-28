@@ -22,6 +22,7 @@ public sealed partial class SettingsViewModel : ViewModelBase
     private readonly ILogService _log;
     private readonly IToastService _toasts;
     private readonly UpdateViewModel _updates;
+    private readonly INavigationService _navigation;
 
     public SettingsViewModel(
         IAppState state,
@@ -31,8 +32,10 @@ public sealed partial class SettingsViewModel : ViewModelBase
         JavaRuntimeManager java,
         ILogService log,
         IToastService toasts,
-        UpdateViewModel updates)
+        UpdateViewModel updates,
+        INavigationService navigation)
     {
+        _navigation = navigation;
         _state = state;
         _paths = paths;
         _platform = platform;
@@ -41,6 +44,16 @@ public sealed partial class SettingsViewModel : ViewModelBase
         _log = log;
         _toasts = toasts;
         _updates = updates;
+
+        Tabs =
+        [
+            new SettingsTab("general", "Основные", "IconSettings") { IsSelected = true },
+            new SettingsTab("minecraft", "Minecraft", "IconCube"),
+            new SettingsTab("interface", "Интерфейс", "IconLayers"),
+            new SettingsTab("download", "Загрузка", "IconDownload"),
+            new SettingsTab("account", "Аккаунт", "IconUser"),
+            new SettingsTab("about", "О лаунчере", "IconInfo"),
+        ];
 
         var settings = state.Settings;
         MinecraftDirectory = settings.MinecraftDirectory ?? paths.DefaultMinecraftDirectory;
@@ -57,6 +70,35 @@ public sealed partial class SettingsViewModel : ViewModelBase
     }
 
     public ObservableCollection<JavaRuntime> JavaRuntimes { get; } = [];
+
+    /// <summary>Вкладки настроек (концепт: Основные / Minecraft / Интерфейс / Загрузка / Аккаунт / О лаунчере).</summary>
+    public ObservableCollection<SettingsTab> Tabs { get; }
+
+    [ObservableProperty]
+    private string _selectedSection = "general";
+
+    [RelayCommand]
+    private void SelectSection(string? key)
+    {
+        if (string.IsNullOrWhiteSpace(key))
+        {
+            return;
+        }
+
+        SelectedSection = key;
+        foreach (var tab in Tabs)
+        {
+            tab.IsSelected = string.Equals(tab.Key, key, StringComparison.OrdinalIgnoreCase);
+        }
+    }
+
+    public string AccountSummary => _state.CurrentAccount is { } account
+        ? $"{account.Username} · {(account.Kind == AccountKind.Microsoft ? "лицензионный" : "локальный")}" +
+          (_state.CurrentProfile is { } p ? $" · {p.Name} ({p.DisplayVersion})" : string.Empty)
+        : "Аккаунт не выбран";
+
+    [RelayCommand]
+    private Task OpenAccountsAsync() => _navigation.NavigateAsync("accounts");
 
     public ObservableCollection<Capability> Capabilities { get; } = [];
 
@@ -105,6 +147,8 @@ public sealed partial class SettingsViewModel : ViewModelBase
 
     public override async Task OnNavigatedToAsync(CancellationToken ct = default)
     {
+        OnPropertyChanged(nameof(AccountSummary));
+
         Capabilities.Clear();
         foreach (var capability in _capabilities.All)
         {

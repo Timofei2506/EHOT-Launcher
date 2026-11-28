@@ -135,6 +135,7 @@ public static class AppBootstrap
         services.AddSingleton<IGalleryService, GalleryService>();
         services.AddSingleton<IServerCatalogService, ServerCatalogService>();
         services.AddSingleton<ISkinFilePicker, SkinFilePicker>();
+        services.AddSingleton<IMrpackFilePicker, MrpackFilePicker>();
         services.AddSingleton<DeepLinkRouter>(sp => new DeepLinkRouter(
             sp.GetRequiredService<ILoggerFactory>().CreateLogger("DeepLink"),
             sp.GetRequiredService<INavigationService>(),
