@@ -87,6 +87,33 @@ public interface IForeignGameFilesService
 
 public sealed class ForeignGameFilesService(ILogService log) : IForeignGameFilesService
 {
+    /// <summary>Создание жёсткой ссылки: CreateHardLinkW (Windows) / link(2) (Unix).</summary>
+    private static class HardLink
+    {
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", EntryPoint = "CreateHardLinkW", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+        private static extern bool CreateHardLinkW(string lpFileName, string lpExistingFileName, IntPtr lpSecurityAttributes);
+
+        [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "link", CharSet = System.Runtime.InteropServices.CharSet.Ansi, SetLastError = true)]
+        private static extern int LinkUnix(string oldpath, string newpath);
+
+        public static bool TryCreate(string linkPath, string target)
+        {
+            try
+            {
+                if (OperatingSystem.IsWindows())
+                {
+                    return CreateHardLinkW(linkPath, target, IntPtr.Zero);
+                }
+
+                return LinkUnix(target, linkPath) == 0;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+    }
+
     public Task<ForeignScanResult> ScanCommonAsync(string destinationMinecraftDirectory, CancellationToken ct = default)
         => Task.Run(() => ScanCore(CandidateRoots(), destinationMinecraftDirectory, ct), ct);
 
@@ -101,7 +128,7 @@ public sealed class ForeignGameFilesService(ILogService log) : IForeignGameFiles
             return ScanCore([(label, minecraftDirectory)], destinationMinecraftDirectory, ct);
         }, ct);
 
-    private ForeignScanResult ScanCore(IReadOnlyList<(string Label, string Root)> roots, string destinationMinecraftDirectory, CancellationToken ct)
+    private static ForeignScanResult ScanCore(IReadOnlyList<(string Label, string Root)> roots, string destinationMinecraftDirectory, CancellationToken ct)
     {
         var versions = new List<ForeignVersionInfo>();
         var searched = new List<string>();
@@ -161,7 +188,7 @@ public sealed class ForeignGameFilesService(ILogService log) : IForeignGameFiles
     }
 
     /// <summary>Известные расположения других лаунчеров (по платформе).</summary>
-    private static IReadOnlyList<(string Label, string Root)> CandidateRoots()
+    private static List<(string Label, string Root)> CandidateRoots()
     {
         var roots = new List<(string, string)>();
         var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
@@ -385,7 +412,7 @@ public sealed class ForeignGameFilesService(ILogService log) : IForeignGameFiles
     }
 
     /// <summary>Слияние дерева: жёсткие ссылки с откатом на копирование; существующие файлы не трогаем.</summary>
-    private void MergeTree(string source, string destination, CancellationToken ct,
+    private static void MergeTree(string source, string destination, CancellationToken ct,
         ref int linked, ref int copied, ref int skippedFiles, ref int failed)
     {
         if (!Directory.Exists(source))
@@ -406,38 +433,24 @@ public sealed class ForeignGameFilesService(ILogService log) : IForeignGameFiles
                 continue;
             }
 
+            if (HardLink.TryCreate(target, file))
+            {
+                linked++;
+                continue;
+            }
+
             try
             {
-                File.CreateHardLink(target, file);
-                linked++;
+                File.Copy(file, target, overwrite: false);
+                copied++;
             }
             catch (IOException)
             {
-                try
-                {
-                    File.Copy(file, target, overwrite: false);
-                    copied++;
-                }
-                catch (IOException)
-                {
-                    failed++;
-                }
-                catch (UnauthorizedAccessException)
-                {
-                    failed++;
-                }
+                failed++;
             }
             catch (UnauthorizedAccessException)
             {
-                try
-                {
-                    File.Copy(file, target, overwrite: false);
-                    copied++;
-                }
-                catch (IOException)
-                {
-                    failed++;
-                }
+                failed++;
             }
         }
     }
