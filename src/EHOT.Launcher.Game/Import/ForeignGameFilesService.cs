@@ -91,7 +91,10 @@ public sealed class ForeignGameFilesService(ILogService log) : IForeignGameFiles
     private static class HardLink
     {
         [System.Runtime.InteropServices.DllImport("kernel32.dll", EntryPoint = "CreateHardLinkW", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
-        private static extern bool CreateHardLinkW(string lpFileName, string lpExistingFileName, IntPtr lpSecurityAttributes);
+        private static extern bool CreateHardLinkW(
+            [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)] string lpFileName,
+            [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPWStr)] string lpExistingFileName,
+            IntPtr lpSecurityAttributes);
 
         [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "link", SetLastError = true)]
         private static extern int LinkUnix(
