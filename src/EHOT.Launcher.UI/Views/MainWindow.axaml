@@ -36,22 +36,31 @@
             </Image.Clip>
           </Image>
         </Button>
-        <TextBlock Text="EHOT Launcher" FontSize="13" FontWeight="Bold"
-                   Foreground="{StaticResource TextBrush}" VerticalAlignment="Center" />
+        <TextBlock FontSize="14.5" FontWeight="ExtraBold" VerticalAlignment="Center" LetterSpacing="0.2">
+          <Run Text="EHOT" Foreground="{StaticResource TextBrush}" /><Run Text=" Launcher" Foreground="{StaticResource AccentBrush}" />
+        </TextBlock>
       </StackPanel>
 
       <Border Grid.Column="1" Background="Transparent" PointerPressed="OnTitleBarPressed" />
 
-      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch" Margin="0,0,8,0" Spacing="0">
-        <Button Classes="window" Click="OnMinimizeClick" ToolTip.Tip="Свернуть">
-          <Path Data="{StaticResource IconWinMinimize}" />
-        </Button>
-        <Button Classes="window" Click="OnMaximizeClick" ToolTip.Tip="Развернуть во весь экран">
-          <Path Data="{StaticResource IconWinMaximize}" x:Name="MaxGlyph" />
-        </Button>
-        <Button Classes="window close" Click="OnCloseClick" ToolTip.Tip="Закрыть">
-          <Path Data="{StaticResource IconWinClose}" />
-        </Button>
+      <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Stretch" Margin="0,0,8,0" Spacing="16">
+        <StackPanel Orientation="Horizontal" Spacing="9" VerticalAlignment="Center" Margin="0,0,2,0">
+          <TextBlock Text="Играй. Исследуй. Наслаждайся." FontSize="11" FontStyle="Italic"
+                     Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+          <Path Data="{StaticResource IconPaw}" Fill="{StaticResource AccentBrush}" Width="14" Height="14" Stretch="Uniform" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch" Spacing="0">
+          <Button Classes="window" Click="OnMinimizeClick" ToolTip.Tip="Свернуть">
+            <Path Data="{StaticResource IconWinMinimize}" />
+          </Button>
+          <Button Classes="window" Click="OnMaximizeClick" ToolTip.Tip="Развернуть во весь экран">
+            <Path Data="{StaticResource IconWinMaximize}" x:Name="MaxGlyph" />
+          </Button>
+          <Button Classes="window close" Click="OnCloseClick" ToolTip.Tip="Закрыть">
+            <Path Data="{StaticResource IconWinClose}" />
+          </Button>
+        </StackPanel>
       </StackPanel>
     </Grid>
 

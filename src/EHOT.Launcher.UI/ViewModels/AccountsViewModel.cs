@@ -22,6 +22,7 @@ public sealed partial class AccountsViewModel : ViewModelBase
     private readonly IAccountRepository _accounts;
     private readonly IToastService _toasts;
     private readonly ISkinFilePicker _picker;
+    private readonly IClipboardService _clipboard;
 
     public AccountsViewModel(
         IAppState state,
@@ -30,7 +31,8 @@ public sealed partial class AccountsViewModel : ViewModelBase
         IProfileLookupService lookup,
         IAccountRepository accounts,
         IToastService toasts,
-        ISkinFilePicker picker)
+        ISkinFilePicker picker,
+        IClipboardService clipboard)
     {
         _state = state;
         _local = local;
@@ -39,6 +41,7 @@ public sealed partial class AccountsViewModel : ViewModelBase
         _accounts = accounts;
         _toasts = toasts;
         _picker = picker;
+        _clipboard = clipboard;
 
         MicrosoftConfigured = microsoft.IsConfigured;
         MicrosoftHint = microsoft.ConfigurationHint ?? string.Empty;
@@ -155,6 +158,25 @@ public sealed partial class AccountsViewModel : ViewModelBase
     }
 
     /// <summary>Автоматически переносит скин официального игрока на уже созданный профиль.</summary>
+    [RelayCommand]
+    private async Task CopyUuidAsync(AccountInfo? account)
+    {
+        if (account is null || string.IsNullOrWhiteSpace(account.Uuid))
+        {
+            return;
+        }
+
+        var copied = await _clipboard.SetTextAsync(account.Uuid).ConfigureAwait(true);
+        if (copied)
+        {
+            _toasts.Success("UUID скопирован", account.Uuid);
+        }
+        else
+        {
+            _toasts.Error("Не удалось скопировать UUID", "Буфер обмена недоступен.");
+        }
+    }
+
     [RelayCommand]
     private async Task CopyOfficialSkinAsync(AccountInfo? account)
     {

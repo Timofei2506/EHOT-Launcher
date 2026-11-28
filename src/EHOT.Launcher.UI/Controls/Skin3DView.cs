@@ -3,16 +3,18 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
-using Avalonia.Platform;
 
 namespace EHOT.Launcher.UI.Controls;
 
 /// <summary>
-/// Объёмное превью скина Minecraft: персонаж собирается из тех же областей текстуры,
-/// что использует игра (голова 8×8×8, тело 8×12×4, руки и ноги 4×12×4), и вращается мышью.
+/// Объёмное превью скина Minecraft: персонаж собирается из областей текстуры
+/// (голова 8×8×8, тело 8×12×4, руки и ноги 4×12×4, второй слой — шляпа/куртка/рукава/брюки)
+/// и вращается мышью.
 /// <para>
-/// Каждая грань закрашивается по настоящей текстуре — попиксельно, с учётом поворота,
-/// поэтому видно лицо, одежду и слой шляпы/куртки. Поддерживаются форматы 64×64 и 64×32.
+/// Грань рисуется одним аффинным преобразованием всей области текстуры (ортографическая
+/// проекция сохраняет прямые линии), поэтому кадр стоит десятки операций вместо тысяч
+/// полигонов — превью больше не тормозит и рисуется без «рваных» текселей.
+/// Поддерживаются форматы 64×64 (классика), 64×32 (legacy) и slim-рукава (Alex).
 /// </para>
 /// </summary>
 public sealed class Skin3DView : Control
@@ -26,12 +28,11 @@ public sealed class Skin3DView : Control
     public static readonly StyledProperty<double> PitchProperty =
         AvaloniaProperty.Register<Skin3DView, double>(nameof(Pitch), 6d);
 
-    /// <summary>Сколько пикселей текстуры в одном пункте модели (масштаб фигуры).</summary>
     private const double PixelsPerPoint = 44.0;
 
-    private uint[]? _pixels;
-    private int _texWidth;
+    private Bitmap? _bitmap;
     private int _texHeight;
+    private bool _slim;
     private bool _dragging;
     private Point _lastPoint;
 
@@ -64,52 +65,62 @@ public sealed class Skin3DView : Control
 
     private void LoadTexture(string? path)
     {
-        _pixels = null;
-        _texWidth = 0;
+        _bitmap?.Dispose();
+        _bitmap = null;
         _texHeight = 0;
-        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
-        {
-            InvalidateVisual();
-            return;
-        }
+        _slim = false;
 
-        Bitmap? bitmap = null;
-        try
+        if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
         {
-            bitmap = new Bitmap(path);
-            var size = bitmap.PixelSize;
-            var buffer = new uint[size.Width * size.Height];
-            var handle = System.Runtime.InteropServices.GCHandle.Alloc(
-                buffer, System.Runtime.InteropServices.GCHandleType.Pinned);
             try
             {
-                bitmap.CopyPixels(new PixelRect(0, 0, size.Width, size.Height),
-                    handle.AddrOfPinnedObject(), buffer.Length * 4, size.Width * 4);
+                var bitmap = new Bitmap(path);
+                _texHeight = bitmap.PixelSize.Height;
+                _slim = _texHeight >= 64 && DetectSlim(bitmap);
+                _bitmap = bitmap;
             }
-            finally
+            catch (Exception)
             {
-                handle.Free();
+                _bitmap?.Dispose();
+                _bitmap = null;
             }
+        }
 
-            // CopyPixels отдаёт пиксели в порядке RGBA (uint = A<<24|B<<16|G<<8|R),
-            // переставлять каналы не нужно — любая «нормализация» ломает цвета.
-            _pixels = buffer;
-            _texWidth = size.Width;
-            _texHeight = size.Height;
-        }
-        catch (IOException)
+        InvalidateVisual();
+    }
+
+    /// <summary>
+    /// Slim-модель: рукава шириной 3 пикселя. В slim-текстуре четвёртый столбец
+    /// передней грани руки прозрачен (рука 4×12 классики всегда сплошная).
+    /// </summary>
+    private static bool DetectSlim(Bitmap bitmap)
+    {
+        const int w = 1, h = 12; // столбец 47, строки 20..31 — «лишняя» колонка slim-руки
+        var buffer = new byte[w * h * 4];
+        var handle = System.Runtime.InteropServices.GCHandle.Alloc(buffer, System.Runtime.InteropServices.GCHandleType.Pinned);
+        try
         {
-            _pixels = null;
+            bitmap.CopyPixels(new PixelRect(47, 20, w, h), handle.AddrOfPinnedObject(), buffer.Length, w * 4);
         }
-        catch (UnauthorizedAccessException)
+        catch (Exception)
         {
-            _pixels = null;
+            return false; // нет доступа к пикселям — считаем модель классической
         }
         finally
         {
-            bitmap?.Dispose();
-            InvalidateVisual();
+            handle.Free();
         }
+
+        var transparent = 0;
+        for (var i = 3; i < buffer.Length; i += 4)
+        {
+            if (buffer[i] < 8)
+            {
+                transparent++;
+            }
+        }
+
+        return transparent >= h - 2; // почти вся колонка прозрачная → slim (Alex)
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
@@ -141,28 +152,34 @@ public sealed class Skin3DView : Control
         base.OnPointerReleased(e);
         _dragging = false;
         e.Pointer.Capture(null);
-        Cursor = Cursor.Default;
+        Cursor = null;
+    }
+
+    // Освобождение текстуры при выгрузке элемента из визуального дерева.
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        _bitmap?.Dispose();
+        _bitmap = null;
+        base.OnDetachedFromVisualTree(e);
     }
 
     public override void Render(DrawingContext context)
     {
         base.Render(context);
         var bounds = new Rect(Bounds.Size);
-        context.FillRectangle(new SolidColorBrush(Color.Parse("#111828")), bounds, 14);
 
-        if (_pixels is null || _texWidth == 0)
+        if (_bitmap is null)
         {
             DrawPlaceholder(context, bounds);
             return;
         }
 
-        // Фигура вытянутая (16×32), поэтому масштаб ограничивают и ширина, и высота.
         var scale = Math.Min(bounds.Width / 22.0, bounds.Height / PixelsPerPoint);
         var yaw = Yaw * Math.PI / 180.0;
         var pitch = Pitch * Math.PI / 180.0;
 
         var faces = new List<Face>();
-        foreach (var box in BuildModel(_texHeight <= 32))
+        foreach (var box in BuildModel(_texHeight <= 32, _slim))
         {
             CollectFaces(faces, box, yaw, pitch, scale, bounds.Center);
         }
@@ -175,11 +192,22 @@ public sealed class Skin3DView : Control
         }
     }
 
+    /// <summary>Силуэт персонажа, когда файла скина нет (или он битый).</summary>
     private static void DrawPlaceholder(DrawingContext context, Rect bounds)
     {
-        var size = Math.Min(bounds.Width, bounds.Height) * 0.45;
-        context.DrawRectangle(new SolidColorBrush(Color.Parse("#252E45")), null,
-            new Rect(bounds.Center.X - (size / 2), bounds.Center.Y - (size / 2), size, size), 10, 10);
+        var unit = Math.Min(bounds.Width, bounds.Height) / 16.0;
+        var cx = bounds.Center.X;
+        var top = bounds.Center.Y - (10.0 * unit / 2);
+        var muted = new SolidColorBrush(Color.Parse("#2E313B"));
+        var line = new SolidColorBrush(Color.Parse("#3A3E4A"));
+
+        // голова
+        context.DrawRectangle(muted, new Pen(line, 1), new RoundedRect(new Rect(cx - (2.1 * unit), top, 4.2 * unit, 4.2 * unit), 1.6 * unit));
+        // тело
+        context.DrawRectangle(muted, new Pen(line, 1), new RoundedRect(new Rect(cx - (2.5 * unit), top + (5.0 * unit), 5.0 * unit, 7.0 * unit), 1.6 * unit));
+        // ноги
+        context.DrawRectangle(muted, new Pen(line, 1), new RoundedRect(new Rect(cx - (2.5 * unit), top + (12.6 * unit), 2.0 * unit, 4.6 * unit), 0.9 * unit));
+        context.DrawRectangle(muted, new Pen(line, 1), new RoundedRect(new Rect(cx + (0.5 * unit), top + (12.6 * unit), 2.0 * unit, 4.6 * unit), 0.9 * unit));
     }
 
     private static void CollectFaces(List<Face> faces, Box box, double yaw, double pitch, double scale, Point center)
@@ -192,7 +220,6 @@ public sealed class Skin3DView : Control
             {
                 var projected = Project(box.Corner(face.Corners[i]), yaw, pitch);
                 depth += projected.Z;
-                // Модель 32 пикселя в высоту; её середина (Y=16) совпадает с центром контрола.
                 corners[i] = new Point(
                     center.X + (projected.X * scale),
                     center.Y - ((projected.Y - 16) * scale));
@@ -203,90 +230,41 @@ public sealed class Skin3DView : Control
     }
 
     /// <summary>
-    /// Грань закрашивается по текстуре: каждый тексель превращается в четырёхугольник
-    /// (проекция ортогональная, поэтому билинейная интерполяция точна) и группируется по цвету.
+    /// Грань = одна аффинная матрица (ортографическая проекция сохраняет прямые линии),
+    /// поверх — полупрозрачное затемнение для объёма. Вся область рисуется целиком,
+    /// прозрачные пиксели текстуры обрабатывает сам DrawImage.
     /// </summary>
     private void DrawFace(DrawingContext context, Face face)
     {
-        var (u0, v0) = face.Source.Uv;
-        var w = face.Source.W;
-        var h = face.Source.H;
-        var brushes = new Dictionary<uint, SolidColorBrush>();
-
-        // Подложка средним цветом области закрывает тёмные швы от сглаживания:
-        // края соседних квадов полупрозрачны, и без подложки сквозь них виден фон.
-        var underlay = FaceAverage(u0, v0, w, h, face.Source.Light);
-        if (underlay is null)
+        if (_bitmap is null)
         {
             return;
         }
 
-        context.DrawGeometry(underlay, null, Polygon(face.Corners));
+        var (u0, v0) = face.Source.Uv;
+        var w = face.Source.W;
+        var h = face.Source.H;
+        var c = face.Corners;
 
-        for (var j = 0; j < h; j++)
+        var matrix = new Matrix(
+            (c[1].X - c[0].X) / w,
+            (c[1].Y - c[0].Y) / w,
+            (c[3].X - c[0].X) / h,
+            (c[3].Y - c[0].Y) / h,
+            c[0].X,
+            c[0].Y);
+
+        using (context.PushTransform(matrix))
         {
-            for (var i = 0; i < w; i++)
-            {
-                var argb = Texel(u0 + i, v0 + j);
-                var alpha = (argb >> 24) & 0xFF;
-                if (alpha < 8)
-                {
-                    continue;
-                }
-
-                var shaded = ApplyLight(argb, face.Source.Light);
-                if (!brushes.TryGetValue(shaded, out var brush))
-                {
-                    brush = new SolidColorBrush(Color.FromArgb(
-                        (byte)(shaded >> 24), (byte)(shaded >> 16), (byte)(shaded >> 8), (byte)shaded));
-                    brushes[shaded] = brush;
-                }
-
-                var s0 = (double)i / w;
-                var s1 = (double)(i + 1) / w;
-                var t0 = (double)j / h;
-                var t1 = (double)(j + 1) / h;
-
-                context.DrawGeometry(brush, null, Polygon(
-                [
-                    Bilinear(face.Corners, s0, t0),
-                    Bilinear(face.Corners, s1, t0),
-                    Bilinear(face.Corners, s1, t1),
-                    Bilinear(face.Corners, s0, t1)
-                ]));
-            }
-        }
-    }
-
-    /// <summary>Средний непрозрачный цвет области текстуры с учётом освещения грани.</summary>
-    private SolidColorBrush? FaceAverage(int u0, int v0, int w, int h, double light)
-    {
-        long r = 0, g = 0, b = 0, count = 0;
-        for (var j = 0; j < h; j++)
-        {
-            for (var i = 0; i < w; i++)
-            {
-                var argb = Texel(u0 + i, v0 + j);
-                if (((argb >> 24) & 0xFF) < 8)
-                {
-                    continue;
-                }
-
-                r += (argb >> 16) & 0xFF;
-                g += (argb >> 8) & 0xFF;
-                b += argb & 0xFF;
-                count++;
-            }
+            context.DrawImage(_bitmap, new Rect(u0, v0, w, h), new Rect(0, 0, w, h));
         }
 
-        if (count == 0)
+        if (face.Source.Light < 1.0)
         {
-            return null;
+            var shade = new SolidColorBrush(Color.FromArgb(
+                (byte)Math.Clamp((1.0 - face.Source.Light) * 200, 0, 255), 10, 8, 6));
+            context.DrawGeometry(shade, null, Polygon(face.Corners));
         }
-
-        var shaded = ApplyLight(0xFF000000 | ((uint)(r / count) << 16) | ((uint)(g / count) << 8) | (uint)(b / count), light);
-        return new SolidColorBrush(Color.FromArgb(
-            (byte)(shaded >> 24), (byte)(shaded >> 16), (byte)(shaded >> 8), (byte)shaded));
     }
 
     private static StreamGeometry Polygon(Point[] points)
@@ -302,36 +280,6 @@ public sealed class Skin3DView : Control
         }
 
         return geometry;
-    }
-
-    /// <summary>Точка внутри четырёхугольника: A — левый верх, B — правый верх, D — левый низ.</summary>
-    private static Point Bilinear(Point[] corners, double s, double t)
-    {
-        var top = corners[0] + ((corners[1] - corners[0]) * s);
-        var bottom = corners[3] + ((corners[2] - corners[3]) * s);
-        return top + ((bottom - top) * t);
-    }
-
-    private uint Texel(int x, int y)
-    {
-        if (_pixels is null || x < 0 || y < 0 || x >= _texWidth || y >= _texHeight)
-        {
-            return 0;
-        }
-
-        return _pixels[(y * _texWidth) + x];
-    }
-
-    /// <summary>Освещение по граням с базовым фоновым светом (ambient), чтобы грани в тени не были чёрными.</summary>
-    private static uint ApplyLight(uint argb, double light)
-    {
-        const double Ambient = 0.35;
-        byte Scale(byte channel) => (byte)Math.Clamp(channel * Math.Max(Ambient, light), 0, 255);
-        var a = (byte)((argb >> 24) & 0xFF);
-        return ((uint)a << 24)
-               | ((uint)Scale((byte)((argb >> 16) & 0xFF)) << 16)
-               | ((uint)Scale((byte)((argb >> 8) & 0xFF)) << 8)
-               | Scale((byte)(argb & 0xFF));
     }
 
     /// <summary>Поворот вокруг Y, затем наклон вокруг X; на экран идут X и Y.</summary>
@@ -372,10 +320,10 @@ public sealed class Skin3DView : Control
         private readonly double _x0, _y0, _z0, _x1, _y1, _z1;
         private readonly BoxFace[] _faces;
 
-        private Box(double x0, double y0, double z0, double x1, double y1, double z1, BoxFace[] faces)
+        private Box(double x0, double y0, double z0, double x1, double y1, double z1, BoxFace[] faces, double inflate = 0)
         {
-            _x0 = x0; _y0 = y0; _z0 = z0;
-            _x1 = x1; _y1 = y1; _z1 = z1;
+            _x0 = x0 - inflate; _y0 = y0 - inflate; _z0 = z0 - inflate;
+            _x1 = x1 + inflate; _y1 = y1 + inflate; _z1 = z1 + inflate;
             _faces = faces;
         }
 
@@ -397,44 +345,63 @@ public sealed class Skin3DView : Control
         /// <summary>
         /// Раскладка как в модели Minecraft: от левого верхнего угла области идут
         /// верх (w×d), низ (w×d), право (d×h), перед (w×h), лево (d×h), зад (w×h).
+        /// <paramref name="cellW"/> — ширина передней ячейки в текстуре: у slim-рук
+        /// видимая грань 3 пикселя, но ячейка остаётся 4-пиксельной, как в классике.
         /// </summary>
-        private static BoxFace[] Faces(int u, int v, int w, int h, int d)
+        private static BoxFace[] Faces(int u, int v, int w, int h, int d, int? cellW = null)
         {
+            var step = cellW ?? w;
             var top = (u + d, v);
-            var bottom = (u + d + w, v);
+            var bottom = (u + d + step, v);
             var right = (u, v + d);
             var front = (u + d, v + d);
-            var left = (u + d + w, v + d);
-            var back = (u + d + w + d, v + d);
+            var left = (u + d + step, v + d);
+            var back = (u + d + step + d, v + d);
 
             return
             [
                 new(front, w, h, 1.00, [4, 5, 1, 0]),
-                new(back, w, h, 0.85, [6, 7, 3, 2]),
-                new(right, d, h, 0.92, [5, 6, 2, 1]),
-                new(left, d, h, 0.92, [7, 4, 0, 3]),
-                new(top, w, d, 1.05, [4, 5, 6, 7]),
-                new(bottom, w, d, 0.75, [3, 2, 1, 0])
+                new(back, w, h, 0.80, [6, 7, 3, 2]),
+                new(right, d, h, 0.90, [5, 6, 2, 1]),
+                new(left, d, h, 0.86, [7, 4, 0, 3]),
+                new(top, w, d, 1.00, [4, 5, 6, 7]),
+                new(bottom, w, d, 0.65, [3, 2, 1, 0])
             ];
         }
 
         public static Box Head(bool hat) => hat
-            // слой шляпы — тот же куб, развёртка на 32 пикселя правее и на 8 ниже
-            ? new Box(-4, 24, -4, 4, 32, 4, Faces(32, 0, 8, 8, 8))
+            ? new Box(-4, 24, -4, 4, 32, 4, Faces(32, 0, 8, 8, 8), 0.35)
             : new Box(-4, 24, -4, 4, 32, 4, Faces(0, 0, 8, 8, 8));
 
         public static Box Body(bool jacket) => jacket
-            ? new Box(-4, 12, -2, 4, 24, 2, Faces(16, 32, 8, 12, 4))
+            ? new Box(-4, 12, -2, 4, 24, 2, Faces(16, 32, 8, 12, 4), 0.35)
             : new Box(-4, 12, -2, 4, 24, 2, Faces(16, 16, 8, 12, 4));
 
-        /// <summary>Руки и ноги в формате 64×64: у каждой конечности своя область.</summary>
-        public static Box Limb(LimbKind kind) => kind switch
+        /// <summary>Руки и ноги 64×64; в slim-модели ширина рук — 3 пикселя.</summary>
+        public static Box Limb(LimbKind kind, bool slim) => kind switch
         {
             // Правая рука игрока при взгляде спереди — слева на экране (X &lt; 0).
-            LimbKind.RightArm => new Box(-8, 12, -2, -4, 24, 2, Faces(40, 16, 4, 12, 4)),
-            LimbKind.LeftArm => new Box(4, 12, -2, 8, 24, 2, Faces(32, 48, 4, 12, 4)),
+            LimbKind.RightArm => slim
+                ? new Box(-8, 12, -2, -5, 24, 2, Faces(40, 16, 3, 12, 4, 4))
+                : new Box(-8, 12, -2, -4, 24, 2, Faces(40, 16, 4, 12, 4)),
+            LimbKind.LeftArm => slim
+                ? new Box(5, 12, -2, 8, 24, 2, Faces(32, 48, 3, 12, 4, 4))
+                : new Box(4, 12, -2, 8, 24, 2, Faces(32, 48, 4, 12, 4)),
             LimbKind.RightLeg => new Box(-4, 0, -2, 0, 12, 2, Faces(0, 16, 4, 12, 4)),
             _ => new Box(0, 0, -2, 4, 12, 2, Faces(16, 48, 4, 12, 4))
+        };
+
+        /// <summary>Второй слой конечностей (рукава/брюки): рукава повторяют slim или классику.</summary>
+        public static Box LimbOverlay(LimbKind kind, bool slim) => kind switch
+        {
+            LimbKind.RightArm => slim
+                ? new Box(-8, 12, -2, -5, 24, 2, Faces(40, 32, 3, 12, 4, 4), 0.35)
+                : new Box(-8, 12, -2, -4, 24, 2, Faces(40, 32, 4, 12, 4), 0.35),
+            LimbKind.LeftArm => slim
+                ? new Box(5, 12, -2, 8, 24, 2, Faces(48, 48, 3, 12, 4, 4), 0.35)
+                : new Box(4, 12, -2, 8, 24, 2, Faces(48, 48, 4, 12, 4), 0.35),
+            LimbKind.RightLeg => new Box(-4, 0, -2, 0, 12, 2, Faces(0, 32, 4, 12, 4), 0.35),
+            _ => new Box(0, 0, -2, 4, 12, 2, Faces(0, 48, 4, 12, 4), 0.35)
         };
 
         /// <summary>В старом формате 64×32 у левых конечностей нет своей области — берут правые.</summary>
@@ -449,9 +416,9 @@ public sealed class Skin3DView : Control
 
     /// <summary>
     /// Кубы модели в пикселях текстуры: центр по X=0, ступни на Y=0.
-    /// В старом формате 64×32 нет слоёв шляпы/куртки и отдельных левых конечностей.
+    /// Порядок важен: непрозрачные кубы, затем второй слой — он перекрывает базовый.
     /// </summary>
-    private static Box[] BuildModel(bool legacy) => legacy
+    private static Box[] BuildModel(bool legacy, bool slim) => legacy
         ?
         [
             Box.LimbLegacy(LimbKind.RightArm),
@@ -463,13 +430,16 @@ public sealed class Skin3DView : Control
         ]
         :
         [
-            // Сначала непрозрачные кубы, потом слои шляпы/куртки — они рисуются поверх.
-            Box.Limb(LimbKind.RightArm),
-            Box.Limb(LimbKind.LeftArm),
-            Box.Limb(LimbKind.RightLeg),
-            Box.Limb(LimbKind.LeftLeg),
+            Box.Limb(LimbKind.RightArm, slim),
+            Box.Limb(LimbKind.LeftArm, slim),
+            Box.Limb(LimbKind.RightLeg, slim: false),
+            Box.Limb(LimbKind.LeftLeg, slim: false),
             Box.Body(false),
             Box.Head(false),
+            Box.LimbOverlay(LimbKind.RightArm, slim),
+            Box.LimbOverlay(LimbKind.LeftArm, slim),
+            Box.LimbOverlay(LimbKind.RightLeg, slim: false),
+            Box.LimbOverlay(LimbKind.LeftLeg, slim: false),
             Box.Body(true),
             Box.Head(true)
         ];

@@ -25,3 +25,4 @@ coverage/
 *.db-shm
 .vercel
 .env*
+assets-src/

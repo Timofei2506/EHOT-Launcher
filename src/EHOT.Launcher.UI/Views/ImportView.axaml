@@ -11,11 +11,74 @@
       <!-- ══════ Заголовок ══════ -->
       <StackPanel Spacing="4">
         <TextBlock Text="Импорт из другого лаунчера" Classes="h1" />
-        <TextBlock Text="Переносим только ваш пользовательский контент: миры, скриншоты, пакеты ресурсов.
-Версии, библиотеки, логин-данные и конфиги исходного лаунчера не трогаем — они относятся к нему."
+        <TextBlock Text="Два способа переиспользовать то, что уже установлено в других лаунчерах: версии игры — клиент, библиотеки и ассеты переносятся жёсткими ссылками без скачивания; пользовательский контент — миры, скриншоты и пакеты ресурсов — в новый инстанс. Логин-данные и конфиги исходного лаунчера не трогаем."
                    Classes="body" TextWrapping="Wrap"
                    Foreground="{StaticResource TextSecondaryBrush}" />
       </StackPanel>
+
+      <!-- ══════ Версии Minecraft из других лаунчеров ══════ -->
+      <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource GlassBorderBrush}" BorderThickness="1">
+        <StackPanel Spacing="12">
+          <StackPanel Spacing="3">
+            <TextBlock Text="ВЕРСИИ ИГРЫ" Classes="eyebrow" />
+            <TextBlock Text="Майнкрафт из других лаунчеров — не скачиваем заново" Classes="h3" />
+            <TextBlock Classes="body" TextWrapping="Wrap" Foreground="{StaticResource TextSecondaryBrush}"
+                       Text="Находим готовые версии в официальном лаунчере, TLauncher, Legacy Launcher, PrismLauncher, MultiMC и CurseForge и переносим клиента, библиотеки и ассеты жёсткими ссылками — мгновенно и без дублирования места на диске. Чужой лаунчер остаётся нетронутым." />
+          </StackPanel>
+
+          <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+            <Button Classes="primary" Content="Найти автоматически"
+                    Command="{Binding ScanVersionsCommand}"
+                    IsEnabled="{Binding IsScanningVersions, Converter={x:Static BoolConverters.Not}}" />
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+              <TextBox Text="{Binding ManualVersionsPath, Mode=TwoWay}" Width="280"
+                       PlaceholderText="Папка вручную, напр. %APPDATA%\.minecraft" />
+              <Button Classes="ghost" Content="Сканировать папку" Command="{Binding ScanVersionsFolderCommand}"
+                      IsEnabled="{Binding IsScanningVersions, Converter={x:Static BoolConverters.Not}}" />
+            </StackPanel>
+          </Grid>
+
+          <ProgressBar Height="4" IsVisible="{Binding IsScanningVersions}" IsIndeterminate="True"
+                       Foreground="{StaticResource AccentBrush}" />
+
+          <TextBlock Text="{Binding VersionsSummary}" Classes="caption" TextWrapping="Wrap"
+                     Foreground="{StaticResource TextSecondaryBrush}" />
+
+          <ItemsControl ItemsSource="{Binding ForeignVersions}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:ForeignVersionRow">
+                <Border CornerRadius="10" Padding="10,8" Margin="0,0,0,6"
+                        Background="{StaticResource GlassSurfaceBrush}" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1">
+                  <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                              IsEnabled="{Binding CanImport}" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding VersionId}" FontWeight="SemiBold" FontSize="13" />
+                      <TextBlock FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}">
+                        <Run Text="{Binding SourceLabel}" /><Run Text=" · " /><Run Text="{Binding SizeLabel}" /><Run Text=" · " /><Run Text="{Binding DataLabel}" />
+                      </TextBlock>
+                    </StackPanel>
+                    <Border Grid.Column="2" Classes="chip" Padding="8,3" VerticalAlignment="Center"
+                            IsVisible="{Binding AlreadyImported}">
+                      <TextBlock Text="УЖЕ ЕСТЬ" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource AccentHotBrush}" />
+                    </Border>
+                  </Grid>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Classes="caption" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center"
+                       Text="Каталог назначения:" TextWrapping="Wrap" />
+            <Button Grid.Column="1" Classes="primary" Content="Импортировать выбранные"
+                    Command="{Binding ImportVersionsCommand}"
+                    IsEnabled="{Binding IsImportingVersions, Converter={x:Static BoolConverters.Not}}" />
+          </Grid>
+          <TextBlock Text="{Binding VersionsDestination, StringFormat='…{0}'}" Classes="caption"
+                     TextTrimming="CharacterEllipsis" Foreground="{StaticResource TextSecondaryBrush}" FontSize="10.5" />
+        </StackPanel>
+      </Border>
 
       <!-- ══════ Шаг 1: путь к .minecraft ══════ -->
       <Border CornerRadius="16" Padding="18" Background="{StaticResource GlassCardBrush}" Classes="glass-card" BorderBrush="{StaticResource BorderSoftBrush}" BorderThickness="1" >

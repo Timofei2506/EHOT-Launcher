@@ -151,8 +151,16 @@
                       <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
                         <TextBlock Text="{Binding Username}" FontWeight="SemiBold" FontSize="13"
                                    Foreground="{StaticResource TextBrush}" />
-                        <TextBlock Text="{Binding Uuid}" Classes="caption" FontSize="10"
-                                   TextTrimming="CharacterEllipsis" MaxLines="1" />
+                        <Grid ColumnDefinitions="Auto,Auto">
+                          <TextBlock Text="{Binding Uuid}" Classes="caption" FontSize="10"
+                                     VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxLines="1" MaxWidth="220" />
+                          <Button Grid.Column="1" Classes="icon" Padding="4" Margin="4,0,0,0"
+                                  ToolTip.Tip="Копировать UUID"
+                                  Command="{Binding $parent[ItemsControl].((vm:AccountsViewModel)DataContext).CopyUuidCommand}"
+                                  CommandParameter="{Binding}">
+                            <Path Data="{StaticResource IconCopy}" Classes="icon" Width="11" Height="11" />
+                          </Button>
+                        </Grid>
                       </StackPanel>
                       <Border Grid.Column="2" Classes="chip" VerticalAlignment="Center" Padding="9,3">
                         <TextBlock Text="{Binding UuidFromOfficialProfile, Converter={x:Static vm:NetConverters.UuidSourceLabel}}"
