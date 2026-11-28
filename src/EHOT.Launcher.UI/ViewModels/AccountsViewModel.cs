@@ -161,15 +161,16 @@ public sealed partial class AccountsViewModel : ViewModelBase
     [RelayCommand]
     private async Task CopyUuidAsync(AccountInfo? account)
     {
-        if (account is null || string.IsNullOrWhiteSpace(account.Uuid))
+        if (account is null)
         {
             return;
         }
 
-        var copied = await _clipboard.SetTextAsync(account.Uuid).ConfigureAwait(true);
+        var uuid = account.Uuid.ToString();
+        var copied = await _clipboard.SetTextAsync(uuid).ConfigureAwait(true);
         if (copied)
         {
-            _toasts.Success("UUID скопирован", account.Uuid);
+            _toasts.Success("UUID скопирован", uuid);
         }
         else
         {
