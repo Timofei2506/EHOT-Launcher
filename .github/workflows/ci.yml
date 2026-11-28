@@ -19,7 +19,7 @@ permissions:
 
 env:
   # Версия приложения в одном месте: Directory.Build.props → <Version>. Здесь только читаем.
-  APP_VERSION: '0.5.0'
+  APP_VERSION: '0.5.1'
   # Релизы (установщики) публикуются в отдельном публичном репозитории.
   # Из него же лаунчер и сайт берут список версий — без токена.
   UPDATE_REPOSITORY: Timofei2506/EHOT-Launcher-Releases
@@ -184,13 +184,11 @@ jobs:
         run: |
           bash packaging/macos/make-dmg.sh "artifacts/${{ matrix.rid }}" "${APP_VERSION}" "${ARCH}" artifacts/installers
 
-      - name: (macOS) ad-hoc подпись — чтобы .app запускался на своей машине
+      - name: (macOS) DMG собран с подписанным .app
         if: startsWith(matrix.platform, 'macos')
         run: |
-          APP="artifacts/installers/EHOT Launcher.app"
-          codesign --force --deep --sign - "$APP" || echo "ad-hoc подпись недоступна, продолжаем без неё"
-          # Gatekeeper: собственная сборка не считается карантинной, но проверим структуру
-          codesign --verify --deep "$APP" || true
+          echo "make-dmg.sh подписывает .app ad-hoc ДО упаковки в DMG и проверяет codesign --verify --strict"
+          ls -l artifacts/installers/*.dmg
 
       - name: Выложить установщик
         uses: actions/upload-artifact@v4
