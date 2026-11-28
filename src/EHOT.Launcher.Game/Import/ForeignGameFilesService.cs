@@ -97,9 +97,7 @@ public sealed class ForeignGameFilesService(ILogService log) : IForeignGameFiles
             IntPtr lpSecurityAttributes);
 
         [System.Runtime.InteropServices.DllImport("libc", EntryPoint = "link", SetLastError = true)]
-        private static extern int LinkUnix(
-            [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPUTF8Str)] string oldpath,
-            [System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.LPUTF8Str)] string newpath);
+        private static extern int LinkUnix(IntPtr oldpath, IntPtr newpath);
 
         public static bool TryCreate(string linkPath, string target)
         {
@@ -110,7 +108,17 @@ public sealed class ForeignGameFilesService(ILogService log) : IForeignGameFiles
                     return CreateHardLinkW(linkPath, target, IntPtr.Zero);
                 }
 
-                return LinkUnix(target, linkPath) == 0;
+                var oldPtr = System.Runtime.InteropServices.Marshal.StringToCoTaskMemUTF8(target);
+                var newPtr = System.Runtime.InteropServices.Marshal.StringToCoTaskMemUTF8(linkPath);
+                try
+                {
+                    return LinkUnix(oldPtr, newPtr) == 0;
+                }
+                finally
+                {
+                    System.Runtime.InteropServices.Marshal.FreeCoTaskMem(oldPtr);
+                    System.Runtime.InteropServices.Marshal.FreeCoTaskMem(newPtr);
+                }
             }
             catch (Exception)
             {
